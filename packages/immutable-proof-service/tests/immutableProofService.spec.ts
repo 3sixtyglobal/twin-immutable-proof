@@ -49,7 +49,6 @@ async function waitForProofGeneration(proofCount: number = 1): Promise<void> {
 		}
 		await new Promise(resolve => setTimeout(resolve, 200));
 	} while (!generated);
-	// eslint-disable-next-line no-restricted-syntax
 	throw new Error("Proof generation timed out");
 }
 
