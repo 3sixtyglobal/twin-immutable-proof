@@ -16,7 +16,6 @@ import {
 	NotFoundError,
 	ObjectHelper,
 	RandomHelper,
-	StringHelper,
 	Urn,
 	Validation,
 	type IValidationFailure
@@ -43,7 +42,7 @@ import type {
 	IImmutableProofTaskPayload,
 	IImmutableProofTaskResult
 } from "@twin.org/immutable-proof-task";
-import { nameof } from "@twin.org/nameof";
+import { nameof, nameofKebabCase } from "@twin.org/nameof";
 import { DidCryptoSuites, ProofTypes } from "@twin.org/standards-w3c-did";
 import {
 	VerifiableStorageConnectorFactory,
@@ -122,7 +121,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 */
 	constructor(options?: IImmutableProofServiceConstructorOptions) {
 		this._proofStorage = EntityStorageConnectorFactory.get(
-			options?.immutableProofEntityStorageType ?? StringHelper.kebabCase(nameof<ImmutableProof>())
+			options?.immutableProofEntityStorageType ?? nameofKebabCase<ImmutableProof>()
 		);
 
 		this._verifiableStorage = VerifiableStorageConnectorFactory.get(
