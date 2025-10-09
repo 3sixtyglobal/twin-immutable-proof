@@ -1,5 +1,20 @@
 # @twin.org/immutable-proof-service - Changelog
 
+## [0.0.2-next.3](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-service-v0.0.2-next.2...immutable-proof-service-v0.0.2-next.3) (2025-10-09)
+
+
+### Features
+
+* add validate-locales ([d6a7c07](https://github.com/twinfoundation/immutable-proof/commit/d6a7c0794a1922981a42f56cc24724d7cee727f6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.2-next.2 to 0.0.2-next.3
+    * @twin.org/immutable-proof-task bumped from 0.0.2-next.2 to 0.0.2-next.3
+
 ## [0.0.2-next.2](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-service-v0.0.2-next.1...immutable-proof-service-v0.0.2-next.2) (2025-08-29)
 
 

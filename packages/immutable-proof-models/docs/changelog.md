@@ -1,5 +1,12 @@
 # @twin.org/immutable-proof-models - Changelog
 
+## [0.0.2-next.3](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.2-next.2...immutable-proof-models-v0.0.2-next.3) (2025-10-09)
+
+
+### Features
+
+* add validate-locales ([d6a7c07](https://github.com/twinfoundation/immutable-proof/commit/d6a7c0794a1922981a42f56cc24724d7cee727f6))
+
 ## [0.0.2-next.2](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.2-next.1...immutable-proof-models-v0.0.2-next.2) (2025-08-29)
 
 
