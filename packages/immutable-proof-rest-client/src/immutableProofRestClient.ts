@@ -27,7 +27,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	public static readonly CLASS_NAME: string = nameof<ImmutableProofRestClient>();
 
 	/**
-	 * Create a new instance of ImmutableProofRestClient
+	 * Create a new instance of ImmutableProofRestClient.
 	 * @param config The configuration for the client.
 	 */
 	constructor(config: IBaseRestClientConfig) {
