@@ -57,15 +57,15 @@ import type { IImmutableProofServiceConstructorOptions } from "./models/IImmutab
  */
 export class ImmutableProofService implements IImmutableProofComponent {
 	/**
+	 * Runtime name for the class.
+	 */
+	public static readonly CLASS_NAME: string = nameof<ImmutableProofService>();
+
+	/**
 	 * The namespace for the service.
 	 * @internal
 	 */
 	private static readonly _NAMESPACE: string = "immutable-proof";
-
-	/**
-	 * Runtime name for the class.
-	 */
-	public readonly CLASS_NAME: string = nameof<ImmutableProofService>();
 
 	/**
 	 * The configuration for the connector.
@@ -163,14 +163,18 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		userIdentity?: string,
 		nodeIdentity?: string
 	): Promise<string> {
-		Guards.object<IJsonLdNodeObject>(this.CLASS_NAME, nameof(document), document);
-		Guards.stringValue(this.CLASS_NAME, nameof(userIdentity), userIdentity);
-		Guards.stringValue(this.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
+		Guards.object<IJsonLdNodeObject>(ImmutableProofService.CLASS_NAME, nameof(document), document);
+		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(userIdentity), userIdentity);
+		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
 
 		try {
 			const validationFailures: IValidationFailure[] = [];
 			await JsonLdHelper.validate(document, validationFailures);
-			Validation.asValidationError(this.CLASS_NAME, nameof(document), validationFailures);
+			Validation.asValidationError(
+				ImmutableProofService.CLASS_NAME,
+				nameof(document),
+				validationFailures
+			);
 
 			const id = Converter.bytesToHex(RandomHelper.generate(32), false);
 
@@ -207,7 +211,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 			return new Urn(ImmutableProofService._NAMESPACE, id).toString();
 		} catch (error) {
-			throw new GeneralError(this.CLASS_NAME, "createFailed", undefined, error);
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "createFailed", undefined, error);
 		}
 	}
 
@@ -218,12 +222,12 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	public async get(id: string): Promise<IImmutableProof> {
-		Guards.stringValue(this.CLASS_NAME, nameof(id), id);
+		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(id), id);
 
 		const urnParsed = Urn.fromValidString(id);
 
 		if (urnParsed.namespaceIdentifier() !== ImmutableProofService._NAMESPACE) {
-			throw new GeneralError(this.CLASS_NAME, "namespaceMismatch", {
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "namespaceMismatch", {
 				namespace: ImmutableProofService._NAMESPACE,
 				id
 			});
@@ -234,7 +238,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 			return JsonLdProcessor.compact(immutableProof, immutableProof["@context"]);
 		} catch (error) {
-			throw new GeneralError(this.CLASS_NAME, "getFailed", undefined, error);
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "getFailed", undefined, error);
 		}
 	}
 
@@ -245,12 +249,12 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	public async verify(id: string): Promise<IImmutableProofVerification> {
-		Guards.stringValue(this.CLASS_NAME, nameof(id), id);
+		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(id), id);
 
 		const urnParsed = Urn.fromValidString(id);
 
 		if (urnParsed.namespaceIdentifier() !== ImmutableProofService._NAMESPACE) {
-			throw new GeneralError(this.CLASS_NAME, "namespaceMismatch", {
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "namespaceMismatch", {
 				namespace: ImmutableProofService._NAMESPACE,
 				id
 			});
@@ -266,7 +270,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				failure
 			};
 		} catch (error) {
-			throw new GeneralError(this.CLASS_NAME, "verifyFailed", undefined, error);
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "verifyFailed", undefined, error);
 		}
 	}
 
@@ -278,13 +282,13 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	public async removeVerifiable(id: string, nodeIdentity?: string): Promise<void> {
-		Guards.stringValue(this.CLASS_NAME, nameof(id), id);
-		Guards.stringValue(this.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
+		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(id), id);
+		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
 
 		const urnParsed = Urn.fromValidString(id);
 
 		if (urnParsed.namespaceIdentifier() !== ImmutableProofService._NAMESPACE) {
-			throw new GeneralError(this.CLASS_NAME, "namespaceMismatch", {
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "namespaceMismatch", {
 				namespace: ImmutableProofService._NAMESPACE,
 				id
 			});
@@ -295,7 +299,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			const streamEntity = await this._proofStorage.get(streamId);
 
 			if (Is.empty(streamEntity)) {
-				throw new NotFoundError(this.CLASS_NAME, "proofNotFound", id);
+				throw new NotFoundError(ImmutableProofService.CLASS_NAME, "proofNotFound", id);
 			}
 
 			if (Is.stringValue(streamEntity.verifiableStorageId)) {
@@ -304,7 +308,12 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				await this._proofStorage.set(streamEntity);
 			}
 		} catch (error) {
-			throw new GeneralError(this.CLASS_NAME, "removeVerifiableFailed", undefined, error);
+			throw new GeneralError(
+				ImmutableProofService.CLASS_NAME,
+				"removeVerifiableFailed",
+				undefined,
+				error
+			);
 		}
 	}
 
@@ -405,7 +414,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		const proofEntity = await this._proofStorage.get(proofId);
 
 		if (Is.empty(proofEntity)) {
-			throw new NotFoundError(this.CLASS_NAME, "proofNotFound", id);
+			throw new NotFoundError(ImmutableProofService.CLASS_NAME, "proofNotFound", id);
 		}
 
 		let proofJsonLd = this.proofEntityToJsonLd(proofEntity);

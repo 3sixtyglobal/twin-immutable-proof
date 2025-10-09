@@ -20,18 +20,18 @@ import { HeaderTypes, MimeTypes } from "@twin.org/web";
 /**
  * Client for performing immutable proof through to REST endpoints.
  */
-export class ImmutableProofClient extends BaseRestClient implements IImmutableProofComponent {
+export class ImmutableProofRestClient extends BaseRestClient implements IImmutableProofComponent {
 	/**
 	 * Runtime name for the class.
 	 */
-	public readonly CLASS_NAME: string = nameof<ImmutableProofClient>();
+	public static readonly CLASS_NAME: string = nameof<ImmutableProofRestClient>();
 
 	/**
-	 * Create a new instance of ImmutableProofClient.
+	 * Create a new instance of ImmutableProofRestClient.
 	 * @param config The configuration for the client.
 	 */
 	constructor(config: IBaseRestClientConfig) {
-		super(nameof<ImmutableProofClient>(), config, "immutable-proof");
+		super(nameof<ImmutableProofRestClient>(), config, "immutable-proof");
 	}
 
 	/**
@@ -40,7 +40,7 @@ export class ImmutableProofClient extends BaseRestClient implements IImmutablePr
 	 * @returns The id of the new proof.
 	 */
 	public async create(document: IJsonLdNodeObject): Promise<string> {
-		Guards.object(this.CLASS_NAME, nameof(document), document);
+		Guards.object(ImmutableProofRestClient.CLASS_NAME, nameof(document), document);
 
 		const response = await this.fetch<IImmutableProofCreateRequest, ICreatedResponse>("/", "POST", {
 			body: {
@@ -58,7 +58,7 @@ export class ImmutableProofClient extends BaseRestClient implements IImmutablePr
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	public async get(id: string): Promise<IImmutableProof> {
-		Guards.stringValue(this.CLASS_NAME, nameof(id), id);
+		Guards.stringValue(ImmutableProofRestClient.CLASS_NAME, nameof(id), id);
 
 		const response = await this.fetch<IImmutableProofGetRequest, IImmutableProofGetResponse>(
 			"/:id",
@@ -83,7 +83,7 @@ export class ImmutableProofClient extends BaseRestClient implements IImmutablePr
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	public async verify(id: string): Promise<IImmutableProofVerification> {
-		Guards.stringValue(this.CLASS_NAME, nameof(id), id);
+		Guards.stringValue(ImmutableProofRestClient.CLASS_NAME, nameof(id), id);
 
 		const response = await this.fetch<IImmutableProofVerifyRequest, IImmutableProofVerifyResponse>(
 			"/:id/verify",
@@ -108,6 +108,8 @@ export class ImmutableProofClient extends BaseRestClient implements IImmutablePr
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	public async removeVerifiable(id: string): Promise<void> {
-		throw new NotSupportedError(this.CLASS_NAME, "removeVerifiable");
+		throw new NotSupportedError(ImmutableProofRestClient.CLASS_NAME, "notSupportedOnClient", {
+			methodName: "removeVerifiable"
+		});
 	}
 }

@@ -1,4 +1,4 @@
-# Class: ImmutableProofClient
+# Class: ImmutableProofRestClient
 
 Client for performing immutable proof through to REST endpoints.
 
@@ -14,9 +14,9 @@ Client for performing immutable proof through to REST endpoints.
 
 ### Constructor
 
-> **new ImmutableProofClient**(`config`): `ImmutableProofClient`
+> **new ImmutableProofRestClient**(`config`): `ImmutableProofRestClient`
 
-Create a new instance of ImmutableProofClient.
+Create a new instance of ImmutableProofRestClient.
 
 #### Parameters
 
@@ -28,7 +28,7 @@ The configuration for the client.
 
 #### Returns
 
-`ImmutableProofClient`
+`ImmutableProofRestClient`
 
 #### Overrides
 
@@ -38,13 +38,9 @@ The configuration for the client.
 
 ### CLASS\_NAME
 
-> `readonly` **CLASS\_NAME**: `string`
+> `readonly` `static` **CLASS\_NAME**: `string`
 
 Runtime name for the class.
-
-#### Implementation of
-
-`IImmutableProofComponent.CLASS_NAME`
 
 ## Methods
 
