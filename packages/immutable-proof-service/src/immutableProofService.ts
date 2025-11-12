@@ -6,6 +6,7 @@ import {
 	type IBackgroundTask,
 	type IBackgroundTaskConnector
 } from "@twin.org/background-task-models";
+import { ContextIdHelper, ContextIdKeys, ContextIdStore } from "@twin.org/context";
 import {
 	ComponentFactory,
 	Converter,
@@ -48,9 +49,9 @@ import {
 	VerifiableStorageConnectorFactory,
 	type IVerifiableStorageConnector
 } from "@twin.org/verifiable-storage-models";
-import type { ImmutableProof } from "./entities/immutableProof";
-import type { IImmutableProofServiceConfig } from "./models/IImmutableProofServiceConfig";
-import type { IImmutableProofServiceConstructorOptions } from "./models/IImmutableProofServiceConstructorOptions";
+import type { ImmutableProof } from "./entities/immutableProof.js";
+import type { IImmutableProofServiceConfig } from "./models/IImmutableProofServiceConfig.js";
+import type { IImmutableProofServiceConstructorOptions } from "./models/IImmutableProofServiceConstructorOptions.js";
 
 /**
  * Class for performing immutable proof operations.
@@ -142,8 +143,23 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 		this._config = options?.config ?? {};
 		this._verificationMethodId = this._config.verificationMethodId ?? "immutable-proof-assertion";
+	}
 
-		this._backgroundTaskConnector.registerHandler<
+	/**
+	 * Returns the class name of the component.
+	 * @returns The class name of the component.
+	 */
+	public className(): string {
+		return ImmutableProofService.CLASS_NAME;
+	}
+
+	/**
+	 * The component needs to be started when the node is initialized.
+	 * @param nodeLoggingComponentType The node logging component type.
+	 * @returns Nothing.
+	 */
+	public async start(nodeLoggingComponentType?: string): Promise<void> {
+		await this._backgroundTaskConnector.registerHandler<
 			IImmutableProofTaskPayload,
 			IImmutableProofTaskResult
 		>("immutable-proof", "@twin.org/immutable-proof-task", "processProofTask", async task => {
@@ -154,18 +170,13 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	/**
 	 * Create a new proof.
 	 * @param document The document to create the proof for.
-	 * @param userIdentity The identity to create the immutable proof operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The id of the new proof.
 	 */
-	public async create(
-		document: IJsonLdNodeObject,
-		userIdentity?: string,
-		nodeIdentity?: string
-	): Promise<string> {
+	public async create(document: IJsonLdNodeObject): Promise<string> {
 		Guards.object<IJsonLdNodeObject>(ImmutableProofService.CLASS_NAME, nameof(document), document);
-		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(userIdentity), userIdentity);
-		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
+
+		const contextIds = await ContextIdStore.getContextIds();
+		ContextIdHelper.guard(contextIds, ContextIdKeys.Organization);
 
 		try {
 			const validationFailures: IValidationFailure[] = [];
@@ -189,8 +200,6 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 			const proofEntity: ImmutableProof = {
 				id,
-				nodeIdentity,
-				userIdentity,
 				dateCreated,
 				proofObjectId,
 				proofObjectHash
@@ -201,7 +210,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 			const proofTaskPayload: IImmutableProofTaskPayload = {
 				proofId: id,
-				nodeIdentity,
+				identity: contextIds[ContextIdKeys.Organization],
 				identityConnectorType: this._identityConnectorType,
 				verificationMethodId: this._verificationMethodId,
 				document: immutableProof as unknown as IJsonLdNodeObject
@@ -236,7 +245,8 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		try {
 			const { immutableProof } = await this.internalGet(id, false);
 
-			return JsonLdProcessor.compact(immutableProof, immutableProof["@context"]);
+			const result = await JsonLdProcessor.compact(immutableProof, immutableProof["@context"]);
+			return result;
 		} catch (error) {
 			throw new GeneralError(ImmutableProofService.CLASS_NAME, "getFailed", undefined, error);
 		}
@@ -277,13 +287,13 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	/**
 	 * Remove the verifiable storage for the proof.
 	 * @param id The id of the proof to remove the storage from.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns Nothing.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	public async removeVerifiable(id: string, nodeIdentity?: string): Promise<void> {
+	public async removeVerifiable(id: string): Promise<void> {
 		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(id), id);
-		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
+		const contextIds = await ContextIdStore.getContextIds();
+		ContextIdHelper.guard(contextIds, ContextIdKeys.Organization);
 
 		const urnParsed = Urn.fromValidString(id);
 
@@ -303,7 +313,10 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			}
 
 			if (Is.stringValue(streamEntity.verifiableStorageId)) {
-				await this._verifiableStorage.remove(nodeIdentity, streamEntity.verifiableStorageId);
+				await this._verifiableStorage.remove(
+					contextIds[ContextIdKeys.Organization],
+					streamEntity.verifiableStorageId
+				);
 				delete streamEntity.verifiableStorageId;
 				await this._proofStorage.set(streamEntity);
 			}
@@ -338,8 +351,6 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			"@context": [ImmutableProofContexts.ContextRoot, ImmutableProofContexts.ContextRootCommon],
 			type: ImmutableProofTypes.ImmutableProof,
 			id: proofEntity.id,
-			nodeIdentity: proofEntity.nodeIdentity,
-			userIdentity: proofEntity.userIdentity,
 			proofObjectId: proofEntity.proofObjectId,
 			proofObjectHash: proofEntity.proofObjectHash,
 			verifiableStorageId: proofEntity.verifiableStorageId
@@ -377,7 +388,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				const compacted = await JsonLdProcessor.compact(immutableProof, immutableProof["@context"]);
 
 				const verifiableCreateResult = await this._verifiableStorage.create(
-					proofEntity.nodeIdentity,
+					task.payload.identity,
 					ObjectHelper.toBytes(compacted)
 				);
 

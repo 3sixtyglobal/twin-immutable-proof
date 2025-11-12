@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0.
 import type { IComponent } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import type { IImmutableProof } from "./IImmutableProof";
-import type { IImmutableProofVerification } from "./IImmutableProofVerification";
+import type { IImmutableProof } from "./IImmutableProof.js";
+import type { IImmutableProofVerification } from "./IImmutableProofVerification.js";
 
 /**
  * Interface describing an immutable proof contract.
@@ -12,15 +12,9 @@ export interface IImmutableProofComponent extends IComponent {
 	/**
 	 * Create a new proof.
 	 * @param document The document to create the proof for.
-	 * @param userIdentity The identity to create the immutable proof operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The id of the new proof.
 	 */
-	create(
-		document: IJsonLdNodeObject,
-		userIdentity?: string,
-		nodeIdentity?: string
-	): Promise<string>;
+	create(document: IJsonLdNodeObject): Promise<string>;
 
 	/**
 	 * Get a proof.
@@ -41,9 +35,8 @@ export interface IImmutableProofComponent extends IComponent {
 	/**
 	 * Remove the verifiable storage for the proof.
 	 * @param id The id of the proof to remove the storage from.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns Nothing.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	removeVerifiable(id: string, nodeIdentity?: string): Promise<void>;
+	removeVerifiable(id: string): Promise<void>;
 }

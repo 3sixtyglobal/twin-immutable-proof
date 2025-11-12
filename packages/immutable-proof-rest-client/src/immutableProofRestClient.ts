@@ -35,6 +35,14 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	}
 
 	/**
+	 * Returns the class name of the component.
+	 * @returns The class name of the component.
+	 */
+	public className(): string {
+		return ImmutableProofRestClient.CLASS_NAME;
+	}
+
+	/**
 	 * Create a new proof.
 	 * @param document The document to create the proof for.
 	 * @returns The id of the new proof.

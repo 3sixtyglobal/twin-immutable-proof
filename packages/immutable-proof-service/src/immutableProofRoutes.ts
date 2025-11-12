@@ -132,8 +132,6 @@ export function generateRestRoutesImmutableProof(
 								],
 								type: ImmutableProofTypes.ImmutableProof,
 								id: "ais:1234567890",
-								nodeIdentity: "node-1",
-								userIdentity: "user-1",
 								proofObjectId: "test:1234567890",
 								proofObjectHash: "EAOKyDN0mYQbBh91eMdVeroxQx1H4GfnRbmt6n/2L/Y=",
 								proof: {
@@ -166,8 +164,6 @@ export function generateRestRoutesImmutableProof(
 								],
 								type: ImmutableProofTypes.ImmutableProof,
 								id: "ais:1234567890",
-								nodeIdentity: "node-1",
-								userIdentity: "user-1",
 								proofObjectId: "test:1234567890",
 								proofObjectHash: "EAOKyDN0mYQbBh91eMdVeroxQx1H4GfnRbmt6n/2L/Y=",
 								proof: {
@@ -267,11 +263,7 @@ export async function immutableProofCreate(
 	Guards.object(ROUTES_SOURCE, nameof(request.body.document), request.body.document);
 
 	const component = ComponentFactory.get<IImmutableProofComponent>(componentName);
-	const result = await component.create(
-		request.body.document,
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
-	);
+	const result = await component.create(request.body.document);
 
 	return {
 		statusCode: HttpStatusCode.created,

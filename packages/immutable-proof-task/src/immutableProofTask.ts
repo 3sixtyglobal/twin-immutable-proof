@@ -1,5 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
+import { ContextIdStore, type IContextIds } from "@twin.org/context";
 import { Guards, Is } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import { EngineCore } from "@twin.org/engine-core";
@@ -7,23 +8,25 @@ import type { IEngineCore, IEngineCoreClone } from "@twin.org/engine-models";
 import { IdentityConnectorFactory } from "@twin.org/identity-models";
 import { nameof } from "@twin.org/nameof";
 import { type IDataIntegrityProof, ProofTypes } from "@twin.org/standards-w3c-did";
-import type { IImmutableProofTaskPayload } from "./models/IImmutableProofTaskPayload";
-import type { IImmutableProofTaskResult } from "./models/IImmutableProofTaskResult";
+import type { IImmutableProofTaskPayload } from "./models/IImmutableProofTaskPayload.js";
+import type { IImmutableProofTaskResult } from "./models/IImmutableProofTaskResult.js";
 
 const CLASS_NAME = "ImmutableProofTask";
 
 /**
  * Process a proof.
  * @param engineCloneData The engine clone data.
+ * @param contextIds The context IDs.
  * @param payload The payload to process.
  * @returns The proof.
  */
 export async function processProofTask(
 	engineCloneData: IEngineCoreClone,
+	contextIds: IContextIds,
 	payload: IImmutableProofTaskPayload
 ): Promise<IImmutableProofTaskResult> {
 	Guards.objectValue<IImmutableProofTaskPayload>(CLASS_NAME, nameof(payload), payload);
-	Guards.stringValue(CLASS_NAME, nameof(payload.nodeIdentity), payload.nodeIdentity);
+	Guards.stringValue(CLASS_NAME, nameof(payload.identity), payload.identity);
 	Guards.stringValue(
 		CLASS_NAME,
 		nameof(payload.identityConnectorType),
@@ -46,19 +49,22 @@ export async function processProofTask(
 			await engine.start();
 		}
 
-		const identityConnector = IdentityConnectorFactory.get(payload.identityConnectorType);
+		const result = await ContextIdStore.run(contextIds, async () => {
+			const identityConnector = IdentityConnectorFactory.get(payload.identityConnectorType);
 
-		const proof = await identityConnector.createProof(
-			payload.nodeIdentity,
-			`${payload.nodeIdentity}#${payload.verificationMethodId}`,
-			ProofTypes.DataIntegrityProof,
-			payload.document
-		);
+			const proof = await identityConnector.createProof(
+				payload.identity,
+				`${payload.identity}#${payload.verificationMethodId}`,
+				ProofTypes.DataIntegrityProof,
+				payload.document
+			);
 
-		return {
-			proofId: payload.proofId,
-			proof: proof as IDataIntegrityProof
-		};
+			return {
+				proofId: payload.proofId,
+				proof: proof as IDataIntegrityProof
+			};
+		});
+		return result;
 	} finally {
 		if (!Is.empty(engine)) {
 			await engine.stop();

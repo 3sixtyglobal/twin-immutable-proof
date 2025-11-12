@@ -1,8 +1,8 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { ImmutableProofContexts } from "./immutableProofContexts";
-import type { ImmutableProofFailure } from "./immutableProofFailure";
-import type { ImmutableProofTypes } from "./immutableProofTypes";
+import type { ImmutableProofContexts } from "./immutableProofContexts.js";
+import type { ImmutableProofFailure } from "./immutableProofFailure.js";
+import type { ImmutableProofTypes } from "./immutableProofTypes.js";
 
 /**
  * Interface describing an immutable proof verification.

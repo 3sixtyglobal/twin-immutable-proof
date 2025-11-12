@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0.
 import type { IJsonLdContextDefinitionElement, IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import type { IDataIntegrityProof } from "@twin.org/standards-w3c-did";
-import type { ImmutableProofContexts } from "./immutableProofContexts";
-import type { ImmutableProofTypes } from "./immutableProofTypes";
+import type { ImmutableProofContexts } from "./immutableProofContexts.js";
+import type { ImmutableProofTypes } from "./immutableProofTypes.js";
 
 /**
  * Interface describing an immutable proof state.
@@ -27,16 +27,6 @@ export interface IImmutableProof {
 	 * The id of the proof.
 	 */
 	id: string;
-
-	/**
-	 * The id of the node who created the proof.
-	 */
-	nodeIdentity: string;
-
-	/**
-	 * The id of the user who created the proof.
-	 */
-	userIdentity: string;
 
 	/**
 	 * The id of the object associated with the proof.

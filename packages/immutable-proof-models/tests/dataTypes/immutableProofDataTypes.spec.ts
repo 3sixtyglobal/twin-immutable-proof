@@ -4,9 +4,9 @@ import type { IValidationFailure } from "@twin.org/core";
 import { DataTypeHelper } from "@twin.org/data-core";
 import { JsonLdDataTypes } from "@twin.org/data-json-ld";
 import { DidContexts, DidCryptoSuites, ProofTypes } from "@twin.org/standards-w3c-did";
-import { ImmutableProofDataTypes } from "../../src/dataTypes/immutableProofDataTypes";
-import { ImmutableProofContexts } from "../../src/models/immutableProofContexts";
-import { ImmutableProofTypes } from "../../src/models/immutableProofTypes";
+import { ImmutableProofDataTypes } from "../../src/dataTypes/immutableProofDataTypes.js";
+import { ImmutableProofContexts } from "../../src/models/immutableProofContexts.js";
+import { ImmutableProofTypes } from "../../src/models/immutableProofTypes.js";
 
 describe("ImmutableDataTypes", () => {
 	beforeAll(async () => {
@@ -38,8 +38,6 @@ describe("ImmutableDataTypes", () => {
 				"@context": [ImmutableProofContexts.ContextRoot, ImmutableProofContexts.ContextRootCommon],
 				type: ImmutableProofTypes.ImmutableProof,
 				id: "proof:123456",
-				nodeIdentity: "node-1",
-				userIdentity: "user-1",
 				proofObjectId: "test:23456",
 				proofObjectHash: "aaabbbcccddd"
 			},
@@ -58,8 +56,6 @@ describe("ImmutableDataTypes", () => {
 				"@context": [ImmutableProofContexts.ContextRoot, ImmutableProofContexts.ContextRootCommon],
 				type: ImmutableProofTypes.ImmutableProof,
 				id: "proof:123456",
-				nodeIdentity: "node-1",
-				userIdentity: "user-1",
 				proofObjectId: "test:23456",
 				proofObjectHash: "aaabbbcccddd",
 				proof: {

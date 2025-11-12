@@ -14,18 +14,6 @@ export class ImmutableProof {
 	public id!: string;
 
 	/**
-	 * The identity of the node which controls the proof.
-	 */
-	@property({ type: "string" })
-	public nodeIdentity!: string;
-
-	/**
-	 * The identity of the user which created the proof.
-	 */
-	@property({ type: "string" })
-	public userIdentity!: string;
-
-	/**
 	 * The date/time of when the proof was created.
 	 */
 	@property({ type: "string", format: "date-time", sortDirection: SortDirection.Descending })

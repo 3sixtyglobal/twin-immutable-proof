@@ -57,8 +57,7 @@ VaultConnectorFactory.register("vault", () => TEST_VAULT_CONNECTOR);
 export const TEST_IDENTITY_CONNECTOR = new EntityStorageIdentityConnector();
 IdentityConnectorFactory.register("identity", () => TEST_IDENTITY_CONNECTOR);
 
-export let TEST_NODE_IDENTITY: string;
-export let TEST_USER_IDENTITY: string;
+export let TEST_ORGANIZATION_IDENTITY: string;
 export let TEST_HASH_KEY: string;
 
 /**
@@ -89,11 +88,9 @@ export async function setupTestEnv(): Promise<void> {
 		"assertionMethod",
 		"immutable-proof-assertion"
 	);
-	const didUser = await testIdentityConnector.createDocument("test-user-identity");
 
-	TEST_NODE_IDENTITY = didNode.id;
-	TEST_USER_IDENTITY = didUser.id;
-	TEST_HASH_KEY = `${TEST_NODE_IDENTITY}/immutable-proof-hash`;
+	TEST_ORGANIZATION_IDENTITY = didNode.id;
+	TEST_HASH_KEY = `${TEST_ORGANIZATION_IDENTITY}/immutable-proof-hash`;
 
 	await testVaultConnector.addKey(
 		TEST_HASH_KEY,

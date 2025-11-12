@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { ImmutableProofRestClient } from "../src/immutableProofRestClient";
+import { ImmutableProofRestClient } from "../src/immutableProofRestClient.js";
 
 describe("ImmutableProofRestClient", () => {
 	test("Can create an instance", async () => {

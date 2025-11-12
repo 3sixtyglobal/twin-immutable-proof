@@ -12,9 +12,9 @@ export interface IImmutableProofTaskPayload {
 	proofId: string;
 
 	/**
-	 * The node identity.
+	 * The identity to create the proof for.
 	 */
-	nodeIdentity: string;
+	identity: string;
 
 	/**
 	 * The identity connector type.
