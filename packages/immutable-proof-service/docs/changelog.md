@@ -1,5 +1,20 @@
 # @twin.org/immutable-proof-service - Changelog
 
+## [0.0.3-next.3](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-service-v0.0.3-next.2...immutable-proof-service-v0.0.3-next.3) (2025-11-28)
+
+
+### Bug Fixes
+
+* constructor component name ([06ea7c3](https://github.com/twinfoundation/immutable-proof/commit/06ea7c3602a7b465870300bf02f358d95312d49a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.2 to 0.0.3-next.3
+    * @twin.org/immutable-proof-task bumped from 0.0.3-next.2 to 0.0.3-next.3
+
 ## [0.0.3-next.2](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-service-v0.0.3-next.1...immutable-proof-service-v0.0.3-next.2) (2025-11-28)
 
 
