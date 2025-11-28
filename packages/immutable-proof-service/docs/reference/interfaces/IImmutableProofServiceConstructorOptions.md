@@ -46,11 +46,11 @@ identity
 
 ***
 
-### backgroundTaskConnectorType?
+### backgroundTaskComponentType?
 
-> `optional` **backgroundTaskConnectorType**: `string`
+> `optional` **backgroundTaskComponentType**: `string`
 
-The background task connector type.
+The background task component type.
 
 #### Default
 

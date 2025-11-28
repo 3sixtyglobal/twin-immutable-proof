@@ -133,7 +133,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		this._identityConnector = IdentityConnectorFactory.get(this._identityConnectorType);
 
 		this._backgroundTaskComponent = ComponentFactory.get(
-			options?.backgroundTaskConnectorType ?? "background-task"
+			options?.backgroundTaskComponentType ?? "background-task"
 		);
 
 		if (Is.stringValue(options?.eventBusComponentType)) {

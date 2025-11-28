@@ -25,10 +25,10 @@ export interface IImmutableProofServiceConstructorOptions {
 	identityConnectorType?: string;
 
 	/**
-	 * The background task connector type.
+	 * The background task component type.
 	 * @default background-task
 	 */
-	backgroundTaskConnectorType?: string;
+	backgroundTaskComponentType?: string;
 
 	/**
 	 * The event bus component type, defaults to no event bus.
