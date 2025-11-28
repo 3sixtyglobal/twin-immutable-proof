@@ -1,6 +1,5 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { ContextIdStore, type IContextIds } from "@twin.org/context";
 import { Guards, Is } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import { EngineCore } from "@twin.org/engine-core";
@@ -16,13 +15,11 @@ const CLASS_NAME = "ImmutableProofTask";
 /**
  * Process a proof.
  * @param engineCloneData The engine clone data.
- * @param contextIds The context IDs.
  * @param payload The payload to process.
  * @returns The proof.
  */
 export async function processProofTask(
 	engineCloneData: IEngineCoreClone,
-	contextIds: IContextIds,
 	payload: IImmutableProofTaskPayload
 ): Promise<IImmutableProofTaskResult> {
 	Guards.objectValue<IImmutableProofTaskPayload>(CLASS_NAME, nameof(payload), payload);
@@ -49,22 +46,19 @@ export async function processProofTask(
 			await engine.start();
 		}
 
-		const result = await ContextIdStore.run(contextIds, async () => {
-			const identityConnector = IdentityConnectorFactory.get(payload.identityConnectorType);
+		const identityConnector = IdentityConnectorFactory.get(payload.identityConnectorType);
 
-			const proof = await identityConnector.createProof(
-				payload.identity,
-				`${payload.identity}#${payload.verificationMethodId}`,
-				ProofTypes.DataIntegrityProof,
-				payload.document
-			);
+		const proof = await identityConnector.createProof(
+			payload.identity,
+			`${payload.identity}#${payload.verificationMethodId}`,
+			ProofTypes.DataIntegrityProof,
+			payload.document
+		);
 
-			return {
-				proofId: payload.proofId,
-				proof: proof as IDataIntegrityProof
-			};
-		});
-		return result;
+		return {
+			proofId: payload.proofId,
+			proof: proof as IDataIntegrityProof
+		};
 	} finally {
 		if (!Is.empty(engine)) {
 			await engine.stop();

@@ -1,6 +1,6 @@
 # Function: processProofTask()
 
-> **processProofTask**(`engineCloneData`, `contextIds`, `payload`): `Promise`\<[`IImmutableProofTaskResult`](../interfaces/IImmutableProofTaskResult.md)\>
+> **processProofTask**(`engineCloneData`, `payload`): `Promise`\<[`IImmutableProofTaskResult`](../interfaces/IImmutableProofTaskResult.md)\>
 
 Process a proof.
 
@@ -11,12 +11,6 @@ Process a proof.
 `IEngineCoreClone`
 
 The engine clone data.
-
-### contextIds
-
-`IContextIds`
-
-The context IDs.
 
 ### payload
 

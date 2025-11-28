@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0.
 import {
 	type BackgroundTask,
-	EntityStorageBackgroundTaskConnector,
+	BackgroundTaskService,
 	initSchema as initSchemaBackgroundTask
-} from "@twin.org/background-task-connector-entity-storage";
-import { BackgroundTaskConnectorFactory } from "@twin.org/background-task-models";
-import { ContextIdStore } from "@twin.org/context";
-import { RandomHelper } from "@twin.org/core";
+} from "@twin.org/background-task-service";
+import { ContextIdStore, type IContextIds } from "@twin.org/context";
+import { ComponentFactory, RandomHelper } from "@twin.org/core";
 import { JsonLdProcessor } from "@twin.org/data-json-ld";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
 import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
@@ -27,7 +26,7 @@ import { initSchema } from "../src/schema.js";
 let proofStorage: MemoryEntityStorageConnector<ImmutableProof>;
 let verifiableStorage: MemoryEntityStorageConnector<VerifiableItem>;
 let backgroundTaskStorage: MemoryEntityStorageConnector<BackgroundTask>;
-let backgroundTaskConnectorEntityStorage: EntityStorageBackgroundTaskConnector;
+let backgroundTaskService: BackgroundTaskService;
 
 const FIRST_TICK = 1724327716271;
 
@@ -79,11 +78,8 @@ describe("ImmutableProofService", () => {
 		});
 		EntityStorageConnectorFactory.register("background-task", () => backgroundTaskStorage);
 
-		backgroundTaskConnectorEntityStorage = new EntityStorageBackgroundTaskConnector();
-		BackgroundTaskConnectorFactory.register(
-			"background-task",
-			() => backgroundTaskConnectorEntityStorage
-		);
+		backgroundTaskService = new BackgroundTaskService();
+		ComponentFactory.register("background-task", () => backgroundTaskService);
 
 		verifiableStorage = new MemoryEntityStorageConnector<VerifiableItem>({
 			entitySchema: nameof<VerifiableItem>()
@@ -102,11 +98,14 @@ describe("ImmutableProofService", () => {
 			.mockImplementation(length => new Uint8Array(length).fill(counter++));
 
 		// Mock the module helper to execute the method in the same thread, so we don't have to create an engine
-		ModuleHelper.execModuleMethodThread = vi
+		ModuleHelper.execModuleMethodThreadMessage = vi
 			.fn()
-			.mockImplementation(async (module, method, args) =>
-				ModuleHelper.execModuleMethod(module, method, args)
-			);
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown, contextIds?: IContextIds) => {
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
 	});
 
 	afterAll(async () => {
@@ -181,7 +180,7 @@ describe("ImmutableProofService", () => {
 	});
 
 	test("Can get a proof that has been issued", async () => {
-		await backgroundTaskConnectorEntityStorage.start();
+		await backgroundTaskService.start();
 
 		const service = new ImmutableProofService();
 		await service.start();
@@ -205,7 +204,7 @@ describe("ImmutableProofService", () => {
 				proofObjectId: "123",
 				proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc=",
 				verifiableStorageId:
-					"verifiable:entity-storage:0303030303030303030303030303030303030303030303030303030303030303",
+					"verifiable:entity-storage:0404040404040404040404040404040404040404040404040404040404040404",
 				dateCreated: "2024-08-22T11:55:16.271Z"
 			}
 		]);
@@ -234,10 +233,10 @@ describe("ImmutableProofService", () => {
 			},
 			immutableReceipt: {
 				type: "VerifiableStorageEntityStorageReceipt",
-				entityStorageId: "0303030303030303030303030303030303030303030303030303030303030303"
+				entityStorageId: "0404040404040404040404040404040404040404040404040404040404040404"
 			},
 			verifiableStorageId:
-				"verifiable:entity-storage:0303030303030303030303030303030303030303030303030303030303030303"
+				"verifiable:entity-storage:0404040404040404040404040404040404040404040404040404040404040404"
 		});
 
 		const verifiableStore = verifiableStorage.getStore();
@@ -249,7 +248,7 @@ describe("ImmutableProofService", () => {
 				creator:
 					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 				data: "eyJAY29udGV4dCI6WyJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9pbW11dGFibGUtcHJvb2YvIiwiaHR0cHM6Ly9zY2hlbWEudHdpbmRldi5vcmcvY29tbW9uLyIsImh0dHBzOi8vd3d3LnczLm9yZy9ucy9jcmVkZW50aWFscy92MiJdLCJpZCI6IjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEiLCJ0eXBlIjoiSW1tdXRhYmxlUHJvb2YiLCJwcm9vZiI6eyJ0eXBlIjoiRGF0YUludGVncml0eVByb29mIiwiY3JlYXRlZCI6IjIwMjQtMDgtMjJUMTE6NTU6MTYuMjcxWiIsImNyeXB0b3N1aXRlIjoiZWRkc2EtamNzLTIwMjIiLCJwcm9vZlB1cnBvc2UiOiJhc3NlcnRpb25NZXRob2QiLCJwcm9vZlZhbHVlIjoiejVCZllQUHh5ZloxR3JSQUhmQmN3ZVJRWkJEcWh0bWJCZWJvdVJ6cThzMThETHhURDFmREhKRGY3V1pIdjVuYlJLTW9XcVF3NEdqVWtWRld4UVZocHFUUjMiLCJ2ZXJpZmljYXRpb25NZXRob2QiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHg2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzI2ltbXV0YWJsZS1wcm9vZi1hc3NlcnRpb24ifSwicHJvb2ZPYmplY3RIYXNoIjoic2hhMjU2Olo1azQzRVZNM2VPQnFjSzZ2dDJvaHd0SkRVc2paWHpadVdaRmgySzN6dmM9IiwicHJvb2ZPYmplY3RJZCI6IjEyMyJ9",
-				id: "0303030303030303030303030303030303030303030303030303030303030303",
+				id: "0404040404040404040404040404040404040404040404040404040404040404",
 				maxAllowListSize: 100
 			}
 		]);
@@ -303,7 +302,7 @@ describe("ImmutableProofService", () => {
 	});
 
 	test("Can verify a proof that has been issued", async () => {
-		await backgroundTaskConnectorEntityStorage.start();
+		await backgroundTaskService.start();
 
 		const service = new ImmutableProofService();
 		await service.start();
@@ -346,10 +345,10 @@ describe("ImmutableProofService", () => {
 			},
 			immutableReceipt: {
 				type: "VerifiableStorageEntityStorageReceipt",
-				entityStorageId: "0303030303030303030303030303030303030303030303030303030303030303"
+				entityStorageId: "0404040404040404040404040404040404040404040404040404040404040404"
 			},
 			verifiableStorageId:
-				"verifiable:entity-storage:0303030303030303030303030303030303030303030303030303030303030303"
+				"verifiable:entity-storage:0404040404040404040404040404040404040404040404040404040404040404"
 		});
 
 		const proofStore = proofStorage.getStore();
@@ -359,7 +358,7 @@ describe("ImmutableProofService", () => {
 				proofObjectId: "123",
 				proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc=",
 				verifiableStorageId:
-					"verifiable:entity-storage:0303030303030303030303030303030303030303030303030303030303030303",
+					"verifiable:entity-storage:0404040404040404040404040404040404040404040404040404040404040404",
 				dateCreated: "2024-08-22T11:55:16.271Z"
 			}
 		]);
@@ -373,7 +372,7 @@ describe("ImmutableProofService", () => {
 				creator:
 					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 				data: "eyJAY29udGV4dCI6WyJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9pbW11dGFibGUtcHJvb2YvIiwiaHR0cHM6Ly9zY2hlbWEudHdpbmRldi5vcmcvY29tbW9uLyIsImh0dHBzOi8vd3d3LnczLm9yZy9ucy9jcmVkZW50aWFscy92MiJdLCJpZCI6IjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEiLCJ0eXBlIjoiSW1tdXRhYmxlUHJvb2YiLCJwcm9vZiI6eyJ0eXBlIjoiRGF0YUludGVncml0eVByb29mIiwiY3JlYXRlZCI6IjIwMjQtMDgtMjJUMTE6NTU6MTYuMjcxWiIsImNyeXB0b3N1aXRlIjoiZWRkc2EtamNzLTIwMjIiLCJwcm9vZlB1cnBvc2UiOiJhc3NlcnRpb25NZXRob2QiLCJwcm9vZlZhbHVlIjoiejVCZllQUHh5ZloxR3JSQUhmQmN3ZVJRWkJEcWh0bWJCZWJvdVJ6cThzMThETHhURDFmREhKRGY3V1pIdjVuYlJLTW9XcVF3NEdqVWtWRld4UVZocHFUUjMiLCJ2ZXJpZmljYXRpb25NZXRob2QiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHg2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzI2ltbXV0YWJsZS1wcm9vZi1hc3NlcnRpb24ifSwicHJvb2ZPYmplY3RIYXNoIjoic2hhMjU2Olo1azQzRVZNM2VPQnFjSzZ2dDJvaHd0SkRVc2paWHpadVdaRmgySzN6dmM9IiwicHJvb2ZPYmplY3RJZCI6IjEyMyJ9",
-				id: "0303030303030303030303030303030303030303030303030303030303030303",
+				id: "0404040404040404040404040404040404040404040404040404040404040404",
 				maxAllowListSize: 100
 			}
 		]);

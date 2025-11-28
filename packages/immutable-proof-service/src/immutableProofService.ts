@@ -1,10 +1,9 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import {
-	BackgroundTaskConnectorFactory,
 	TaskStatus,
 	type IBackgroundTask,
-	type IBackgroundTaskConnector
+	type IBackgroundTaskComponent
 } from "@twin.org/background-task-models";
 import { ContextIdHelper, ContextIdKeys, ContextIdStore } from "@twin.org/context";
 import {
@@ -93,10 +92,10 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	private readonly _verifiableStorage: IVerifiableStorageConnector;
 
 	/**
-	 * The background task connector.
+	 * The background task component.
 	 * @internal
 	 */
-	private readonly _backgroundTaskConnector: IBackgroundTaskConnector;
+	private readonly _backgroundTaskComponent: IBackgroundTaskComponent;
 
 	/**
 	 * The event bus component.
@@ -133,7 +132,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 		this._identityConnector = IdentityConnectorFactory.get(this._identityConnectorType);
 
-		this._backgroundTaskConnector = BackgroundTaskConnectorFactory.get(
+		this._backgroundTaskComponent = ComponentFactory.get(
 			options?.backgroundTaskConnectorType ?? "background-task"
 		);
 
@@ -159,7 +158,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 * @returns Nothing.
 	 */
 	public async start(nodeLoggingComponentType?: string): Promise<void> {
-		await this._backgroundTaskConnector.registerHandler<
+		await this._backgroundTaskComponent.registerHandler<
 			IImmutableProofTaskPayload,
 			IImmutableProofTaskResult
 		>("immutable-proof", "@twin.org/immutable-proof-task", "processProofTask", async task => {
@@ -216,7 +215,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				document: immutableProof as unknown as IJsonLdNodeObject
 			};
 
-			await this._backgroundTaskConnector.create("immutable-proof", proofTaskPayload);
+			await this._backgroundTaskComponent.create("immutable-proof", proofTaskPayload);
 
 			return new Urn(ImmutableProofService._NAMESPACE, id).toString();
 		} catch (error) {

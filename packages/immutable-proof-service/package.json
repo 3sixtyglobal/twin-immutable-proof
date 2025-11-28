@@ -48,7 +48,7 @@
 		"@twin.org/web": "next"
 	},
 	"devDependencies": {
-		"@twin.org/background-task-connector-entity-storage": "next",
+		"@twin.org/background-task-service": "next",
 		"@twin.org/entity-storage-connector-memory": "next",
 		"@twin.org/identity-connector-entity-storage": "next",
 		"@twin.org/verifiable-storage-connector-entity-storage": "next",
