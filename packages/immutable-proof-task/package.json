@@ -1,6 +1,6 @@
 {
 	"name": "@twin.org/immutable-proof-task",
-	"version": "0.0.3-next.3",
+	"version": "0.0.3-next.4",
 	"description": "Background task for generating the proof",
 	"repository": {
 		"type": "git",

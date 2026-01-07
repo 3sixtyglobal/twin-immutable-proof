@@ -1,5 +1,20 @@
 # @twin.org/immutable-proof-service - Changelog
 
+## [0.0.3-next.4](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-service-v0.0.3-next.3...immutable-proof-service-v0.0.3-next.4) (2026-01-07)
+
+
+### Features
+
+* add logging ([#18](https://github.com/twinfoundation/immutable-proof/issues/18)) ([e331ce8](https://github.com/twinfoundation/immutable-proof/commit/e331ce843393554750c2708ebce1273056b6399a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.3 to 0.0.3-next.4
+    * @twin.org/immutable-proof-task bumped from 0.0.3-next.3 to 0.0.3-next.4
+
 ## [0.0.3-next.3](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-service-v0.0.3-next.2...immutable-proof-service-v0.0.3-next.3) (2025-11-28)
 
 
