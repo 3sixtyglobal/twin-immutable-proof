@@ -19,6 +19,12 @@ export interface IImmutableProofServiceConstructorOptions {
 	verifiableStorageType?: string;
 
 	/**
+	 * The logging component type.
+	 * @default logging
+	 */
+	loggingComponentType?: string;
+
+	/**
 	 * The identity connector type.
 	 * @default identity
 	 */

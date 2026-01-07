@@ -10,6 +10,12 @@ import { ComponentFactory, RandomHelper } from "@twin.org/core";
 import { JsonLdProcessor } from "@twin.org/data-json-ld";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
 import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
+import {
+	EntityStorageLoggingConnector,
+	initSchema as initSchemaLogging,
+	type LogEntry
+} from "@twin.org/logging-connector-entity-storage";
+import { LoggingConnectorFactory } from "@twin.org/logging-models";
 import { ModuleHelper } from "@twin.org/modules";
 import { nameof } from "@twin.org/nameof";
 import {
@@ -27,14 +33,19 @@ let proofStorage: MemoryEntityStorageConnector<ImmutableProof>;
 let verifiableStorage: MemoryEntityStorageConnector<VerifiableItem>;
 let backgroundTaskStorage: MemoryEntityStorageConnector<BackgroundTask>;
 let backgroundTaskService: BackgroundTaskService;
+let memoryLoggingEntityStorage: MemoryEntityStorageConnector<LogEntry>;
 
 const FIRST_TICK = 1724327716271;
 
 /**
  * Wait for the proof to be generated.
  * @param proofCount The number of proofs to wait for.
+ * @param showFail Whether to show debug information on failure.
  */
-async function waitForProofGeneration(proofCount: number = 1): Promise<void> {
+async function waitForProofGeneration(
+	proofCount: number = 1,
+	showFail: boolean = true
+): Promise<void> {
 	let count = 0;
 	let generated;
 	do {
@@ -45,8 +56,11 @@ async function waitForProofGeneration(proofCount: number = 1): Promise<void> {
 		await new Promise(resolve => setTimeout(resolve, 200));
 	} while (!generated && count < 20);
 
-	console.debug(JSON.stringify(backgroundTaskStorage.getStore(), null, 2));
-	throw new Error("Proof generation timed out");
+	if (showFail) {
+		console.debug("backgroundTasks", JSON.stringify(backgroundTaskStorage.getStore(), null, 2));
+		console.debug("logEntries", JSON.stringify(memoryLoggingEntityStorage.getStore(), null, 2));
+		throw new Error("Proof generation timed out");
+	}
 }
 
 describe("ImmutableProofService", () => {
@@ -61,12 +75,21 @@ describe("ImmutableProofService", () => {
 
 	beforeEach(async () => {
 		initSchema();
+		initSchemaLogging();
 		initSchemaVerifiableStorage();
 		initSchemaBackgroundTask();
 
 		ContextIdStore.getContextIds = vi
 			.fn()
 			.mockImplementation(() => ({ organization: TEST_ORGANIZATION_IDENTITY }));
+
+		memoryLoggingEntityStorage = new MemoryEntityStorageConnector<LogEntry>({
+			entitySchema: nameof<LogEntry>()
+		});
+		EntityStorageConnectorFactory.register("log-entry", () => memoryLoggingEntityStorage);
+		const loggingConnector = new EntityStorageLoggingConnector();
+		LoggingConnectorFactory.register("logging", () => loggingConnector);
+		ComponentFactory.register("logging", () => loggingConnector);
 
 		proofStorage = new MemoryEntityStorageConnector<ImmutableProof>({
 			entitySchema: nameof<ImmutableProof>()
@@ -96,16 +119,6 @@ describe("ImmutableProofService", () => {
 		RandomHelper.generate = vi
 			.fn()
 			.mockImplementation(length => new Uint8Array(length).fill(counter++));
-
-		// Mock the module helper to execute the method in the same thread, so we don't have to create an engine
-		ModuleHelper.execModuleMethodThreadMessage = vi
-			.fn()
-			.mockImplementation((module, completed) => ({
-				executeMethod: async (method: string, args?: unknown, contextIds?: IContextIds) => {
-					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
-					completed(method, res);
-				}
-			}));
 	});
 
 	afterAll(async () => {
@@ -179,7 +192,47 @@ describe("ImmutableProofService", () => {
 		});
 	});
 
+	test("Can fail to get a proof when there is no identity connector", async () => {
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "123",
+			name: "John Smith"
+		});
+		expect(proofId).toEqual(
+			"immutable-proof:0101010101010101010101010101010101010101010101010101010101010101"
+		);
+
+		await waitForProofGeneration(1, false);
+
+		const failLogEntry = memoryLoggingEntityStorage
+			.getStore()
+			.find(entry => entry.message === "createProofFailed");
+		expect(failLogEntry).toBeDefined();
+
+		expect(failLogEntry?.error?.[0].message).toEqual("factory.noGet");
+		expect(failLogEntry?.error?.[0].properties).toEqual({
+			typeName: "identity-connector",
+			name: "identity"
+		});
+	});
+
 	test("Can get a proof that has been issued", async () => {
+		// Mock the module helper to execute the method in the same thread, so we don't have to create an engine
+		ModuleHelper.execModuleMethodThreadMessage = vi
+			.fn()
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown, contextIds?: IContextIds) => {
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
+
 		await backgroundTaskService.start();
 
 		const service = new ImmutableProofService();
@@ -204,7 +257,7 @@ describe("ImmutableProofService", () => {
 				proofObjectId: "123",
 				proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc=",
 				verifiableStorageId:
-					"verifiable:entity-storage:0404040404040404040404040404040404040404040404040404040404040404",
+					"verifiable:entity-storage:0606060606060606060606060606060606060606060606060606060606060606",
 				dateCreated: "2024-08-22T11:55:16.271Z"
 			}
 		]);
@@ -233,10 +286,10 @@ describe("ImmutableProofService", () => {
 			},
 			immutableReceipt: {
 				type: "VerifiableStorageEntityStorageReceipt",
-				entityStorageId: "0404040404040404040404040404040404040404040404040404040404040404"
+				entityStorageId: "0606060606060606060606060606060606060606060606060606060606060606"
 			},
 			verifiableStorageId:
-				"verifiable:entity-storage:0404040404040404040404040404040404040404040404040404040404040404"
+				"verifiable:entity-storage:0606060606060606060606060606060606060606060606060606060606060606"
 		});
 
 		const verifiableStore = verifiableStorage.getStore();
@@ -248,7 +301,7 @@ describe("ImmutableProofService", () => {
 				creator:
 					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 				data: "eyJAY29udGV4dCI6WyJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9pbW11dGFibGUtcHJvb2YvIiwiaHR0cHM6Ly9zY2hlbWEudHdpbmRldi5vcmcvY29tbW9uLyIsImh0dHBzOi8vd3d3LnczLm9yZy9ucy9jcmVkZW50aWFscy92MiJdLCJpZCI6IjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEiLCJ0eXBlIjoiSW1tdXRhYmxlUHJvb2YiLCJwcm9vZiI6eyJ0eXBlIjoiRGF0YUludGVncml0eVByb29mIiwiY3JlYXRlZCI6IjIwMjQtMDgtMjJUMTE6NTU6MTYuMjcxWiIsImNyeXB0b3N1aXRlIjoiZWRkc2EtamNzLTIwMjIiLCJwcm9vZlB1cnBvc2UiOiJhc3NlcnRpb25NZXRob2QiLCJwcm9vZlZhbHVlIjoiejVCZllQUHh5ZloxR3JSQUhmQmN3ZVJRWkJEcWh0bWJCZWJvdVJ6cThzMThETHhURDFmREhKRGY3V1pIdjVuYlJLTW9XcVF3NEdqVWtWRld4UVZocHFUUjMiLCJ2ZXJpZmljYXRpb25NZXRob2QiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHg2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzI2ltbXV0YWJsZS1wcm9vZi1hc3NlcnRpb24ifSwicHJvb2ZPYmplY3RIYXNoIjoic2hhMjU2Olo1azQzRVZNM2VPQnFjSzZ2dDJvaHd0SkRVc2paWHpadVdaRmgySzN6dmM9IiwicHJvb2ZPYmplY3RJZCI6IjEyMyJ9",
-				id: "0404040404040404040404040404040404040404040404040404040404040404",
+				id: "0606060606060606060606060606060606060606060606060606060606060606",
 				maxAllowListSize: 100
 			}
 		]);
@@ -345,10 +398,10 @@ describe("ImmutableProofService", () => {
 			},
 			immutableReceipt: {
 				type: "VerifiableStorageEntityStorageReceipt",
-				entityStorageId: "0404040404040404040404040404040404040404040404040404040404040404"
+				entityStorageId: "0606060606060606060606060606060606060606060606060606060606060606"
 			},
 			verifiableStorageId:
-				"verifiable:entity-storage:0404040404040404040404040404040404040404040404040404040404040404"
+				"verifiable:entity-storage:0606060606060606060606060606060606060606060606060606060606060606"
 		});
 
 		const proofStore = proofStorage.getStore();
@@ -358,7 +411,7 @@ describe("ImmutableProofService", () => {
 				proofObjectId: "123",
 				proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc=",
 				verifiableStorageId:
-					"verifiable:entity-storage:0404040404040404040404040404040404040404040404040404040404040404",
+					"verifiable:entity-storage:0606060606060606060606060606060606060606060606060606060606060606",
 				dateCreated: "2024-08-22T11:55:16.271Z"
 			}
 		]);
@@ -372,7 +425,7 @@ describe("ImmutableProofService", () => {
 				creator:
 					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 				data: "eyJAY29udGV4dCI6WyJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9pbW11dGFibGUtcHJvb2YvIiwiaHR0cHM6Ly9zY2hlbWEudHdpbmRldi5vcmcvY29tbW9uLyIsImh0dHBzOi8vd3d3LnczLm9yZy9ucy9jcmVkZW50aWFscy92MiJdLCJpZCI6IjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEiLCJ0eXBlIjoiSW1tdXRhYmxlUHJvb2YiLCJwcm9vZiI6eyJ0eXBlIjoiRGF0YUludGVncml0eVByb29mIiwiY3JlYXRlZCI6IjIwMjQtMDgtMjJUMTE6NTU6MTYuMjcxWiIsImNyeXB0b3N1aXRlIjoiZWRkc2EtamNzLTIwMjIiLCJwcm9vZlB1cnBvc2UiOiJhc3NlcnRpb25NZXRob2QiLCJwcm9vZlZhbHVlIjoiejVCZllQUHh5ZloxR3JSQUhmQmN3ZVJRWkJEcWh0bWJCZWJvdVJ6cThzMThETHhURDFmREhKRGY3V1pIdjVuYlJLTW9XcVF3NEdqVWtWRld4UVZocHFUUjMiLCJ2ZXJpZmljYXRpb25NZXRob2QiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHg2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzI2ltbXV0YWJsZS1wcm9vZi1hc3NlcnRpb24ifSwicHJvb2ZPYmplY3RIYXNoIjoic2hhMjU2Olo1azQzRVZNM2VPQnFjSzZ2dDJvaHd0SkRVc2paWHpadVdaRmgySzN6dmM9IiwicHJvb2ZPYmplY3RJZCI6IjEyMyJ9",
-				id: "0404040404040404040404040404040404040404040404040404040404040404",
+				id: "0606060606060606060606060606060606060606060606060606060606060606",
 				maxAllowListSize: 100
 			}
 		]);

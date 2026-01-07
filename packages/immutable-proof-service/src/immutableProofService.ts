@@ -7,6 +7,7 @@ import {
 } from "@twin.org/background-task-models";
 import { ContextIdHelper, ContextIdKeys, ContextIdStore } from "@twin.org/context";
 import {
+	BaseError,
 	ComponentFactory,
 	Converter,
 	GeneralError,
@@ -42,6 +43,7 @@ import type {
 	IImmutableProofTaskPayload,
 	IImmutableProofTaskResult
 } from "@twin.org/immutable-proof-task";
+import type { ILoggingComponent } from "@twin.org/logging-models";
 import { nameof, nameofKebabCase } from "@twin.org/nameof";
 import { DidCryptoSuites, ProofTypes } from "@twin.org/standards-w3c-did";
 import {
@@ -72,6 +74,12 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 * @internal
 	 */
 	private readonly _config: IImmutableProofServiceConfig;
+
+	/**
+	 * The logging component.
+	 * @internal
+	 */
+	private readonly _logging?: ILoggingComponent;
 
 	/**
 	 * The identity connector.
@@ -126,6 +134,10 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 		this._verifiableStorage = VerifiableStorageConnectorFactory.get(
 			options?.verifiableStorageType ?? "verifiable-storage"
+		);
+
+		this._logging = ComponentFactory.getIfExists<ILoggingComponent>(
+			options?.loggingComponentType ?? "logging"
 		);
 
 		this._identityConnectorType = options?.identityConnectorType ?? "identity";
@@ -215,7 +227,9 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				document: immutableProof as unknown as IJsonLdNodeObject
 			};
 
-			await this._backgroundTaskComponent.create("immutable-proof", proofTaskPayload);
+			await this._backgroundTaskComponent.create("immutable-proof", proofTaskPayload, {
+				retainFor: 5000
+			});
 
 			return new Urn(ImmutableProofService._NAMESPACE, id).toString();
 		} catch (error) {
@@ -366,39 +380,60 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	private async finaliseTask(
 		task: IBackgroundTask<IImmutableProofTaskPayload, IImmutableProofTaskResult>
 	): Promise<void> {
-		if (task.status === TaskStatus.Success && Is.object(task.payload) && Is.object(task.result)) {
-			const proofEntity = await this._proofStorage.get(task.payload.proofId);
+		if (Is.object(task.payload)) {
+			if (task.status === TaskStatus.Success && Is.object(task.result)) {
+				const proofEntity = await this._proofStorage.get(task.payload.proofId);
 
-			if (Is.object(proofEntity)) {
-				const immutableProof: IImmutableProof = this.proofEntityToJsonLd(proofEntity);
+				if (Is.object(proofEntity)) {
+					const immutableProof: IImmutableProof = this.proofEntityToJsonLd(proofEntity);
 
-				// As we are adding the proof to the data we update its context
-				immutableProof["@context"] = JsonLdProcessor.combineContexts(
-					[ImmutableProofContexts.ContextRoot, ImmutableProofContexts.ContextRootCommon],
-					task.result.proof["@context"]
-				) as IImmutableProof["@context"];
-				immutableProof.proof = task.result.proof;
-				ObjectHelper.propertyDelete(immutableProof.proof, "@context");
+					// As we are adding the proof to the data we update its context
+					immutableProof["@context"] = JsonLdProcessor.combineContexts(
+						[ImmutableProofContexts.ContextRoot, ImmutableProofContexts.ContextRootCommon],
+						task.result.proof["@context"]
+					) as IImmutableProof["@context"];
+					immutableProof.proof = task.result.proof;
+					ObjectHelper.propertyDelete(immutableProof.proof, "@context");
 
-				if (Is.stringValue(immutableProof.proof.created)) {
-					proofEntity.dateCreated = immutableProof.proof.created;
+					if (Is.stringValue(immutableProof.proof.created)) {
+						proofEntity.dateCreated = immutableProof.proof.created;
+					}
+
+					const compacted = await JsonLdProcessor.compact(
+						immutableProof,
+						immutableProof["@context"]
+					);
+
+					const verifiableCreateResult = await this._verifiableStorage.create(
+						task.payload.identity,
+						ObjectHelper.toBytes(compacted)
+					);
+
+					proofEntity.verifiableStorageId = verifiableCreateResult.id;
+
+					await this._proofStorage.set(proofEntity);
+
+					await this._logging?.log({
+						source: ImmutableProofService.CLASS_NAME,
+						level: "info",
+						ts: Date.now(),
+						message: "createdProof",
+						data: { proofId: task.payload.proofId }
+					});
+
+					await this._eventBusComponent?.publish<IImmutableProofEventBusProofCreated>(
+						ImmutableProofTopics.ProofCreated,
+						{ id: new Urn(ImmutableProofService._NAMESPACE, task.payload.proofId).toString() }
+					);
 				}
-
-				const compacted = await JsonLdProcessor.compact(immutableProof, immutableProof["@context"]);
-
-				const verifiableCreateResult = await this._verifiableStorage.create(
-					task.payload.identity,
-					ObjectHelper.toBytes(compacted)
-				);
-
-				proofEntity.verifiableStorageId = verifiableCreateResult.id;
-
-				await this._proofStorage.set(proofEntity);
-
-				await this._eventBusComponent?.publish<IImmutableProofEventBusProofCreated>(
-					ImmutableProofTopics.ProofCreated,
-					{ id: new Urn(ImmutableProofService._NAMESPACE, task.payload.proofId).toString() }
-				);
+			} else if (task.status === TaskStatus.Failed) {
+				await this._logging?.log({
+					source: ImmutableProofService.CLASS_NAME,
+					level: "error",
+					ts: Date.now(),
+					message: "createProofFailed",
+					error: BaseError.fromError(task.error)
+				});
 			}
 		}
 	}

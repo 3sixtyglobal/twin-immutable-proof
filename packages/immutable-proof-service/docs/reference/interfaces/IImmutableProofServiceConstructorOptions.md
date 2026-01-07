@@ -32,6 +32,20 @@ verifiable-storage
 
 ***
 
+### loggingComponentType?
+
+> `optional` **loggingComponentType**: `string`
+
+The logging component type.
+
+#### Default
+
+```ts
+logging
+```
+
+***
+
 ### identityConnectorType?
 
 > `optional` **identityConnectorType**: `string`
