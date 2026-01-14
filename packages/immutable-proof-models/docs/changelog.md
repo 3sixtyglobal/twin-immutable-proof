@@ -1,5 +1,12 @@
 # @twin.org/immutable-proof-models - Changelog
 
+## [0.0.3-next.5](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.3-next.4...immutable-proof-models-v0.0.3-next.5) (2026-01-14)
+
+
+### Features
+
+* update contexts and namespaces ([#20](https://github.com/twinfoundation/immutable-proof/issues/20)) ([d38aa69](https://github.com/twinfoundation/immutable-proof/commit/d38aa696c73e4fcc304f08fb458d5900109abcb4))
+
 ## [0.0.3-next.4](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.3-next.3...immutable-proof-models-v0.0.3-next.4) (2026-01-07)
 
 
