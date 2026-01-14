@@ -14,9 +14,9 @@ export class ImmutableProofDataTypes {
 	 */
 	public static registerTypes(): void {
 		DataTypeHandlerFactory.register(
-			`${ImmutableProofContexts.ContextRoot}${ImmutableProofTypes.ImmutableProof}`,
+			`${ImmutableProofContexts.Namespace}${ImmutableProofTypes.ImmutableProof}`,
 			() => ({
-				context: ImmutableProofContexts.ContextRoot,
+				namespace: ImmutableProofContexts.Namespace,
 				type: ImmutableProofTypes.ImmutableProof,
 				defaultValue: {},
 				jsonSchema: async () => ImmutableProofSchema as IJsonSchema

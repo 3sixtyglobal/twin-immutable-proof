@@ -287,7 +287,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			const { verified, failure } = await this.internalGet(id, true);
 
 			return {
-				"@context": ImmutableProofContexts.ContextRoot,
+				"@context": ImmutableProofContexts.Namespace,
 				type: ImmutableProofTypes.ImmutableProofVerification,
 				verified,
 				failure
@@ -361,7 +361,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 */
 	private proofEntityToJsonLd(proofEntity: ImmutableProof): IImmutableProof {
 		const jsonLd: IImmutableProof = {
-			"@context": [ImmutableProofContexts.ContextRoot, ImmutableProofContexts.ContextRootCommon],
+			"@context": [ImmutableProofContexts.Namespace, ImmutableProofContexts.NamespaceCommon],
 			type: ImmutableProofTypes.ImmutableProof,
 			id: proofEntity.id,
 			proofObjectId: proofEntity.proofObjectId,
@@ -389,7 +389,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 					// As we are adding the proof to the data we update its context
 					immutableProof["@context"] = JsonLdProcessor.combineContexts(
-						[ImmutableProofContexts.ContextRoot, ImmutableProofContexts.ContextRootCommon],
+						[ImmutableProofContexts.Namespace, ImmutableProofContexts.NamespaceCommon],
 						task.result.proof["@context"]
 					) as IImmutableProof["@context"];
 					immutableProof.proof = task.result.proof;

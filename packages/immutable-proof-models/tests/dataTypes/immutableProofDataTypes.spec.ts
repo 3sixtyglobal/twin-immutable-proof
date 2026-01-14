@@ -18,7 +18,7 @@ describe("ImmutableDataTypes", () => {
 		const validationFailures: IValidationFailure[] = [];
 		const isValid = await DataTypeHelper.validate(
 			"",
-			`${ImmutableProofContexts.ContextRoot}${ImmutableProofTypes.ImmutableProof}`,
+			`${ImmutableProofContexts.Namespace}${ImmutableProofTypes.ImmutableProof}`,
 			{
 				id: "foo",
 				dateCreated: new Date().toISOString()
@@ -33,9 +33,9 @@ describe("ImmutableDataTypes", () => {
 		const validationFailures: IValidationFailure[] = [];
 		const isValid = await DataTypeHelper.validate(
 			"",
-			`${ImmutableProofContexts.ContextRoot}${ImmutableProofTypes.ImmutableProof}`,
+			`${ImmutableProofContexts.Namespace}${ImmutableProofTypes.ImmutableProof}`,
 			{
-				"@context": [ImmutableProofContexts.ContextRoot, ImmutableProofContexts.ContextRootCommon],
+				"@context": [ImmutableProofContexts.Namespace, ImmutableProofContexts.NamespaceCommon],
 				type: ImmutableProofTypes.ImmutableProof,
 				id: "proof:123456",
 				proofObjectId: "test:23456",
@@ -53,13 +53,13 @@ describe("ImmutableDataTypes", () => {
 			"",
 			ImmutableProofTypes.ImmutableProof,
 			{
-				"@context": [ImmutableProofContexts.ContextRoot, ImmutableProofContexts.ContextRootCommon],
+				"@context": [ImmutableProofContexts.Namespace, ImmutableProofContexts.NamespaceCommon],
 				type: ImmutableProofTypes.ImmutableProof,
 				id: "proof:123456",
 				proofObjectId: "test:23456",
 				proofObjectHash: "aaabbbcccddd",
 				proof: {
-					"@context": [DidContexts.ContextDataIntegrity],
+					"@context": [DidContexts.NamespaceDataIntegrity],
 					type: ProofTypes.DataIntegrityProof,
 					cryptosuite: DidCryptoSuites.EdDSAJcs2022,
 					proofPurpose: "assertionMethod",

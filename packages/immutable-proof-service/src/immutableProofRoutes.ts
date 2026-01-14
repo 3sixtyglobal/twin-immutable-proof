@@ -127,15 +127,15 @@ export function generateRestRoutesImmutableProof(
 						response: {
 							body: {
 								"@context": [
-									ImmutableProofContexts.ContextRoot,
-									ImmutableProofContexts.ContextRootCommon
+									ImmutableProofContexts.Namespace,
+									ImmutableProofContexts.NamespaceCommon
 								],
 								type: ImmutableProofTypes.ImmutableProof,
 								id: "ais:1234567890",
 								proofObjectId: "test:1234567890",
 								proofObjectHash: "EAOKyDN0mYQbBh91eMdVeroxQx1H4GfnRbmt6n/2L/Y=",
 								proof: {
-									"@context": DidContexts.ContextDataIntegrity,
+									"@context": DidContexts.NamespaceDataIntegrity,
 									type: ProofTypes.DataIntegrityProof,
 									cryptosuite: DidCryptoSuites.EdDSAJcs2022,
 									created: "2024-08-22T11:56:56.272Z",
@@ -159,15 +159,15 @@ export function generateRestRoutesImmutableProof(
 							},
 							body: {
 								"@context": [
-									ImmutableProofContexts.ContextRoot,
-									ImmutableProofContexts.ContextRootCommon
+									ImmutableProofContexts.Namespace,
+									ImmutableProofContexts.NamespaceCommon
 								],
 								type: ImmutableProofTypes.ImmutableProof,
 								id: "ais:1234567890",
 								proofObjectId: "test:1234567890",
 								proofObjectHash: "EAOKyDN0mYQbBh91eMdVeroxQx1H4GfnRbmt6n/2L/Y=",
 								proof: {
-									"@context": DidContexts.ContextDataIntegrity,
+									"@context": DidContexts.NamespaceDataIntegrity,
 									type: ProofTypes.DataIntegrityProof,
 									cryptosuite: DidCryptoSuites.EdDSAJcs2022,
 									created: "2024-08-22T11:56:56.272Z",
@@ -214,7 +214,7 @@ export function generateRestRoutesImmutableProof(
 						id: "immutableProofVerifyResponseExample",
 						response: {
 							body: {
-								"@context": ImmutableProofContexts.ContextRoot,
+								"@context": ImmutableProofContexts.Namespace,
 								type: ImmutableProofTypes.ImmutableProofVerification,
 								verified: true
 							}
@@ -229,7 +229,7 @@ export function generateRestRoutesImmutableProof(
 						id: "immutableProofVerifyResponseFailExample",
 						response: {
 							body: {
-								"@context": ImmutableProofContexts.ContextRoot,
+								"@context": ImmutableProofContexts.Namespace,
 								type: ImmutableProofTypes.ImmutableProofVerification,
 								verified: false,
 								failure: ImmutableProofFailure.ProofTypeMismatch

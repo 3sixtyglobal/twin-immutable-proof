@@ -6,14 +6,14 @@ The contexts of immutable proof data.
 
 ## Type Declaration
 
-### ContextRoot
+### Namespace
 
-> `readonly` **ContextRoot**: `"https://schema.twindev.org/immutable-proof/"` = `"https://schema.twindev.org/immutable-proof/"`
+> `readonly` **Namespace**: `"https://schema.twindev.org/immutable-proof/"` = `"https://schema.twindev.org/immutable-proof/"`
 
-The context root for the immutable proof types.
+The namespace for the immutable proof types.
 
-### ContextRootCommon
+### NamespaceCommon
 
-> `readonly` **ContextRootCommon**: `"https://schema.twindev.org/common/"` = `"https://schema.twindev.org/common/"`
+> `readonly` **NamespaceCommon**: `"https://schema.twindev.org/common/"` = `"https://schema.twindev.org/common/"`
 
-The context root for the common types.
+The namespace for the common types.
