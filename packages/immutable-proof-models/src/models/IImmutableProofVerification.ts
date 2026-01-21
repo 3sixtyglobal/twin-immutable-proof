@@ -11,7 +11,7 @@ export interface IImmutableProofVerification {
 	/**
 	 * JSON-LD Context.
 	 */
-	"@context": typeof ImmutableProofContexts.Namespace;
+	"@context": typeof ImmutableProofContexts.Context;
 
 	/**
 	 * JSON-LD Type.

@@ -126,16 +126,13 @@ export function generateRestRoutesImmutableProof(
 						id: "immutableProofGetResponseExample",
 						response: {
 							body: {
-								"@context": [
-									ImmutableProofContexts.Namespace,
-									ImmutableProofContexts.NamespaceCommon
-								],
+								"@context": [ImmutableProofContexts.Context, ImmutableProofContexts.ContextCommon],
 								type: ImmutableProofTypes.ImmutableProof,
 								id: "ais:1234567890",
 								proofObjectId: "test:1234567890",
 								proofObjectHash: "EAOKyDN0mYQbBh91eMdVeroxQx1H4GfnRbmt6n/2L/Y=",
 								proof: {
-									"@context": DidContexts.NamespaceDataIntegrity,
+									"@context": DidContexts.ContextDataIntegrity,
 									type: ProofTypes.DataIntegrityProof,
 									cryptosuite: DidCryptoSuites.EdDSAJcs2022,
 									created: "2024-08-22T11:56:56.272Z",
@@ -158,16 +155,13 @@ export function generateRestRoutesImmutableProof(
 								[HeaderTypes.ContentType]: MimeTypes.JsonLd
 							},
 							body: {
-								"@context": [
-									ImmutableProofContexts.Namespace,
-									ImmutableProofContexts.NamespaceCommon
-								],
+								"@context": [ImmutableProofContexts.Context, ImmutableProofContexts.ContextCommon],
 								type: ImmutableProofTypes.ImmutableProof,
 								id: "ais:1234567890",
 								proofObjectId: "test:1234567890",
 								proofObjectHash: "EAOKyDN0mYQbBh91eMdVeroxQx1H4GfnRbmt6n/2L/Y=",
 								proof: {
-									"@context": DidContexts.NamespaceDataIntegrity,
+									"@context": DidContexts.ContextDataIntegrity,
 									type: ProofTypes.DataIntegrityProof,
 									cryptosuite: DidCryptoSuites.EdDSAJcs2022,
 									created: "2024-08-22T11:56:56.272Z",
@@ -214,7 +208,7 @@ export function generateRestRoutesImmutableProof(
 						id: "immutableProofVerifyResponseExample",
 						response: {
 							body: {
-								"@context": ImmutableProofContexts.Namespace,
+								"@context": ImmutableProofContexts.Context,
 								type: ImmutableProofTypes.ImmutableProofVerification,
 								verified: true
 							}
@@ -229,7 +223,7 @@ export function generateRestRoutesImmutableProof(
 						id: "immutableProofVerifyResponseFailExample",
 						response: {
 							body: {
-								"@context": ImmutableProofContexts.Namespace,
+								"@context": ImmutableProofContexts.Context,
 								type: ImmutableProofTypes.ImmutableProofVerification,
 								verified: false,
 								failure: ImmutableProofFailure.ProofTypeMismatch

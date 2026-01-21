@@ -13,8 +13,8 @@ export interface IImmutableProof {
 	 * JSON-LD Context.
 	 */
 	"@context": [
-		typeof ImmutableProofContexts.Namespace,
-		typeof ImmutableProofContexts.NamespaceCommon,
+		typeof ImmutableProofContexts.Context,
+		typeof ImmutableProofContexts.ContextCommon,
 		...IJsonLdContextDefinitionElement[]
 	];
 

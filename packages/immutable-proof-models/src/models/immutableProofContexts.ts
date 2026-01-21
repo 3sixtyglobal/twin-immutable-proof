@@ -7,14 +7,34 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const ImmutableProofContexts = {
 	/**
-	 * The namespace for the immutable proof types.
+	 * The canonical RDF namespace URI for Immutable Proof.
 	 */
 	Namespace: "https://schema.twindev.org/immutable-proof/",
 
 	/**
-	 * The namespace for the common types.
+	 * The value to use in context for Immutable Proof.
 	 */
-	NamespaceCommon: "https://schema.twindev.org/common/"
+	Context: "https://schema.twindev.org/immutable-proof/",
+
+	/**
+	 * The JSON-LD Context URL for Immutable Proof.
+	 */
+	JsonLdContext: "https://schema.twindev.org/immutable-proof/types.jsonld",
+
+	/**
+	 * The canonical RDF namespace URI for TWIN Common.
+	 */
+	NamespaceCommon: "https://schema.twindev.org/common/",
+
+	/**
+	 * The value to use in JSON-LD context for TWIN Common.
+	 */
+	ContextCommon: "https://schema.twindev.org/common/",
+
+	/**
+	 * The JSON-LD Context URL for TWIN Common.
+	 */
+	JsonLdContextCommon: "https://schema.twindev.org/common/types.jsonld"
 } as const;
 
 /**
