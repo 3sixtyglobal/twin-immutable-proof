@@ -33,6 +33,7 @@ The id of the proof.
 > `optional` **proofObjectId**: `string`
 
 The id of the object associated with the proof.
+json-ld type:schema:identifier
 
 ***
 
@@ -41,6 +42,7 @@ The id of the object associated with the proof.
 > **proofObjectHash**: `string`
 
 The hash of the object associated with the proof.
+json-ld type:schema:Text
 
 ***
 
@@ -49,6 +51,7 @@ The hash of the object associated with the proof.
 > `optional` **verifiableStorageId**: `string`
 
 The verifiable storage id for where the proof is stored.
+json-ld type:schema:identifier
 
 ***
 
@@ -57,6 +60,7 @@ The verifiable storage id for where the proof is stored.
 > `optional` **proof**: `IDataIntegrityProof`
 
 The proof which can be undefined if it has not yet been issued.
+json-ld id
 
 ***
 
@@ -65,3 +69,4 @@ The proof which can be undefined if it has not yet been issued.
 > `optional` **immutableReceipt**: `IJsonLdNodeObject`
 
 The immutable receipt detail for where the proof is stored.
+json-ld id

@@ -25,6 +25,7 @@ JSON-LD Type.
 > **verified**: `boolean`
 
 Was the verification successful.
+json-ld namespace:twin-common
 
 ***
 
@@ -33,3 +34,4 @@ Was the verification successful.
 > `optional` **failure**: [`ImmutableProofFailure`](../type-aliases/ImmutableProofFailure.md)
 
 If the verification was unsuccessful the failure reason.
+json-ld type:schema:Text

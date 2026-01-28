@@ -1,0 +1,17 @@
+{
+	"prefix": "twin-immutable-proof",
+	"contextUrl": "https://schema.twindev.org/immutable-proof/",
+	"additionalContextUrls": {
+		"twin-common": "https://schema.twindev.org/common/",
+		"schema": "http://schema.org/"
+	},
+	"fixedMappings": {
+		"id": "@id",
+		"type": "@type"
+	},
+	"types": [
+		"./src/models/IImmutableProof.ts",
+		"./src/models/IImmutableProofVerification.ts",
+		"./src/models/immutableProofFailure.ts"
+	]
+}

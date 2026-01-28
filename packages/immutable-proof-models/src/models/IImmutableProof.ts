@@ -30,26 +30,31 @@ export interface IImmutableProof {
 
 	/**
 	 * The id of the object associated with the proof.
+	 * json-ld type:schema:identifier
 	 */
 	proofObjectId?: string;
 
 	/**
 	 * The hash of the object associated with the proof.
+	 * json-ld type:schema:Text
 	 */
 	proofObjectHash: string;
 
 	/**
 	 * The verifiable storage id for where the proof is stored.
+	 * json-ld type:schema:identifier
 	 */
 	verifiableStorageId?: string;
 
 	/**
 	 * The proof which can be undefined if it has not yet been issued.
+	 * json-ld id
 	 */
 	proof?: IDataIntegrityProof;
 
 	/**
 	 * The immutable receipt detail for where the proof is stored.
+	 * json-ld id
 	 */
 	immutableReceipt?: IJsonLdNodeObject;
 }
