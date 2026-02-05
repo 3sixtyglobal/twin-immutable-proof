@@ -1,5 +1,20 @@
 # @twin.org/immutable-proof-service - Changelog
 
+## [0.0.3-next.7](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-service-v0.0.3-next.6...immutable-proof-service-v0.0.3-next.7) (2026-02-05)
+
+
+### Miscellaneous Chores
+
+* **immutable-proof-service:** Synchronize repo versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.6 to 0.0.3-next.7
+    * @twin.org/immutable-proof-task bumped from 0.0.3-next.6 to 0.0.3-next.7
+
 ## [0.0.3-next.6](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-service-v0.0.3-next.5...immutable-proof-service-v0.0.3-next.6) (2026-01-21)
 
 

@@ -1,5 +1,12 @@
 # @twin.org/immutable-proof-models - Changelog
 
+## [0.0.3-next.7](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.3-next.6...immutable-proof-models-v0.0.3-next.7) (2026-02-05)
+
+
+### Features
+
+* add ts-to-jsonld-context tool ([871191b](https://github.com/twinfoundation/immutable-proof/commit/871191b75cb82c2f6daaab08a71384ba92f02a64))
+
 ## [0.0.3-next.6](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.3-next.5...immutable-proof-models-v0.0.3-next.6) (2026-01-21)
 
 

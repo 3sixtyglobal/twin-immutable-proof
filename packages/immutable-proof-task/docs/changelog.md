@@ -1,5 +1,12 @@
 # @twin.org/immutable-proof-task - Changelog
 
+## [0.0.3-next.7](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-task-v0.0.3-next.6...immutable-proof-task-v0.0.3-next.7) (2026-02-05)
+
+
+### Bug Fixes
+
+* pass context ids to populateClone ([#24](https://github.com/twinfoundation/immutable-proof/issues/24)) ([f360e71](https://github.com/twinfoundation/immutable-proof/commit/f360e71d6895d9abbc85e1f5ffb2579e9d9666ac))
+
 ## [0.0.3-next.6](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-task-v0.0.3-next.5...immutable-proof-task-v0.0.3-next.6) (2026-01-21)
 
 
