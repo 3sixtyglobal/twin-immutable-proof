@@ -1,5 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
+import { ContextIdStore } from "@twin.org/context";
 import { Guards, Is } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import { EngineCore } from "@twin.org/engine-core";
@@ -42,7 +43,7 @@ export async function processProofTask(
 			// If the clone data is not empty we use it to create a new engine as it's a new thread
 			// otherwise we assume the factories are already populated.
 			engine = new EngineCore();
-			engine.populateClone(engineCloneData, true);
+			engine.populateClone(engineCloneData, await ContextIdStore.getContextIds(), true);
 			await engine.start();
 		}
 
