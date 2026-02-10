@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
+import type { IImmutableProof } from "@twin.org/immutable-proof-models";
 
 /**
  * The payload for the immutable proof task.
@@ -27,7 +27,7 @@ export interface IImmutableProofTaskPayload {
 	verificationMethodId: string;
 
 	/**
-	 * The document to create the proof for.
+	 * The subject to create the proof for.
 	 */
-	document: IJsonLdNodeObject;
+	credentialSubject: IImmutableProof;
 }

@@ -6,8 +6,7 @@
 	"enum": [
 		"notIssued",
 		"proofMissing",
-		"cryptoSuiteMismatch",
-		"proofTypeMismatch",
-		"signatureMismatch"
+		"verificationFailure",
+		"revoked"
 	]
 }

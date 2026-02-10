@@ -8,6 +8,7 @@
 
 - [IImmutableProof](interfaces/IImmutableProof.md)
 - [IImmutableProofComponent](interfaces/IImmutableProofComponent.md)
+- [IImmutableProofReceipt](interfaces/IImmutableProofReceipt.md)
 - [IImmutableProofVerification](interfaces/IImmutableProofVerification.md)
 - [IImmutableProofCreateRequest](interfaces/IImmutableProofCreateRequest.md)
 - [IImmutableProofGetRequest](interfaces/IImmutableProofGetRequest.md)

@@ -12,6 +12,12 @@ The types of immutable proof data.
 
 Represents Immutable Proof.
 
+### ImmutableProofReceipt
+
+> `readonly` **ImmutableProofReceipt**: `"ImmutableProofReceipt"` = `"ImmutableProofReceipt"`
+
+Represents Immutable Proof Receipt.
+
 ### ImmutableProofVerification
 
 > `readonly` **ImmutableProofVerification**: `"ImmutableProofVerification"` = `"ImmutableProofVerification"`

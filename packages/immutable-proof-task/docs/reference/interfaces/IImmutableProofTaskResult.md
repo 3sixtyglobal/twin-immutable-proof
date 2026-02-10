@@ -12,8 +12,8 @@ The proof id.
 
 ***
 
-### proof
+### verifiableCredential
 
-> **proof**: `IDataIntegrityProof`
+> **verifiableCredential**: `IDidVerifiableCredential`
 
-The proof.
+The proof, we only generate a single proof, so restrict to a single proof.

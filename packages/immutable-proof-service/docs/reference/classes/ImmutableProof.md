@@ -22,6 +22,14 @@ The id of the proof.
 
 ***
 
+### organizationId
+
+> **organizationId**: `string`
+
+The organization id.
+
+***
+
 ### dateCreated
 
 > **dateCreated**: `string`
@@ -38,11 +46,11 @@ The associated id for the item.
 
 ***
 
-### proofObjectHash
+### proofObjectIntegrity
 
-> **proofObjectHash**: `string`
+> **proofObjectIntegrity**: `string`
 
-The associated hash for the item.
+The associated integrity for the item.
 
 ***
 
@@ -51,3 +59,11 @@ The associated hash for the item.
 > `optional` **verifiableStorageId**: `string`
 
 The verifiable storage id.
+
+***
+
+### vcContext?
+
+> `optional` **vcContext**: `"https://www.w3.org/2018/credentials/v1"` \| `"https://www.w3.org/ns/credentials/v2"`
+
+The verifiable credential context.

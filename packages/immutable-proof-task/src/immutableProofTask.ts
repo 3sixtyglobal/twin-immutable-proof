@@ -7,7 +7,6 @@ import { EngineCore } from "@twin.org/engine-core";
 import type { IEngineCore, IEngineCoreClone } from "@twin.org/engine-models";
 import { IdentityConnectorFactory } from "@twin.org/identity-models";
 import { nameof } from "@twin.org/nameof";
-import { type IDataIntegrityProof, ProofTypes } from "@twin.org/standards-w3c-did";
 import type { IImmutableProofTaskPayload } from "./models/IImmutableProofTaskPayload.js";
 import type { IImmutableProofTaskResult } from "./models/IImmutableProofTaskResult.js";
 
@@ -35,7 +34,11 @@ export async function processProofTask(
 		nameof(payload.verificationMethodId),
 		payload.verificationMethodId
 	);
-	Guards.object<IJsonLdNodeObject>(CLASS_NAME, nameof(payload.document), payload.document);
+	Guards.object<IJsonLdNodeObject>(
+		CLASS_NAME,
+		nameof(payload.credentialSubject),
+		payload.credentialSubject
+	);
 
 	let engine: IEngineCore | undefined;
 	try {
@@ -49,16 +52,16 @@ export async function processProofTask(
 
 		const identityConnector = IdentityConnectorFactory.get(payload.identityConnectorType);
 
-		const proof = await identityConnector.createProof(
+		const result = await identityConnector.createVerifiableCredential(
 			payload.identity,
 			`${payload.identity}#${payload.verificationMethodId}`,
-			ProofTypes.DataIntegrityProof,
-			payload.document
+			payload.proofId,
+			payload.credentialSubject
 		);
 
 		return {
 			proofId: payload.proofId,
-			proof: proof as IDataIntegrityProof
+			verifiableCredential: result.verifiableCredential
 		};
 	} finally {
 		if (!Is.empty(engine)) {

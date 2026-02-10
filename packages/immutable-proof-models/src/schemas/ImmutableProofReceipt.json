@@ -1,7 +1,7 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schema.twindev.org/immutable-proof/ImmutableProof",
-	"description": "Interface describing an immutable proof state.",
+	"$id": "https://schema.twindev.org/immutable-proof/ImmutableProofReceipt",
+	"description": "Interface describing an immutable proof receipt.",
 	"type": "object",
 	"properties": {
 		"@context": {
@@ -22,20 +22,20 @@
 		},
 		"type": {
 			"type": "string",
-			"const": "ImmutableProof",
+			"const": "ImmutableProofReceipt",
 			"description": "JSON-LD Type."
 		},
-		"id": {
-			"type": "string",
-			"description": "The id of the object associated with the proof."
+		"immutableReceipt": {
+			"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject",
+			"description": "The immutable receipt detail for where the proof is stored. json-ld id"
 		},
-		"proofIntegrity": {
+		"verifiableStorageId": {
 			"type": "string",
-			"description": "The integrity hash of the object associated with the proof. json-ld namespace:twin-common"
+			"description": "The verifiable storage id for where the proof is stored. json-ld id"
 		}
 	},
 	"required": [
-		"proofIntegrity"
+		"type"
 	],
 	"additionalProperties": false
 }

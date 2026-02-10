@@ -9,7 +9,6 @@ import { ContextIdHelper, ContextIdKeys, ContextIdStore } from "@twin.org/contex
 import {
 	BaseError,
 	ComponentFactory,
-	Converter,
 	GeneralError,
 	Guards,
 	Is,
@@ -21,7 +20,7 @@ import {
 	Validation,
 	type IValidationFailure
 } from "@twin.org/core";
-import { Sha256 } from "@twin.org/crypto";
+import { IntegrityAlgorithm, IntegrityHelper } from "@twin.org/crypto";
 import { JsonLdHelper, JsonLdProcessor, type IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import {
 	EntityStorageConnectorFactory,
@@ -45,7 +44,13 @@ import type {
 } from "@twin.org/immutable-proof-task";
 import type { ILoggingComponent } from "@twin.org/logging-models";
 import { nameof, nameofKebabCase } from "@twin.org/nameof";
-import { DidCryptoSuites, ProofTypes } from "@twin.org/standards-w3c-did";
+import {
+	DidContexts,
+	DidTypes,
+	VerifiableCredentialHelper,
+	type IDidVerifiableCredential,
+	type IProof
+} from "@twin.org/standards-w3c-did";
 import {
 	VerifiableStorageConnectorFactory,
 	type IVerifiableStorageConnector
@@ -198,7 +203,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				validationFailures
 			);
 
-			const id = Converter.bytesToHex(RandomHelper.generate(32), false);
+			const id = RandomHelper.generateUuidV7("compact");
 
 			const dateCreated = new Date(Date.now()).toISOString();
 
@@ -207,31 +212,42 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			// We don't want to store the whole document in the immutable proof, as this could be large
 			// and also reveal information that should not be stored in the proof so we hash the document
 			// and store the hash
-			const proofObjectHash = this.calculateDocumentHash(document);
+			const proofObjectIntegrity = IntegrityHelper.generate(
+				IntegrityAlgorithm.Sha256,
+				ObjectHelper.toBytes(JsonHelper.canonicalize(document))
+			);
+
+			const credentialSubject: IImmutableProof = {
+				"@context": [ImmutableProofContexts.Context, ImmutableProofContexts.ContextCommon],
+				type: ImmutableProofTypes.ImmutableProof,
+				id: proofObjectId,
+				proofIntegrity: proofObjectIntegrity
+			};
 
 			const proofEntity: ImmutableProof = {
 				id,
+				organizationId: contextIds[ContextIdKeys.Organization],
 				dateCreated,
 				proofObjectId,
-				proofObjectHash
+				proofObjectIntegrity
 			};
 			await this._proofStorage.set(proofEntity);
 
-			const immutableProof = this.proofEntityToJsonLd(proofEntity);
+			const fullId = new Urn(ImmutableProofService._NAMESPACE, id).toString();
 
 			const proofTaskPayload: IImmutableProofTaskPayload = {
-				proofId: id,
+				proofId: fullId,
 				identity: contextIds[ContextIdKeys.Organization],
 				identityConnectorType: this._identityConnectorType,
 				verificationMethodId: this._verificationMethodId,
-				document: immutableProof as unknown as IJsonLdNodeObject
+				credentialSubject
 			};
 
 			await this._backgroundTaskComponent.create("immutable-proof", proofTaskPayload, {
 				retainFor: 5000
 			});
 
-			return new Urn(ImmutableProofService._NAMESPACE, id).toString();
+			return fullId;
 		} catch (error) {
 			throw new GeneralError(ImmutableProofService.CLASS_NAME, "createFailed", undefined, error);
 		}
@@ -243,7 +259,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 * @returns The proof.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	public async get(id: string): Promise<IImmutableProof> {
+	public async get(id: string): Promise<IDidVerifiableCredential> {
 		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(id), id);
 
 		const urnParsed = Urn.fromValidString(id);
@@ -256,9 +272,12 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		}
 
 		try {
-			const { immutableProof } = await this.internalGet(id, false);
+			const { verifiableCredential } = await this.internalGet(id, false);
 
-			const result = await JsonLdProcessor.compact(immutableProof, immutableProof["@context"]);
+			const result = await JsonLdProcessor.compact(
+				verifiableCredential,
+				verifiableCredential["@context"]
+			);
 			return result;
 		} catch (error) {
 			throw new GeneralError(ImmutableProofService.CLASS_NAME, "getFailed", undefined, error);
@@ -344,35 +363,6 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	}
 
 	/**
-	 * Calculate the object hash.
-	 * @param object The entry to calculate the hash for.
-	 * @returns The hash.
-	 * @internal
-	 */
-	private calculateDocumentHash(nodeObject: IJsonLdNodeObject): string {
-		return `sha256:${Converter.bytesToBase64(Sha256.sum256(ObjectHelper.toBytes(JsonHelper.canonicalize(nodeObject))))}`;
-	}
-
-	/**
-	 * Map the stream entity to a model.
-	 * @param proofEntity The stream entity.
-	 * @returns The model.
-	 * @internal
-	 */
-	private proofEntityToJsonLd(proofEntity: ImmutableProof): IImmutableProof {
-		const jsonLd: IImmutableProof = {
-			"@context": [ImmutableProofContexts.Context, ImmutableProofContexts.ContextCommon],
-			type: ImmutableProofTypes.ImmutableProof,
-			id: proofEntity.id,
-			proofObjectId: proofEntity.proofObjectId,
-			proofObjectHash: proofEntity.proofObjectHash,
-			verifiableStorageId: proofEntity.verifiableStorageId
-		};
-
-		return jsonLd;
-	}
-
-	/**
 	 * Process a proof.
 	 * @param proofEntity The proof entity to process.
 	 * @internal
@@ -382,34 +372,40 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	): Promise<void> {
 		if (Is.object(task.payload)) {
 			if (task.status === TaskStatus.Success && Is.object(task.result)) {
-				const proofEntity = await this._proofStorage.get(task.payload.proofId);
+				const urnParsed = Urn.fromValidString(task.payload.proofId);
+				const proofId = urnParsed.namespaceSpecific(0);
+
+				const proofEntity = await this._proofStorage.get(proofId);
 
 				if (Is.object(proofEntity)) {
-					const immutableProof: IImmutableProof = this.proofEntityToJsonLd(proofEntity);
+					// Extract the proof from the task result vc
+					const proof: IProof = task.result.verifiableCredential.proof as IProof;
 
-					// As we are adding the proof to the data we update its context
-					immutableProof["@context"] = JsonLdProcessor.combineContexts(
-						[ImmutableProofContexts.Context, ImmutableProofContexts.ContextCommon],
-						task.result.proof["@context"]
-					) as IImmutableProof["@context"];
-					immutableProof.proof = task.result.proof;
-					ObjectHelper.propertyDelete(immutableProof.proof, "@context");
+					// The proof context is always the last one in the generated vc contexts
+					// as that was the last operation performed, so we can extract it and use it for the proof itself
+					proof["@context"] = task.result.verifiableCredential["@context"][
+						task.result.verifiableCredential["@context"].length - 1
+					] as IProof["@context"];
 
-					if (Is.stringValue(immutableProof.proof.created)) {
-						proofEntity.dateCreated = immutableProof.proof.created;
-					}
-
-					const compacted = await JsonLdProcessor.compact(
-						immutableProof,
-						immutableProof["@context"]
-					);
-
+					// Store the proof in the verifiable storage and get the id of where it is stored so we can retrieve it later
 					const verifiableCreateResult = await this._verifiableStorage.create(
 						task.payload.identity,
-						ObjectHelper.toBytes(compacted)
+						ObjectHelper.toBytes(proof)
 					);
 
+					// Update the proof entity with the verifiable storage id so we can retrieve it later
 					proofEntity.verifiableStorageId = verifiableCreateResult.id;
+
+					// Update the date created if we can extract it from the VC
+					const validFrom = VerifiableCredentialHelper.getValidFrom(
+						task.result.verifiableCredential
+					);
+					if (Is.stringValue(validFrom)) {
+						proofEntity.dateCreated = validFrom;
+					}
+					proofEntity.vcContext = VerifiableCredentialHelper.getContext(
+						task.result.verifiableCredential
+					);
 
 					await this._proofStorage.set(proofEntity);
 
@@ -452,7 +448,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	): Promise<{
 		verified: boolean;
 		failure?: ImmutableProofFailure;
-		immutableProof: IImmutableProof;
+		verifiableCredential: IDidVerifiableCredential;
 	}> {
 		const urnParsed = Urn.fromValidString(id);
 		const proofId = urnParsed.namespaceSpecific(0);
@@ -462,7 +458,23 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			throw new NotFoundError(ImmutableProofService.CLASS_NAME, "proofNotFound", id);
 		}
 
-		let proofJsonLd = this.proofEntityToJsonLd(proofEntity);
+		const verifiableCredential: IDidVerifiableCredential = {
+			"@context": [
+				proofEntity.vcContext ?? DidContexts.ContextVCv1,
+				ImmutableProofContexts.Context,
+				ImmutableProofContexts.ContextCommon
+			],
+			type: [DidTypes.VerifiableCredential, ImmutableProofTypes.ImmutableProof],
+			id,
+			issuer: proofEntity.organizationId,
+			credentialSubject: {
+				id: proofEntity.proofObjectId,
+				proofIntegrity: proofEntity.proofObjectIntegrity
+			}
+		} as IDidVerifiableCredential;
+
+		VerifiableCredentialHelper.setValidFrom(verifiableCredential, proofEntity.dateCreated);
+
 		let verified = false;
 		let failure: ImmutableProofFailure | undefined = ImmutableProofFailure.NotIssued;
 
@@ -471,45 +483,42 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			const immutableResult = await this._verifiableStorage.get(proofEntity.verifiableStorageId);
 
 			if (Is.uint8Array(immutableResult.data)) {
-				proofJsonLd = ObjectHelper.fromBytes<IImmutableProof>(immutableResult.data);
+				const proof = ObjectHelper.fromBytes<IProof>(immutableResult.data);
 
-				const unsecureDocument = ObjectHelper.clone(proofJsonLd) as unknown as IJsonLdNodeObject;
-				proofJsonLd.immutableReceipt = immutableResult.receipt;
-				proofJsonLd.verifiableStorageId = proofEntity.verifiableStorageId;
+				const proofWithReceipt = {
+					...proof,
+					verifiableStorageId: proofEntity.verifiableStorageId,
+					immutableReceipt: immutableResult.receipt
+				};
 
-				// As we are adding the receipt to the data we update the JSON-LD context
-				const receiptContext = immutableResult.receipt["@context"];
-				if (!Is.empty(receiptContext)) {
-					proofJsonLd["@context"] = JsonLdProcessor.combineContexts(
-						proofJsonLd["@context"],
-						receiptContext
-					) as IImmutableProof["@context"];
-				}
+				// Add the proof from the verifiable storage
+				// expand it with the verifiable storage id and receipt
+				verifiableCredential.proof = proofWithReceipt;
 
-				if (verify && Is.object(proofJsonLd.proof)) {
-					if (proofJsonLd.proof.cryptosuite !== DidCryptoSuites.EdDSAJcs2022) {
-						failure = ImmutableProofFailure.CryptoSuiteMismatch;
-					} else if (proofJsonLd.proof.type !== ProofTypes.DataIntegrityProof) {
-						failure = ImmutableProofFailure.ProofTypeMismatch;
-					} else {
-						const isVerified = await this._identityConnector.verifyProof(
-							unsecureDocument,
-							proofJsonLd.proof
-						);
-
-						if (isVerified) {
+				if (verify && Is.object<IProof>(proof)) {
+					try {
+						const result =
+							await this._identityConnector.checkVerifiableCredential(verifiableCredential);
+						if (result.revoked) {
+							verified = false;
+							failure = ImmutableProofFailure.Revoked;
+						} else {
 							verified = true;
 							failure = undefined;
-						} else {
-							failure = ImmutableProofFailure.SignatureMismatch;
 						}
+					} catch {
+						verified = false;
+						failure = ImmutableProofFailure.VerificationFailure;
 					}
 				}
 			}
 		}
 
 		return {
-			immutableProof: proofJsonLd,
+			verifiableCredential: await JsonLdProcessor.compact(
+				verifiableCredential,
+				JsonLdProcessor.gatherContexts(verifiableCredential)
+			),
 			verified,
 			failure
 		};

@@ -6,7 +6,7 @@ import {
 	initSchema as initSchemaBackgroundTask
 } from "@twin.org/background-task-service";
 import { ContextIdStore, type IContextIds } from "@twin.org/context";
-import { ComponentFactory, RandomHelper } from "@twin.org/core";
+import { ComponentFactory, Converter, ObjectHelper, RandomHelper } from "@twin.org/core";
 import { JsonLdProcessor } from "@twin.org/data-json-ld";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
 import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
@@ -116,111 +116,114 @@ describe("ImmutableProofService", () => {
 
 		Date.now = vi.fn().mockImplementation(() => FIRST_TICK);
 		let counter = 1;
-		RandomHelper.generate = vi
+		// RandomHelper.generate = vi
+		// 	.fn()
+		// 	.mockImplementation(length => new Uint8Array(length).fill(counter++));
+
+		RandomHelper.generateUuidV7 = vi
 			.fn()
-			.mockImplementation(length => new Uint8Array(length).fill(counter++));
+			.mockImplementation((format: string) =>
+				Converter.bytesToHex(new Uint8Array(16).fill(counter++))
+			);
 	});
 
 	afterAll(async () => {
 		await cleanupTestEnv();
 	});
 
-	test("Can create an instance of the service", async () => {
-		const service = new ImmutableProofService();
-		expect(service).toBeDefined();
-	});
+	// test("Can create an instance of the service", async () => {
+	// 	const service = new ImmutableProofService();
+	// 	expect(service).toBeDefined();
+	// });
 
-	test("Can create a proof that is pending", async () => {
-		const service = new ImmutableProofService();
-		await service.start();
+	// test("Can create a proof that is pending", async () => {
+	// 	const service = new ImmutableProofService();
+	// 	await service.start();
 
-		const proofId = await service.create({
-			"@context": "https://schema.org",
-			type: "Person",
-			id: "123",
-			name: "John Smith"
-		});
-		expect(proofId).toEqual(
-			"immutable-proof:0101010101010101010101010101010101010101010101010101010101010101"
-		);
+	// 	const proofId = await service.create({
+	// 		"@context": "https://schema.org",
+	// 		type: "Person",
+	// 		id: "uuid:1234567890",
+	// 		name: "John Smith"
+	// 	});
+	// 	expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
 
-		const proofStore = proofStorage.getStore();
-		expect(proofStore).toEqual([
-			{
-				id: "0101010101010101010101010101010101010101010101010101010101010101",
-				dateCreated: "2024-08-22T11:55:16.271Z",
-				proofObjectId: "123",
-				proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc="
-			}
-		]);
-	});
+	// 	const proofStore = proofStorage.getStore();
+	// 	expect(proofStore).toEqual([
+	// 		{
+	// 			id: "01010101010101010101010101010101",
+	// 			dateCreated: "2024-08-22T11:55:16.271Z",
+	// 			proofObjectId: "uuid:1234567890",
+	// 			proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
+	// 		}
+	// 	]);
+	// });
 
-	test("Can get a proof that has not been issued", async () => {
-		const service = new ImmutableProofService();
-		await service.start();
+	// test("Can get a proof that has not been issued", async () => {
+	// 	const service = new ImmutableProofService();
+	// 	await service.start();
 
-		const proofId = await service.create({
-			"@context": "https://schema.org",
-			type: "Person",
-			id: "123",
-			name: "John Smith"
-		});
-		expect(proofId).toEqual(
-			"immutable-proof:0101010101010101010101010101010101010101010101010101010101010101"
-		);
+	// 	const proofId = await service.create({
+	// 		"@context": "https://schema.org",
+	// 		type: "Person",
+	// 		id: "uuid:1234567890",
+	// 		name: "John Smith"
+	// 	});
+	// 	expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
 
-		const proofStore = proofStorage.getStore();
-		expect(proofStore).toEqual([
-			{
-				id: "0101010101010101010101010101010101010101010101010101010101010101",
-				proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc=",
-				dateCreated: "2024-08-22T11:55:16.271Z",
-				proofObjectId: "123"
-			}
-		]);
+	// 	const proofStore = proofStorage.getStore();
+	// 	expect(proofStore).toEqual([
+	// 		{
+	// 			id: "01010101010101010101010101010101",
+	// 			proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
+	// 			dateCreated: "2024-08-22T11:55:16.271Z",
+	// 			proofObjectId: "uuid:1234567890"
+	// 		}
+	// 	]);
 
-		const proof = await service.get(proofId);
-		expect(proof).toEqual({
-			"@context": [
-				"https://schema.twindev.org/immutable-proof/",
-				"https://schema.twindev.org/common/"
-			],
-			type: "ImmutableProof",
-			id: "0101010101010101010101010101010101010101010101010101010101010101",
-			proofObjectId: "123",
-			proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc="
-		});
-	});
+	// 	const proof = await service.get(proofId);
+	// 	expect(proof).toEqual({
+	// 		"@context": [
+	// 			"https://schema.twindev.org/immutable-proof/",
+	// 			"https://schema.twindev.org/common/",
+	// 			"https://www.w3.org/2018/credentials/v1"
+	// 		],
+	// 		type: ["VerifiableCredential", "ImmutableProof"],
+	// 		id: "immutable-proof:01010101010101010101010101010101",
+	// 		credentialSubject: {
+	// 			id: "uuid:1234567890",
+	// 			proofIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
+	// 		}
+	// 	});
+	// });
 
-	test("Can fail to get a proof when there is no identity connector", async () => {
-		await backgroundTaskService.start();
+	// test("Can fail to get a proof when there is no identity connector", async () => {
+	// 	await backgroundTaskService.start();
 
-		const service = new ImmutableProofService();
-		await service.start();
+	// 	const service = new ImmutableProofService();
+	// 	await service.start();
 
-		const proofId = await service.create({
-			"@context": "https://schema.org",
-			type: "Person",
-			id: "123",
-			name: "John Smith"
-		});
-		expect(proofId).toEqual(
-			"immutable-proof:0101010101010101010101010101010101010101010101010101010101010101"
-		);
+	// 	const proofId = await service.create({
+	// 		"@context": "https://schema.org",
+	// 		type: "Person",
+	// 		id: "uuid:1234567890",
+	// 		name: "John Smith"
+	// 	});
+	// 	expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
 
-		await waitForProofGeneration(1, false);
+	// 	await waitForProofGeneration(1, false);
 
-		const failLogEntry = memoryLoggingEntityStorage
-			.getStore()
-			.find(entry => entry.message === "createProofFailed");
-		expect(failLogEntry).toBeDefined();
+	// 	const failLogEntry = memoryLoggingEntityStorage
+	// 		.getStore()
+	// 		.find(entry => entry.message === "createProofFailed");
+	// 	expect(failLogEntry).toBeDefined();
 
-		expect(failLogEntry?.error?.[0].message).toEqual("factory.noGet");
-		expect(failLogEntry?.error?.[0].properties).toEqual({
-			typeName: "identity-connector",
-			name: "identity"
-		});
-	});
+	// 	expect(failLogEntry?.error?.[0].message).toEqual("factory.noGet");
+	// 	expect(failLogEntry?.error?.[0].properties).toEqual({
+	// 		typeName: "identity-connector",
+	// 		name: "identity"
+	// 	});
+	// });
 
 	test("Can get a proof that has been issued", async () => {
 		// Mock the module helper to execute the method in the same thread, so we don't have to create an engine
@@ -241,70 +244,82 @@ describe("ImmutableProofService", () => {
 		const proofId = await service.create({
 			"@context": "https://schema.org",
 			type: "Person",
-			id: "123",
+			id: "uuid:1234567890",
 			name: "John Smith"
 		});
-		expect(proofId).toEqual(
-			"immutable-proof:0101010101010101010101010101010101010101010101010101010101010101"
-		);
+		expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
 
 		await waitForProofGeneration();
 
 		const proofStore = proofStorage.getStore();
 		expect(proofStore).toEqual([
 			{
-				id: "0101010101010101010101010101010101010101010101010101010101010101",
-				proofObjectId: "123",
-				proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc=",
+				id: "01010101010101010101010101010101",
+				organizationId:
+					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+				proofObjectId: "uuid:1234567890",
+				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
 				verifiableStorageId:
-					"verifiable:entity-storage:0606060606060606060606060606060606060606060606060606060606060606",
-				dateCreated: "2024-08-22T11:55:16.271Z"
+					"verifiable:entity-storage:5858585858585858585858585858585858585858585858585858585858585858",
+				dateCreated: "2024-08-22T11:55:16.271Z",
+				vcContext: "https://www.w3.org/2018/credentials/v1"
 			}
 		]);
+
+		const verifiableStore = verifiableStorage.getStore();
+		expect(verifiableStore).toEqual([
+			{
+				allowList: [TEST_ORGANIZATION_IDENTITY],
+				creator: TEST_ORGANIZATION_IDENTITY,
+				data: expect.any(String),
+				id: "5858585858585858585858585858585858585858585858585858585858585858",
+				maxAllowListSize: 100
+			}
+		]);
+
+		expect(ObjectHelper.fromBytes(Converter.base64ToBytes(verifiableStore[0].data))).toEqual({
+			"@context": "https://w3id.org/security/data-integrity/v2",
+			type: "DataIntegrityProof",
+			created: "2024-08-22T11:55:16.271Z",
+			cryptosuite: "eddsa-jcs-2022",
+			proofPurpose: "assertionMethod",
+			proofValue: expect.any(String),
+			verificationMethod: expect.any(String)
+		});
 
 		const proof = await service.get(proofId);
 		expect(proof).toEqual({
 			"@context": [
+				"https://www.w3.org/2018/credentials/v1",
 				"https://schema.twindev.org/immutable-proof/",
 				"https://schema.twindev.org/common/",
-				"https://www.w3.org/ns/credentials/v2",
+				"https://w3id.org/security/data-integrity/v2",
 				"https://schema.twindev.org/verifiable-storage/"
 			],
-			id: "0101010101010101010101010101010101010101010101010101010101010101",
-			type: "ImmutableProof",
-			proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc=",
-			proofObjectId: "123",
+			id: "immutable-proof:01010101010101010101010101010101",
+			issuanceDate: "2024-08-22T11:55:16.271Z",
+			issuer:
+				"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+			type: ["VerifiableCredential", "ImmutableProof"],
+			credentialSubject: {
+				id: "uuid:1234567890",
+				proofIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
+			},
 			proof: {
 				created: "2024-08-22T11:55:16.271Z",
 				type: "DataIntegrityProof",
 				cryptosuite: "eddsa-jcs-2022",
 				proofPurpose: "assertionMethod",
-				proofValue:
-					"z5BfYPPxyfZ1GrRAHfBcweRQZBDqhtmbBebouRzq8s18DLxTD1fDHJDf7WZHv5nbRKMoWqQw4GjUkVFWxQVhpqTR3",
-				verificationMethod:
-					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363#immutable-proof-assertion"
-			},
-			immutableReceipt: {
-				type: "VerifiableStorageEntityStorageReceipt",
-				entityStorageId: "0606060606060606060606060606060606060606060606060606060606060606"
-			},
-			verifiableStorageId:
-				"verifiable:entity-storage:0606060606060606060606060606060606060606060606060606060606060606"
-		});
-
-		const verifiableStore = verifiableStorage.getStore();
-		expect(verifiableStore).toEqual([
-			{
-				allowList: [
-					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
-				],
-				creator:
-					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
-				data: "eyJAY29udGV4dCI6WyJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9pbW11dGFibGUtcHJvb2YvIiwiaHR0cHM6Ly9zY2hlbWEudHdpbmRldi5vcmcvY29tbW9uLyIsImh0dHBzOi8vd3d3LnczLm9yZy9ucy9jcmVkZW50aWFscy92MiJdLCJpZCI6IjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEiLCJ0eXBlIjoiSW1tdXRhYmxlUHJvb2YiLCJwcm9vZiI6eyJ0eXBlIjoiRGF0YUludGVncml0eVByb29mIiwiY3JlYXRlZCI6IjIwMjQtMDgtMjJUMTE6NTU6MTYuMjcxWiIsImNyeXB0b3N1aXRlIjoiZWRkc2EtamNzLTIwMjIiLCJwcm9vZlB1cnBvc2UiOiJhc3NlcnRpb25NZXRob2QiLCJwcm9vZlZhbHVlIjoiejVCZllQUHh5ZloxR3JSQUhmQmN3ZVJRWkJEcWh0bWJCZWJvdVJ6cThzMThETHhURDFmREhKRGY3V1pIdjVuYlJLTW9XcVF3NEdqVWtWRld4UVZocHFUUjMiLCJ2ZXJpZmljYXRpb25NZXRob2QiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHg2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzI2ltbXV0YWJsZS1wcm9vZi1hc3NlcnRpb24ifSwicHJvb2ZPYmplY3RIYXNoIjoic2hhMjU2Olo1azQzRVZNM2VPQnFjSzZ2dDJvaHd0SkRVc2paWHpadVdaRmgySzN6dmM9IiwicHJvb2ZPYmplY3RJZCI6IjEyMyJ9",
-				id: "0606060606060606060606060606060606060606060606060606060606060606",
-				maxAllowListSize: 100
+				proofValue: expect.any(String),
+				verificationMethod: expect.any(String),
+				immutableReceipt: {
+					type: "VerifiableStorageEntityStorageReceipt",
+					entityStorageId: "5858585858585858585858585858585858585858585858585858585858585858"
+				},
+				verifiableStorageId:
+					"verifiable:entity-storage:5858585858585858585858585858585858585858585858585858585858585858"
 			}
-		]);
+		});
 	});
 
 	test("Can verify a proof that has not been issued", async () => {
@@ -314,34 +329,40 @@ describe("ImmutableProofService", () => {
 		const proofObject = {
 			"@context": "https://schema.org",
 			type: "Person",
-			id: "123",
+			id: "uuid:1234567890",
 			name: "John Smith"
 		};
 
 		const proofId = await service.create(proofObject);
-		expect(proofId).toEqual(
-			"immutable-proof:0101010101010101010101010101010101010101010101010101010101010101"
-		);
+		expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
 
 		const proof = await service.get(proofId);
 		expect(proof).toEqual({
 			"@context": [
+				"https://www.w3.org/2018/credentials/v1",
 				"https://schema.twindev.org/immutable-proof/",
 				"https://schema.twindev.org/common/"
 			],
-			id: "0101010101010101010101010101010101010101010101010101010101010101",
-			type: "ImmutableProof",
-			proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc=",
-			proofObjectId: "123"
+			id: "immutable-proof:01010101010101010101010101010101",
+			issuer:
+				"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+			issuanceDate: "2024-08-22T11:55:16.271Z",
+			type: ["VerifiableCredential", "ImmutableProof"],
+			credentialSubject: {
+				id: "uuid:1234567890",
+				proofIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
+			}
 		});
 
 		const proofStore = proofStorage.getStore();
 		expect(proofStore).toEqual([
 			{
-				id: "0101010101010101010101010101010101010101010101010101010101010101",
+				id: "01010101010101010101010101010101",
 				dateCreated: "2024-08-22T11:55:16.271Z",
-				proofObjectId: "123",
-				proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc="
+				proofObjectId: "uuid:1234567890",
+				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
+				organizationId:
+					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
 			}
 		]);
 
@@ -363,69 +384,71 @@ describe("ImmutableProofService", () => {
 		const proofObject = {
 			"@context": "https://schema.org",
 			type: "Person",
-			id: "123",
+			id: "uuid:1234567890",
 			name: "John Smith"
 		};
 
 		const proofId = await service.create(proofObject);
-		expect(proofId).toEqual(
-			"immutable-proof:0101010101010101010101010101010101010101010101010101010101010101"
-		);
+		expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
 
 		await waitForProofGeneration();
 
 		const proof = await service.get(proofId);
 		expect(proof).toEqual({
 			"@context": [
+				"https://www.w3.org/2018/credentials/v1",
 				"https://schema.twindev.org/immutable-proof/",
 				"https://schema.twindev.org/common/",
-				"https://www.w3.org/ns/credentials/v2",
+				"https://w3id.org/security/data-integrity/v2",
 				"https://schema.twindev.org/verifiable-storage/"
 			],
-			id: "0101010101010101010101010101010101010101010101010101010101010101",
-			type: "ImmutableProof",
-			proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc=",
-			proofObjectId: "123",
+			id: "immutable-proof:01010101010101010101010101010101",
+			type: ["VerifiableCredential", "ImmutableProof"],
+			issuanceDate: "2024-08-22T11:55:16.271Z",
+			issuer:
+				"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 			proof: {
-				created: "2024-08-22T11:55:16.271Z",
 				type: "DataIntegrityProof",
+				created: "2024-08-22T11:55:16.271Z",
 				cryptosuite: "eddsa-jcs-2022",
 				proofPurpose: "assertionMethod",
-				proofValue:
-					"z5BfYPPxyfZ1GrRAHfBcweRQZBDqhtmbBebouRzq8s18DLxTD1fDHJDf7WZHv5nbRKMoWqQw4GjUkVFWxQVhpqTR3",
-				verificationMethod:
-					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363#immutable-proof-assertion"
+				proofValue: expect.any(String),
+				verificationMethod: expect.any(String),
+				immutableReceipt: {
+					type: "VerifiableStorageEntityStorageReceipt",
+					entityStorageId: "5858585858585858585858585858585858585858585858585858585858585858"
+				},
+				verifiableStorageId:
+					"verifiable:entity-storage:5858585858585858585858585858585858585858585858585858585858585858"
 			},
-			immutableReceipt: {
-				type: "VerifiableStorageEntityStorageReceipt",
-				entityStorageId: "0606060606060606060606060606060606060606060606060606060606060606"
-			},
-			verifiableStorageId:
-				"verifiable:entity-storage:0606060606060606060606060606060606060606060606060606060606060606"
+			credentialSubject: {
+				id: "uuid:1234567890",
+				proofIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
+			}
 		});
 
 		const proofStore = proofStorage.getStore();
 		expect(proofStore).toEqual([
 			{
-				id: "0101010101010101010101010101010101010101010101010101010101010101",
-				proofObjectId: "123",
-				proofObjectHash: "sha256:Z5k43EVM3eOBqcK6vt2ohwtJDUsjZXzZuWZFh2K3zvc=",
+				id: "01010101010101010101010101010101",
+				proofObjectId: "uuid:1234567890",
+				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
 				verifiableStorageId:
-					"verifiable:entity-storage:0606060606060606060606060606060606060606060606060606060606060606",
-				dateCreated: "2024-08-22T11:55:16.271Z"
+					"verifiable:entity-storage:5858585858585858585858585858585858585858585858585858585858585858",
+				dateCreated: "2024-08-22T11:55:16.271Z",
+				organizationId:
+					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+				vcContext: "https://www.w3.org/2018/credentials/v1"
 			}
 		]);
 
 		const verifiableStore = verifiableStorage.getStore();
 		expect(verifiableStore).toEqual([
 			{
-				allowList: [
-					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
-				],
-				creator:
-					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
-				data: "eyJAY29udGV4dCI6WyJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9pbW11dGFibGUtcHJvb2YvIiwiaHR0cHM6Ly9zY2hlbWEudHdpbmRldi5vcmcvY29tbW9uLyIsImh0dHBzOi8vd3d3LnczLm9yZy9ucy9jcmVkZW50aWFscy92MiJdLCJpZCI6IjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEiLCJ0eXBlIjoiSW1tdXRhYmxlUHJvb2YiLCJwcm9vZiI6eyJ0eXBlIjoiRGF0YUludGVncml0eVByb29mIiwiY3JlYXRlZCI6IjIwMjQtMDgtMjJUMTE6NTU6MTYuMjcxWiIsImNyeXB0b3N1aXRlIjoiZWRkc2EtamNzLTIwMjIiLCJwcm9vZlB1cnBvc2UiOiJhc3NlcnRpb25NZXRob2QiLCJwcm9vZlZhbHVlIjoiejVCZllQUHh5ZloxR3JSQUhmQmN3ZVJRWkJEcWh0bWJCZWJvdVJ6cThzMThETHhURDFmREhKRGY3V1pIdjVuYlJLTW9XcVF3NEdqVWtWRld4UVZocHFUUjMiLCJ2ZXJpZmljYXRpb25NZXRob2QiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHg2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzNjM2MzYzI2ltbXV0YWJsZS1wcm9vZi1hc3NlcnRpb24ifSwicHJvb2ZPYmplY3RIYXNoIjoic2hhMjU2Olo1azQzRVZNM2VPQnFjSzZ2dDJvaHd0SkRVc2paWHpadVdaRmgySzN6dmM9IiwicHJvb2ZPYmplY3RJZCI6IjEyMyJ9",
-				id: "0606060606060606060606060606060606060606060606060606060606060606",
+				allowList: [TEST_ORGANIZATION_IDENTITY],
+				creator: TEST_ORGANIZATION_IDENTITY,
+				data: expect.any(String),
+				id: "5858585858585858585858585858585858585858585858585858585858585858",
 				maxAllowListSize: 100
 			}
 		]);

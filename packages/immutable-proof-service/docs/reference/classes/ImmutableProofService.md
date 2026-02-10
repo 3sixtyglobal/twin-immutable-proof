@@ -108,7 +108,7 @@ The id of the new proof.
 
 ### get()
 
-> **get**(`id`): `Promise`\<`IImmutableProof`\>
+> **get**(`id`): `Promise`\<`IDidVerifiableCredential`\>
 
 Get a proof.
 
@@ -122,7 +122,7 @@ The id of the proof to get.
 
 #### Returns
 
-`Promise`\<`IImmutableProof`\>
+`Promise`\<`IDidVerifiableCredential`\>
 
 The proof.
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 import type { IComponent } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import type { IImmutableProof } from "./IImmutableProof.js";
+import type { IDidVerifiableCredential } from "@twin.org/standards-w3c-did";
 import type { IImmutableProofVerification } from "./IImmutableProofVerification.js";
 
 /**
@@ -22,7 +22,7 @@ export interface IImmutableProofComponent extends IComponent {
 	 * @returns The proof.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	get(id: string): Promise<IImmutableProof>;
+	get(id: string): Promise<IDidVerifiableCredential>;
 
 	/**
 	 * Verify a proof.

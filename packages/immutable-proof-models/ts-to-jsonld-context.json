@@ -3,7 +3,9 @@
 	"contextUrl": "https://schema.twindev.org/immutable-proof/",
 	"additionalContextUrls": {
 		"twin-common": "https://schema.twindev.org/common/",
-		"schema": "http://schema.org/"
+		"schema": "http://schema.org/",
+		"sec": "https://w3id.org/security#",
+		"cred": "https://www.w3.org/2018/credentials#"
 	},
 	"fixedMappings": {
 		"id": "@id",
@@ -11,6 +13,7 @@
 	},
 	"types": [
 		"./src/models/IImmutableProof.ts",
+		"./src/models/IImmutableProofReceipt.ts",
 		"./src/models/IImmutableProofVerification.ts",
 		"./src/models/immutableProofFailure.ts"
 	]

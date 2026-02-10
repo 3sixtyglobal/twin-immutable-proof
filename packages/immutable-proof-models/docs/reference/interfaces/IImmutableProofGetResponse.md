@@ -18,6 +18,6 @@ The headers which can be used to determine the response data type.
 
 ### body
 
-> **body**: [`IImmutableProof`](IImmutableProof.md)
+> **body**: `IDidVerifiableCredential`
 
 The response body.

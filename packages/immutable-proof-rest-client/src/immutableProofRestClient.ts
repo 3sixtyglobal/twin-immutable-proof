@@ -5,7 +5,6 @@ import type { IBaseRestClientConfig, ICreatedResponse } from "@twin.org/api-mode
 import { Guards, NotSupportedError } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import type {
-	IImmutableProof,
 	IImmutableProofComponent,
 	IImmutableProofCreateRequest,
 	IImmutableProofGetRequest,
@@ -15,6 +14,7 @@ import type {
 	IImmutableProofVerifyResponse
 } from "@twin.org/immutable-proof-models";
 import { nameof } from "@twin.org/nameof";
+import type { IDidVerifiableCredential } from "@twin.org/standards-w3c-did";
 import { HeaderTypes, MimeTypes } from "@twin.org/web";
 
 /**
@@ -65,7 +65,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	 * @returns The proof.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	public async get(id: string): Promise<IImmutableProof> {
+	public async get(id: string): Promise<IDidVerifiableCredential> {
 		Guards.stringValue(ImmutableProofRestClient.CLASS_NAME, nameof(id), id);
 
 		const response = await this.fetch<IImmutableProofGetRequest, IImmutableProofGetResponse>(

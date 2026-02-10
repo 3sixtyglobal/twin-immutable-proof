@@ -36,8 +36,8 @@ The assertion method id.
 
 ***
 
-### document
+### credentialSubject
 
-> **document**: `IJsonLdNodeObject`
+> **credentialSubject**: `IImmutableProof`
 
-The document to create the proof for.
+The subject to create the proof for.

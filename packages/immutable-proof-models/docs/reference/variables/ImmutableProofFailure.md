@@ -18,20 +18,14 @@ Proof not yet issued.
 
 Proof missing.
 
-### CryptoSuiteMismatch
+### VerificationFailure
 
-> `readonly` **CryptoSuiteMismatch**: `"cryptoSuiteMismatch"` = `"cryptoSuiteMismatch"`
+> `readonly` **VerificationFailure**: `"verificationFailure"` = `"verificationFailure"`
 
-Crypto suite mismatch.
+Verification failure.
 
-### ProofTypeMismatch
+### Revoked
 
-> `readonly` **ProofTypeMismatch**: `"proofTypeMismatch"` = `"proofTypeMismatch"`
+> `readonly` **Revoked**: `"revoked"` = `"revoked"`
 
-Proof type.
-
-### SignatureMismatch
-
-> `readonly` **SignatureMismatch**: `"signatureMismatch"` = `"signatureMismatch"`
-
-Signature mismatch.
+Revoked.
