@@ -387,6 +387,10 @@ export class ImmutableProofService implements IImmutableProofComponent {
 						task.result.verifiableCredential["@context"].length - 1
 					] as IProof["@context"];
 
+					// Remove the verification method so that we reduce the linkage between
+					// the proof and the identity that issued it, we will reinstate on verification
+					delete proof.verificationMethod;
+
 					// Store the proof in the verifiable storage and get the id of where it is stored so we can retrieve it later
 					const verifiableCreateResult = await this._verifiableStorage.create(
 						task.payload.identity,
@@ -487,6 +491,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 				const proofWithReceipt = {
 					...proof,
+					verificationMethod: `${proofEntity.organizationId}#${this._verificationMethodId}`,
 					verifiableStorageId: proofEntity.verifiableStorageId,
 					immutableReceipt: immutableResult.receipt
 				};

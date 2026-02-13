@@ -283,8 +283,7 @@ describe("ImmutableProofService", () => {
 			created: "2024-08-22T11:55:16.271Z",
 			cryptosuite: "eddsa-jcs-2022",
 			proofPurpose: "assertionMethod",
-			proofValue: expect.any(String),
-			verificationMethod: expect.any(String)
+			proofValue: expect.any(String)
 		});
 
 		const proof = await service.get(proofId);
