@@ -1,5 +1,20 @@
 # @twin.org/immutable-proof-service - Changelog
 
+## [0.0.3-next.9](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-service-v0.0.3-next.8...immutable-proof-service-v0.0.3-next.9) (2026-02-13)
+
+
+### Features
+
+* remove vm linkage in on chain proof ([4034336](https://github.com/twinfoundation/immutable-proof/commit/4034336177261dcf3b017524a56f3f6537545227))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.8 to 0.0.3-next.9
+    * @twin.org/immutable-proof-task bumped from 0.0.3-next.8 to 0.0.3-next.9
+
 ## [0.0.3-next.8](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-service-v0.0.3-next.7...immutable-proof-service-v0.0.3-next.8) (2026-02-10)
 
 

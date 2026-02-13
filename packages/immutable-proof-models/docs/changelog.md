@@ -1,5 +1,12 @@
 # @twin.org/immutable-proof-models - Changelog
 
+## [0.0.3-next.9](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.3-next.8...immutable-proof-models-v0.0.3-next.9) (2026-02-13)
+
+
+### Miscellaneous Chores
+
+* **immutable-proof-models:** Synchronize repo versions
+
 ## [0.0.3-next.8](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.3-next.7...immutable-proof-models-v0.0.3-next.8) (2026-02-10)
 
 
