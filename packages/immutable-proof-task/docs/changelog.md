@@ -1,5 +1,19 @@
 # @twin.org/immutable-proof-task - Changelog
 
+## [0.0.3-next.10](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-task-v0.0.3-next.9...immutable-proof-task-v0.0.3-next.10) (2026-02-25)
+
+
+### Miscellaneous Chores
+
+* **immutable-proof-task:** Synchronize repo versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.9 to 0.0.3-next.10
+
 ## [0.0.3-next.9](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-task-v0.0.3-next.8...immutable-proof-task-v0.0.3-next.9) (2026-02-13)
 
 
