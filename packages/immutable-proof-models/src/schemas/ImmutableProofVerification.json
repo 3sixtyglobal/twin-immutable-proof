@@ -27,6 +27,5 @@
 		"@context",
 		"type",
 		"verified"
-	],
-	"additionalProperties": false
+	]
 }

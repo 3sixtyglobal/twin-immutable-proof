@@ -607,7 +607,6 @@
 					"cryptosuite",
 					"proofPurpose"
 				],
-				"additionalProperties": false,
 				"description": "Interface describing a did proof. https://www.w3.org/TR/vc-data-integrity/"
 			},
 			"DidCredentialSchema": {
@@ -626,7 +625,6 @@
 					"id",
 					"type"
 				],
-				"additionalProperties": false,
 				"description": "Interface describing a DID credential schema."
 			},
 			"DidCredentialStatus": {
@@ -685,7 +683,6 @@
 					"@value",
 					"@language"
 				],
-				"additionalProperties": false,
 				"description": "Interface describing a DID Label."
 			},
 			"DidVerifiableCredential": {
@@ -802,8 +799,7 @@
 								},
 								"required": [
 									"id"
-								],
-								"additionalProperties": false
+								]
 							}
 						],
 						"description": "The issuing identity."
@@ -899,7 +895,6 @@
 					"@context",
 					"type"
 				],
-				"additionalProperties": false,
 				"description": "Interface describing a verifiable credential. https://www.w3.org/TR/vc-data-model-1.1"
 			},
 			"DidVerifiableCredentialV2": {
@@ -1005,8 +1000,7 @@
 								},
 								"required": [
 									"id"
-								],
-								"additionalProperties": false
+								]
 							}
 						],
 						"description": "The issuing identity."
@@ -1102,7 +1096,6 @@
 					"@context",
 					"type"
 				],
-				"additionalProperties": false,
 				"description": "Interface describing a verifiable credential. https://www.w3.org/TR/vc-data-model-2.0"
 			},
 			"Error": {
@@ -1137,7 +1130,6 @@
 					"name",
 					"message"
 				],
-				"additionalProperties": false,
 				"description": "Model to describe serialized error."
 			},
 			"ImmutableProofCreateRequest": {
@@ -1150,7 +1142,6 @@
 				"required": [
 					"document"
 				],
-				"additionalProperties": false,
 				"description": "The parameters from the body."
 			},
 			"JsonWebSignature2020Proof": {
@@ -1204,12 +1195,10 @@
 					"type",
 					"proofPurpose"
 				],
-				"additionalProperties": false,
 				"description": "Interface describing a did proof in JSON Web Signature 2020 Format. https://www.w3.org/TR/vc-jws-2020/"
 			},
 			"NotFoundResponse": {
 				"type": "object",
-				"additionalProperties": false,
 				"properties": {
 					"notFoundId": {
 						"type": "string",
