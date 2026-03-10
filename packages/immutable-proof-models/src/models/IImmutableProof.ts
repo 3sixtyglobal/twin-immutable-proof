@@ -24,7 +24,7 @@ export interface IImmutableProof {
 
 	/**
 	 * The integrity hash of the object associated with the proof.
-	 * json-ld namespace:twin-common
+	 * @json-ld namespace:twin-common
 	 */
 	proofIntegrity: string;
 }

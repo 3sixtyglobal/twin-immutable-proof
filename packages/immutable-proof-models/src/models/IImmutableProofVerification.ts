@@ -20,13 +20,13 @@ export interface IImmutableProofVerification {
 
 	/**
 	 * Was the verification successful.
-	 * json-ld namespace:twin-common
+	 * @json-ld namespace:twin-common
 	 */
 	verified: boolean;
 
 	/**
 	 * If the verification was unsuccessful the failure reason.
-	 * json-ld type:schema:Text
+	 * @json-ld type:schema:Text
 	 */
 	failure?: ImmutableProofFailure;
 }

@@ -20,13 +20,13 @@ export interface IImmutableProofReceipt {
 
 	/**
 	 * The immutable receipt detail for where the proof is stored.
-	 * json-ld id
+	 * @json-ld id
 	 */
 	immutableReceipt?: IJsonLdNodeObject;
 
 	/**
 	 * The verifiable storage id for where the proof is stored.
-	 * json-ld id
+	 * @json-ld id
 	 */
 	verifiableStorageId?: string;
 }
