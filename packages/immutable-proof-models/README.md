@@ -1,6 +1,6 @@
 # TWIN Immutable Proof Models
 
-Models which define the structure of the immutable proof connectors and services.
+This package defines the shared contracts used by immutable proof components, including request and response models, verification structures, topics, and schema context values. It provides a stable foundation so services, tasks, and clients can exchange data consistently.
 
 ## Installation
 

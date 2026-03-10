@@ -1,7 +1,7 @@
 {
 	"name": "@twin.org/immutable-proof-models",
 	"version": "0.0.3-next.10",
-	"description": "Models which define the structure of the immutable proof connectors and services",
+	"description": "Shared model contracts, schema types, and context constants for immutable proof workflows",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/twinfoundation/immutable-proof.git",

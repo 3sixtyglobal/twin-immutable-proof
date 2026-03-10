@@ -1,7 +1,7 @@
 {
 	"name": "@twin.org/immutable-proof-rest-client",
 	"version": "0.0.3-next.10",
-	"description": "Immutable Proof contract implementation which can connect to REST endpoints",
+	"description": "HTTP client for calling immutable proof service endpoints from external components",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/twinfoundation/immutable-proof.git",

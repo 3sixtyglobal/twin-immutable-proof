@@ -1,6 +1,6 @@
 # TWIN Immutable Proof Service
 
-Immutable proof contract implementation and REST endpoint definitions.
+This package implements the core immutable proof lifecycle, including proof creation, retrieval, verification, and storage coordination. It also exposes route and schema helpers so API hosts can register endpoints and entity schemas with consistent behaviour.
 
 ## Installation
 

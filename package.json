@@ -1,7 +1,7 @@
 {
 	"name": "@twin.org/immutable-proof",
 	"version": "0.0.0",
-	"description": "Immutable Proof",
+	"description": "Repository for immutable proof models, processing, services, and client integration",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/twinfoundation/immutable-proof.git"

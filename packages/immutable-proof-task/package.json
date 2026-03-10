@@ -1,7 +1,7 @@
 {
 	"name": "@twin.org/immutable-proof-task",
 	"version": "0.0.3-next.10",
-	"description": "Background task for generating the proof",
+	"description": "Background proof processing that creates verifiable credentials from prepared payloads",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/twinfoundation/immutable-proof.git",
