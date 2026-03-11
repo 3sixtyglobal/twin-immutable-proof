@@ -1,4 +1,4 @@
-# @twin.org/immutable-proof-models - Changelog
+# Changelog
 
 ## [0.0.3-next.10](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.3-next.9...immutable-proof-models-v0.0.3-next.10) (2026-02-25)
 
