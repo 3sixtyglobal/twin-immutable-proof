@@ -14,7 +14,7 @@ Class describing the immutable proof.
 
 ## Properties
 
-### id
+### id {#id}
 
 > **id**: `string`
 
@@ -22,7 +22,7 @@ The id of the proof.
 
 ***
 
-### organizationId
+### organizationId {#organizationid}
 
 > **organizationId**: `string`
 
@@ -30,7 +30,7 @@ The organization id.
 
 ***
 
-### dateCreated
+### dateCreated {#datecreated}
 
 > **dateCreated**: `string`
 
@@ -38,7 +38,7 @@ The date/time of when the proof was created.
 
 ***
 
-### proofObjectId?
+### proofObjectId? {#proofobjectid}
 
 > `optional` **proofObjectId**: `string`
 
@@ -46,7 +46,7 @@ The associated id for the item.
 
 ***
 
-### proofObjectIntegrity
+### proofObjectIntegrity {#proofobjectintegrity}
 
 > **proofObjectIntegrity**: `string`
 
@@ -54,7 +54,7 @@ The associated integrity for the item.
 
 ***
 
-### verifiableStorageId?
+### verifiableStorageId? {#verifiablestorageid}
 
 > `optional` **verifiableStorageId**: `string`
 
@@ -62,7 +62,7 @@ The verifiable storage id.
 
 ***
 
-### vcContext?
+### vcContext? {#vccontext}
 
 > `optional` **vcContext**: `"https://www.w3.org/2018/credentials/v1"` \| `"https://www.w3.org/ns/credentials/v2"`
 

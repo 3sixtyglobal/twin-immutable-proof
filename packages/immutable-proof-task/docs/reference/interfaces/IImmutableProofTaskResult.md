@@ -4,7 +4,7 @@ The result for the immutable proof task.
 
 ## Properties
 
-### proofId
+### proofId {#proofid}
 
 > **proofId**: `string`
 
@@ -12,7 +12,7 @@ The proof id.
 
 ***
 
-### verifiableCredential
+### verifiableCredential {#verifiablecredential}
 
 > **verifiableCredential**: `IDidVerifiableCredential`
 

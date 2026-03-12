@@ -6,19 +6,19 @@ The types of immutable proof data.
 
 ## Type Declaration
 
-### ImmutableProof
+### ImmutableProof {#immutableproof}
 
 > `readonly` **ImmutableProof**: `"ImmutableProof"` = `"ImmutableProof"`
 
 Represents Immutable Proof.
 
-### ImmutableProofReceipt
+### ImmutableProofReceipt {#immutableproofreceipt}
 
 > `readonly` **ImmutableProofReceipt**: `"ImmutableProofReceipt"` = `"ImmutableProofReceipt"`
 
 Represents Immutable Proof Receipt.
 
-### ImmutableProofVerification
+### ImmutableProofVerification {#immutableproofverification}
 
 > `readonly` **ImmutableProofVerification**: `"ImmutableProofVerification"` = `"ImmutableProofVerification"`
 

@@ -4,7 +4,7 @@ The payload for the immutable proof task.
 
 ## Properties
 
-### proofId
+### proofId {#proofid}
 
 > **proofId**: `string`
 
@@ -12,7 +12,7 @@ The proof id.
 
 ***
 
-### identity
+### identity {#identity}
 
 > **identity**: `string`
 
@@ -20,7 +20,7 @@ The identity to create the proof for.
 
 ***
 
-### identityConnectorType
+### identityConnectorType {#identityconnectortype}
 
 > **identityConnectorType**: `string`
 
@@ -28,7 +28,7 @@ The identity connector type.
 
 ***
 
-### verificationMethodId
+### verificationMethodId {#verificationmethodid}
 
 > **verificationMethodId**: `string`
 
@@ -36,7 +36,7 @@ The assertion method id.
 
 ***
 
-### credentialSubject
+### credentialSubject {#credentialsubject}
 
 > **credentialSubject**: `IImmutableProof`
 

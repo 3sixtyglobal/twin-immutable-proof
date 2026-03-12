@@ -14,7 +14,7 @@ Handle all the data types for immutable proof.
 
 ## Methods
 
-### registerTypes()
+### registerTypes() {#registertypes}
 
 > `static` **registerTypes**(): `void`
 

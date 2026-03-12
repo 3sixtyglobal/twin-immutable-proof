@@ -28,7 +28,7 @@ The dependencies for the immutable proof connector.
 
 ## Properties
 
-### CLASS\_NAME
+### CLASS\_NAME {#class_name}
 
 > `readonly` `static` **CLASS\_NAME**: `string`
 
@@ -36,7 +36,7 @@ Runtime name for the class.
 
 ## Methods
 
-### className()
+### className() {#classname}
 
 > **className**(): `string`
 
@@ -54,7 +54,7 @@ The class name of the component.
 
 ***
 
-### start()
+### start() {#start}
 
 > **start**(`nodeLoggingComponentType?`): `Promise`\<`void`\>
 
@@ -80,7 +80,7 @@ Nothing.
 
 ***
 
-### create()
+### create() {#create}
 
 > **create**(`document`): `Promise`\<`string`\>
 
@@ -106,7 +106,7 @@ The id of the new proof.
 
 ***
 
-### get()
+### get() {#get}
 
 > **get**(`id`): `Promise`\<`IDidVerifiableCredential`\>
 
@@ -136,7 +136,7 @@ NotFoundError if the proof is not found.
 
 ***
 
-### verify()
+### verify() {#verify}
 
 > **verify**(`id`): `Promise`\<`IImmutableProofVerification`\>
 
@@ -166,7 +166,7 @@ NotFoundError if the proof is not found.
 
 ***
 
-### removeVerifiable()
+### removeVerifiable() {#removeverifiable}
 
 > **removeVerifiable**(`id`): `Promise`\<`void`\>
 

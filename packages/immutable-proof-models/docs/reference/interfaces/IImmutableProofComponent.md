@@ -8,7 +8,7 @@ Interface describing an immutable proof contract.
 
 ## Methods
 
-### create()
+### create() {#create}
 
 > **create**(`document`): `Promise`\<`string`\>
 
@@ -30,7 +30,7 @@ The id of the new proof.
 
 ***
 
-### get()
+### get() {#get}
 
 > **get**(`id`): `Promise`\<`IDidVerifiableCredential`\>
 
@@ -56,7 +56,7 @@ NotFoundError if the proof is not found.
 
 ***
 
-### verify()
+### verify() {#verify}
 
 > **verify**(`id`): `Promise`\<[`IImmutableProofVerification`](IImmutableProofVerification.md)\>
 
@@ -82,7 +82,7 @@ NotFoundError if the proof is not found.
 
 ***
 
-### removeVerifiable()
+### removeVerifiable() {#removeverifiable}
 
 > **removeVerifiable**(`id`): `Promise`\<`void`\>
 

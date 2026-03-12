@@ -4,7 +4,7 @@ Response to getting an immutable proof.
 
 ## Properties
 
-### headers?
+### headers? {#headers}
 
 > `optional` **headers**: `object`
 
@@ -16,7 +16,7 @@ The headers which can be used to determine the response data type.
 
 ***
 
-### body
+### body {#body}
 
 > **body**: `IDidVerifiableCredential`
 

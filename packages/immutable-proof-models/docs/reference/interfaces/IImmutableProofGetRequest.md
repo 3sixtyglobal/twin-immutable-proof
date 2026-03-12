@@ -4,7 +4,7 @@ Get a proof.
 
 ## Properties
 
-### headers?
+### headers? {#headers}
 
 > `optional` **headers**: `object`
 
@@ -16,7 +16,7 @@ The headers which can be used to determine the response data type.
 
 ***
 
-### pathParams
+### pathParams {#pathparams}
 
 > **pathParams**: `object`
 

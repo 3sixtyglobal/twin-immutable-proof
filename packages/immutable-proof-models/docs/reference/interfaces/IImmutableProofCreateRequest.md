@@ -4,7 +4,7 @@ Create a proof.
 
 ## Properties
 
-### body
+### body {#body}
 
 > **body**: `object`
 

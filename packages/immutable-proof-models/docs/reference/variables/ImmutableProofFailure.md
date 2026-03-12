@@ -6,25 +6,25 @@ The failure reason of the proof.
 
 ## Type Declaration
 
-### NotIssued
+### NotIssued {#notissued}
 
 > `readonly` **NotIssued**: `"notIssued"` = `"notIssued"`
 
 Proof not yet issued.
 
-### ProofMissing
+### ProofMissing {#proofmissing}
 
 > `readonly` **ProofMissing**: `"proofMissing"` = `"proofMissing"`
 
 Proof missing.
 
-### VerificationFailure
+### VerificationFailure {#verificationfailure}
 
 > `readonly` **VerificationFailure**: `"verificationFailure"` = `"verificationFailure"`
 
 Verification failure.
 
-### Revoked
+### Revoked {#revoked}
 
 > `readonly` **Revoked**: `"revoked"` = `"revoked"`
 
