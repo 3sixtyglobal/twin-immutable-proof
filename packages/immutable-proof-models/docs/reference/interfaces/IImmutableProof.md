@@ -6,7 +6,7 @@ Interface describing an immutable proof state.
 
 ### @context? {#context}
 
-> `optional` **@context**: \[`"https://schema.twindev.org/immutable-proof/"`, `"https://schema.twindev.org/common/"`\]
+> `optional` **@context?**: \[`"https://schema.twindev.org/immutable-proof/"`, `"https://schema.twindev.org/common/"`\]
 
 JSON-LD Context.
 
@@ -14,7 +14,7 @@ JSON-LD Context.
 
 ### type? {#type}
 
-> `optional` **type**: `"ImmutableProof"`
+> `optional` **type?**: `"ImmutableProof"`
 
 JSON-LD Type.
 
@@ -22,7 +22,7 @@ JSON-LD Type.
 
 ### id? {#id}
 
-> `optional` **id**: `string`
+> `optional` **id?**: `string`
 
 The id of the object associated with the proof.
 

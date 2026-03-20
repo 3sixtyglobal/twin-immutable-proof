@@ -30,6 +30,6 @@ Was the verification successful.
 
 ### failure? {#failure}
 
-> `optional` **failure**: [`ImmutableProofFailure`](../type-aliases/ImmutableProofFailure.md)
+> `optional` **failure?**: [`ImmutableProofFailure`](../type-aliases/ImmutableProofFailure.md)
 
 If the verification was unsuccessful the failure reason.

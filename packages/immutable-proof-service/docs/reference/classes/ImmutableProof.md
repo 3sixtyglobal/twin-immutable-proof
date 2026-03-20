@@ -40,7 +40,7 @@ The date/time of when the proof was created.
 
 ### proofObjectId? {#proofobjectid}
 
-> `optional` **proofObjectId**: `string`
+> `optional` **proofObjectId?**: `string`
 
 The associated id for the item.
 
@@ -56,7 +56,7 @@ The associated integrity for the item.
 
 ### verifiableStorageId? {#verifiablestorageid}
 
-> `optional` **verifiableStorageId**: `string`
+> `optional` **verifiableStorageId?**: `string`
 
 The verifiable storage id.
 
@@ -64,6 +64,6 @@ The verifiable storage id.
 
 ### vcContext? {#vccontext}
 
-> `optional` **vcContext**: `"https://www.w3.org/2018/credentials/v1"` \| `"https://www.w3.org/ns/credentials/v2"`
+> `optional` **vcContext?**: `"https://www.w3.org/2018/credentials/v1"` \| `"https://www.w3.org/ns/credentials/v2"`
 
 The verifiable credential context.

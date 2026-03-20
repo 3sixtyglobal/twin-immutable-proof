@@ -6,7 +6,7 @@ Interface describing an immutable proof receipt.
 
 ### @context? {#context}
 
-> `optional` **@context**: \[`"https://schema.twindev.org/immutable-proof/"`, `"https://schema.twindev.org/common/"`\]
+> `optional` **@context?**: \[`"https://schema.twindev.org/immutable-proof/"`, `"https://schema.twindev.org/common/"`\]
 
 JSON-LD Context.
 
@@ -22,7 +22,7 @@ JSON-LD Type.
 
 ### immutableReceipt? {#immutablereceipt}
 
-> `optional` **immutableReceipt**: `IJsonLdNodeObject`
+> `optional` **immutableReceipt?**: `IJsonLdNodeObject`
 
 The immutable receipt detail for where the proof is stored.
 
@@ -30,6 +30,6 @@ The immutable receipt detail for where the proof is stored.
 
 ### verifiableStorageId? {#verifiablestorageid}
 
-> `optional` **verifiableStorageId**: `string`
+> `optional` **verifiableStorageId?**: `string`
 
 The verifiable storage id for where the proof is stored.

@@ -6,6 +6,12 @@ Configuration for the immutable proof service.
 
 ### verificationMethodId? {#verificationmethodid}
 
-> `optional` **verificationMethodId**: `string`
+> `optional` **verificationMethodId?**: `string`
 
 The verification method id to use for the proof.
+
+#### Default
+
+```ts
+immutable-proof-assertion
+```

@@ -7,8 +7,8 @@
 		"./src/models/immutableProofFailure.ts"
 	],
 	"externalReferences": {
-		"IJsonLd(.*)": "https://schema.twindev.org/json-ld/JsonLd$1",
-		"IDid(.*)": "https://schema.twindev.org/w3c-did/Did$1",
-		"IDataIntegrityProof": "https://schema.twindev.org/w3c-did/DataIntegrityProof"
+		"JsonLd(.*)": "https://schema.twindev.org/json-ld/JsonLd$1",
+		"Did(.*)": "https://schema.twindev.org/w3c-did/Did$1",
+		"DataIntegrityProof": "https://schema.twindev.org/w3c-did/DataIntegrityProof"
 	}
 }
