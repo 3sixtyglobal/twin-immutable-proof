@@ -23,3 +23,9 @@ Represents Immutable Proof Receipt.
 > `readonly` **ImmutableProofVerification**: `"ImmutableProofVerification"` = `"ImmutableProofVerification"`
 
 Represents Immutable Proof Verification.
+
+### ImmutableProofFailure {#immutableprooffailure}
+
+> `readonly` **ImmutableProofFailure**: `"ImmutableProofFailure"` = `"ImmutableProofFailure"`
+
+Represents Immutable Proof Failure.
