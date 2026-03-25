@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3-next.11](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.3-next.10...immutable-proof-models-v0.0.3-next.11) (2026-03-25)
+
+
+### Features
+
+* add missing proof type registration ([1e9f52b](https://github.com/twinfoundation/immutable-proof/commit/1e9f52b88ab201e97c9d2aa7611fb8f77a82d614))
+
 ## [0.0.3-next.10](https://github.com/twinfoundation/immutable-proof/compare/immutable-proof-models-v0.0.3-next.9...immutable-proof-models-v0.0.3-next.10) (2026-02-25)
 
 
