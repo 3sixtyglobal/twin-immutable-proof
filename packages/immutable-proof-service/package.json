@@ -4,7 +4,7 @@
 	"description": "Core proof lifecycle service with route helpers for create, get, and verify operations",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/twinfoundation/immutable-proof.git",
+		"url": "git+https://github.com/iotaledger/immutable-proof.git",
 		"directory": "packages/immutable-proof-service"
 	},
 	"author": "martyn.janes@iota.org",
@@ -98,7 +98,7 @@
 		"business-logic"
 	],
 	"bugs": {
-		"url": "git+https://github.com/twinfoundation/immutable-proof/issues"
+		"url": "git+https://github.com/iotaledger/immutable-proof/issues"
 	},
 	"homepage": "https://twindev.org"
 }
