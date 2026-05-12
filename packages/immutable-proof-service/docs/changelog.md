@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.3-next.12](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.0.3-next.11...immutable-proof-service-v0.0.3-next.12) (2026-05-12)
+
+
+### Features
+
+* typescript 6 update ([34d8aea](https://github.com/iotaledger/twin-immutable-proof/commit/34d8aea0ea0c1e1252de1882517abb1683d98313))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.11 to 0.0.3-next.12
+    * @twin.org/immutable-proof-task bumped from 0.0.3-next.11 to 0.0.3-next.12
+
 ## [0.0.3-next.11](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.0.3-next.10...immutable-proof-service-v0.0.3-next.11) (2026-03-25)
 
 
