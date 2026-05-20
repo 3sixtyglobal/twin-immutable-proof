@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.3-next.13](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-rest-client-v0.0.3-next.12...immutable-proof-rest-client-v0.0.3-next.13) (2026-05-20)
+
+
+### Miscellaneous Chores
+
+* **immutable-proof-rest-client:** Synchronize repo versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.12 to 0.0.3-next.13
+
 ## [0.0.3-next.12](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-rest-client-v0.0.3-next.11...immutable-proof-rest-client-v0.0.3-next.12) (2026-05-12)
 
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.3-next.13](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.0.3-next.12...immutable-proof-service-v0.0.3-next.13) (2026-05-20)
+
+
+### Features
+
+* update dependencies ([1ec6b18](https://github.com/iotaledger/twin-immutable-proof/commit/1ec6b18e93198a8fc4935700863cdab1c3df7b64))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.12 to 0.0.3-next.13
+    * @twin.org/immutable-proof-task bumped from 0.0.3-next.12 to 0.0.3-next.13
+
 ## [0.0.3-next.12](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.0.3-next.11...immutable-proof-service-v0.0.3-next.12) (2026-05-12)
 
 
