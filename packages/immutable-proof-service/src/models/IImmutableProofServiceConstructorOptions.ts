@@ -13,10 +13,10 @@ export interface IImmutableProofServiceConstructorOptions {
 	immutableProofEntityStorageType?: string;
 
 	/**
-	 * The verifiable storage.
-	 * @default verifiable-storage
+	 * The notarization connector type.
+	 * @default notarization
 	 */
-	verifiableStorageType?: string;
+	notarizationConnectorType?: string;
 
 	/**
 	 * The logging component type.

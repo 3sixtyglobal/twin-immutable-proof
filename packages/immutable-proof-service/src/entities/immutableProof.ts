@@ -39,10 +39,10 @@ export class ImmutableProof {
 	public proofObjectIntegrity!: string;
 
 	/**
-	 * The verifiable storage id.
+	 * The notarization id.
 	 */
 	@property({ type: "string", optional: true })
-	public verifiableStorageId?: string;
+	public notarizationId?: string;
 
 	/**
 	 * The verifiable credential context.

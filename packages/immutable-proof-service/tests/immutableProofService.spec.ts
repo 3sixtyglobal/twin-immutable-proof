@@ -19,18 +19,18 @@ import { LoggingConnectorFactory } from "@twin.org/logging-models";
 import { ModuleHelper } from "@twin.org/modules";
 import { nameof } from "@twin.org/nameof";
 import {
-	EntityStorageVerifiableStorageConnector,
-	initSchema as initSchemaVerifiableStorage,
-	type VerifiableItem
-} from "@twin.org/verifiable-storage-connector-entity-storage";
-import { VerifiableStorageConnectorFactory } from "@twin.org/verifiable-storage-models";
+	EntityStorageNotarizationConnector,
+	initSchema as initSchemaNotarization,
+	type Notarization
+} from "@twin.org/notarization-connector-entity-storage";
+import { NotarizationConnectorFactory } from "@twin.org/notarization-models";
 import { cleanupTestEnv, setupTestEnv, TEST_ORGANIZATION_IDENTITY } from "./setupTestEnv.js";
 import type { ImmutableProof } from "../src/entities/immutableProof.js";
 import { ImmutableProofService } from "../src/immutableProofService.js";
 import { initSchema } from "../src/schema.js";
 
 let proofStorage: MemoryEntityStorageConnector<ImmutableProof>;
-let verifiableStorage: MemoryEntityStorageConnector<VerifiableItem>;
+let notarizationStorage: MemoryEntityStorageConnector<Notarization>;
 let backgroundTaskStorage: MemoryEntityStorageConnector<BackgroundTask>;
 let backgroundTaskService: BackgroundTaskService;
 let memoryLoggingEntityStorage: MemoryEntityStorageConnector<LogEntry>;
@@ -49,7 +49,7 @@ async function waitForProofGeneration(
 	let count = 0;
 	let generated;
 	do {
-		generated = verifiableStorage.getStore().length === proofCount || count++ === proofCount * 40;
+		generated = notarizationStorage.getStore().length === proofCount || count++ === proofCount * 40;
 		if (generated) {
 			return;
 		}
@@ -76,7 +76,7 @@ describe("ImmutableProofService", () => {
 	beforeEach(async () => {
 		initSchema();
 		initSchemaLogging();
-		initSchemaVerifiableStorage();
+		initSchemaNotarization();
 		initSchemaBackgroundTask();
 
 		ContextIdStore.getContextIds = vi
@@ -104,14 +104,14 @@ describe("ImmutableProofService", () => {
 		backgroundTaskService = new BackgroundTaskService();
 		ComponentFactory.register("background-task", () => backgroundTaskService);
 
-		verifiableStorage = new MemoryEntityStorageConnector<VerifiableItem>({
-			entitySchema: nameof<VerifiableItem>()
+		notarizationStorage = new MemoryEntityStorageConnector<Notarization>({
+			entitySchema: nameof<Notarization>()
 		});
-		EntityStorageConnectorFactory.register("verifiable-item", () => verifiableStorage);
+		EntityStorageConnectorFactory.register("notarization", () => notarizationStorage);
 
-		VerifiableStorageConnectorFactory.register(
-			"verifiable-storage",
-			() => new EntityStorageVerifiableStorageConnector()
+		NotarizationConnectorFactory.register(
+			"notarization",
+			() => new EntityStorageNotarizationConnector()
 		);
 
 		Date.now = vi.fn().mockImplementation(() => FIRST_TICK);
@@ -259,25 +259,26 @@ describe("ImmutableProofService", () => {
 					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 				proofObjectId: "uuid:1234567890",
 				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
-				verifiableStorageId:
-					"verifiable:entity-storage:5858585858585858585858585858585858585858585858585858585858585858",
+				notarizationId: "notarization:entity-storage:04040404040404040404040404040404",
 				dateCreated: "2024-08-22T11:55:16.271Z",
 				vcContext: "https://www.w3.org/2018/credentials/v1"
 			}
 		]);
 
-		const verifiableStore = verifiableStorage.getStore();
-		expect(verifiableStore).toEqual([
+		const notarizationStore = notarizationStorage.getStore();
+		expect(notarizationStore).toEqual([
 			{
-				allowList: [TEST_ORGANIZATION_IDENTITY],
-				creator: TEST_ORGANIZATION_IDENTITY,
+				id: "04040404040404040404040404040404",
+				mode: "locked",
+				dateCreated: expect.any(String),
 				data: expect.any(String),
-				id: "5858585858585858585858585858585858585858585858585858585858585858",
-				maxAllowListSize: 100
+				transferLockUntilDestroyed: true,
+				controllerIdentity: TEST_ORGANIZATION_IDENTITY,
+				owner: TEST_ORGANIZATION_IDENTITY
 			}
 		]);
 
-		expect(ObjectHelper.fromBytes(Converter.base64ToBytes(verifiableStore[0].data))).toEqual({
+		expect(ObjectHelper.fromBytes(Converter.base64ToBytes(notarizationStore[0].data))).toEqual({
 			"@context": "https://w3id.org/security/data-integrity/v2",
 			type: "DataIntegrityProof",
 			created: "2024-08-22T11:55:16.271Z",
@@ -292,8 +293,7 @@ describe("ImmutableProofService", () => {
 				"https://www.w3.org/2018/credentials/v1",
 				"https://schema.twindev.org/immutable-proof/",
 				"https://schema.twindev.org/common/",
-				"https://w3id.org/security/data-integrity/v2",
-				"https://schema.twindev.org/verifiable-storage/"
+				"https://w3id.org/security/data-integrity/v2"
 			],
 			id: "immutable-proof:01010101010101010101010101010101",
 			issuanceDate: "2024-08-22T11:55:16.271Z",
@@ -311,12 +311,7 @@ describe("ImmutableProofService", () => {
 				proofPurpose: "assertionMethod",
 				proofValue: expect.any(String),
 				verificationMethod: expect.any(String),
-				immutableReceipt: {
-					type: "VerifiableStorageEntityStorageReceipt",
-					entityStorageId: "5858585858585858585858585858585858585858585858585858585858585858"
-				},
-				verifiableStorageId:
-					"verifiable:entity-storage:5858585858585858585858585858585858585858585858585858585858585858"
+				notarizationId: "notarization:entity-storage:04040404040404040404040404040404"
 			}
 		});
 	});
@@ -374,6 +369,49 @@ describe("ImmutableProofService", () => {
 		});
 	});
 
+	test("Can create a proof with a delete lock", async () => {
+		ModuleHelper.execModuleMethodThreadMessage = vi
+			.fn()
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown, contextIds?: IContextIds) => {
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
+
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create(
+			{
+				"@context": "https://schema.org",
+				type: "Person",
+				id: "uuid:1234567890",
+				name: "John Smith"
+			},
+			{ deleteLock: "2030-01-01T00:00:00.000Z" }
+		);
+		expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
+
+		await waitForProofGeneration();
+
+		const notarizationStore = notarizationStorage.getStore();
+		expect(notarizationStore).toEqual([
+			{
+				id: "04040404040404040404040404040404",
+				mode: "locked",
+				dateCreated: expect.any(String),
+				data: expect.any(String),
+				deleteLockDateTime: "2030-01-01T00:00:00.000Z",
+				transferLockUntilDestroyed: true,
+				controllerIdentity: TEST_ORGANIZATION_IDENTITY,
+				owner: TEST_ORGANIZATION_IDENTITY
+			}
+		]);
+	});
+
 	test("Can verify a proof that has been issued", async () => {
 		await backgroundTaskService.start();
 
@@ -398,8 +436,7 @@ describe("ImmutableProofService", () => {
 				"https://www.w3.org/2018/credentials/v1",
 				"https://schema.twindev.org/immutable-proof/",
 				"https://schema.twindev.org/common/",
-				"https://w3id.org/security/data-integrity/v2",
-				"https://schema.twindev.org/verifiable-storage/"
+				"https://w3id.org/security/data-integrity/v2"
 			],
 			id: "immutable-proof:01010101010101010101010101010101",
 			type: ["VerifiableCredential", "ImmutableProof"],
@@ -413,12 +450,7 @@ describe("ImmutableProofService", () => {
 				proofPurpose: "assertionMethod",
 				proofValue: expect.any(String),
 				verificationMethod: expect.any(String),
-				immutableReceipt: {
-					type: "VerifiableStorageEntityStorageReceipt",
-					entityStorageId: "5858585858585858585858585858585858585858585858585858585858585858"
-				},
-				verifiableStorageId:
-					"verifiable:entity-storage:5858585858585858585858585858585858585858585858585858585858585858"
+				notarizationId: "notarization:entity-storage:04040404040404040404040404040404"
 			},
 			credentialSubject: {
 				id: "uuid:1234567890",
@@ -432,8 +464,7 @@ describe("ImmutableProofService", () => {
 				id: "01010101010101010101010101010101",
 				proofObjectId: "uuid:1234567890",
 				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
-				verifiableStorageId:
-					"verifiable:entity-storage:5858585858585858585858585858585858585858585858585858585858585858",
+				notarizationId: "notarization:entity-storage:04040404040404040404040404040404",
 				dateCreated: "2024-08-22T11:55:16.271Z",
 				organizationId:
 					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
@@ -441,14 +472,16 @@ describe("ImmutableProofService", () => {
 			}
 		]);
 
-		const verifiableStore = verifiableStorage.getStore();
-		expect(verifiableStore).toEqual([
+		const notarizationStore = notarizationStorage.getStore();
+		expect(notarizationStore).toEqual([
 			{
-				allowList: [TEST_ORGANIZATION_IDENTITY],
-				creator: TEST_ORGANIZATION_IDENTITY,
+				id: "04040404040404040404040404040404",
+				mode: "locked",
+				dateCreated: expect.any(String),
 				data: expect.any(String),
-				id: "5858585858585858585858585858585858585858585858585858585858585858",
-				maxAllowListSize: 100
+				transferLockUntilDestroyed: true,
+				controllerIdentity: TEST_ORGANIZATION_IDENTITY,
+				owner: TEST_ORGANIZATION_IDENTITY
 			}
 		]);
 

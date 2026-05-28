@@ -12,11 +12,6 @@ export const ImmutableProofTypes = {
 	ImmutableProof: "ImmutableProof",
 
 	/**
-	 * Represents Immutable Proof Receipt.
-	 */
-	ImmutableProofReceipt: "ImmutableProofReceipt",
-
-	/**
 	 * Represents Immutable Proof Verification.
 	 */
 	ImmutableProofVerification: "ImmutableProofVerification",

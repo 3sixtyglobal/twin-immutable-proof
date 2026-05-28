@@ -151,11 +151,7 @@ export function generateRestRoutesImmutableProof(
 									proofValue: "7DdiPPYtxLjCD3wA1po2rv...",
 									verificationMethod:
 										"did:iota:testnet:0xcb07cabaa2f23b7e53d8cdc4228efb351ebb270554d13bc382e4f94ca8d3136b#immutable-proof-assertion",
-									verifiableStorageId: "verifiable-storage:1234567890",
-									immutableReceipt: {
-										id: "immutable-receipt:1234567890",
-										type: "ImmutableReceipt"
-									}
+									notarizationId: "notarization:iota:0xabcdef1234567890"
 								} as IProof
 							}
 						}
@@ -192,11 +188,7 @@ export function generateRestRoutesImmutableProof(
 									proofValue: "7DdiPPYtxLjCD3wA1po2rv...",
 									verificationMethod:
 										"did:iota:testnet:0xcb07cabaa2f23b7e53d8cdc4228efb351ebb270554d13bc382e4f94ca8d3136b#immutable-proof-assertion",
-									verifiableStorageId: "verifiable-storage:1234567890",
-									immutableReceipt: {
-										id: "immutable-receipt:1234567890",
-										type: "ImmutableReceipt"
-									}
+									notarizationId: "notarization:iota:0xabcdef1234567890"
 								} as IProof
 							}
 						}
@@ -287,7 +279,7 @@ export async function immutableProofCreate(
 	Guards.object(ROUTES_SOURCE, nameof(request.body.document), request.body.document);
 
 	const component = ComponentFactory.get<IImmutableProofComponent>(componentName);
-	const result = await component.create(request.body.document);
+	const result = await component.create(request.body.document, request.body.options);
 
 	return {
 		statusCode: HttpStatusCode.created,

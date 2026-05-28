@@ -18,16 +18,16 @@ immutable-proof
 
 ***
 
-### verifiableStorageType? {#verifiablestoragetype}
+### notarizationConnectorType? {#notarizationconnectortype}
 
-> `optional` **verifiableStorageType?**: `string`
+> `optional` **notarizationConnectorType?**: `string`
 
-The verifiable storage.
+The notarization connector type.
 
 #### Default
 
 ```ts
-verifiable-storage
+notarization
 ```
 
 ***

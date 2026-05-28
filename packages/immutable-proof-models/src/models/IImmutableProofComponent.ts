@@ -12,9 +12,11 @@ export interface IImmutableProofComponent extends IComponent {
 	/**
 	 * Create a new proof.
 	 * @param document The document to create the proof for.
+	 * @param options Optional settings for the proof.
+	 * @param options.deleteLock An ISO 8601 date-time string specifying when the notarization lock expires; if omitted no lock is applied.
 	 * @returns The id of the new proof.
 	 */
-	create(document: IJsonLdNodeObject): Promise<string>;
+	create(document: IJsonLdNodeObject, options?: { deleteLock?: string }): Promise<string>;
 
 	/**
 	 * Get a proof.

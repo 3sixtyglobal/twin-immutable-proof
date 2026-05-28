@@ -20,16 +20,8 @@ JSON-LD Type.
 
 ***
 
-### immutableReceipt? {#immutablereceipt}
+### notarizationId? {#notarizationid}
 
-> `optional` **immutableReceipt?**: `IJsonLdNodeObject`
+> `optional` **notarizationId?**: `string`
 
-The immutable receipt detail for where the proof is stored.
-
-***
-
-### verifiableStorageId? {#verifiablestorageid}
-
-> `optional` **verifiableStorageId?**: `string`
-
-The verifiable storage id for where the proof is stored.
+The notarization id for where the proof is stored.

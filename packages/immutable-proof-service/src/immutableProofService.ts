@@ -45,16 +45,16 @@ import type {
 import type { ILoggingComponent } from "@twin.org/logging-models";
 import { nameof, nameofKebabCase } from "@twin.org/nameof";
 import {
+	NotarizationConnectorFactory,
+	type INotarizationConnector
+} from "@twin.org/notarization-models";
+import {
 	DidContexts,
 	DidTypes,
 	VerifiableCredentialHelper,
 	type IDidVerifiableCredential,
 	type IProof
 } from "@twin.org/standards-w3c-did";
-import {
-	VerifiableStorageConnectorFactory,
-	type IVerifiableStorageConnector
-} from "@twin.org/verifiable-storage-models";
 import type { ImmutableProof } from "./entities/immutableProof.js";
 import type { IImmutableProofServiceConfig } from "./models/IImmutableProofServiceConfig.js";
 import type { IImmutableProofServiceConstructorOptions } from "./models/IImmutableProofServiceConstructorOptions.js";
@@ -99,10 +99,16 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	private readonly _proofStorage: IEntityStorageConnector<ImmutableProof>;
 
 	/**
-	 * The verifiable storage for the credentials.
+	 * The notarization connector type.
 	 * @internal
 	 */
-	private readonly _verifiableStorage: IVerifiableStorageConnector;
+	private readonly _notarizationConnectorType: string;
+
+	/**
+	 * The notarization connector for the credentials.
+	 * @internal
+	 */
+	private readonly _notarizationConnector: INotarizationConnector;
 
 	/**
 	 * The background task component.
@@ -137,9 +143,8 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			options?.immutableProofEntityStorageType ?? nameofKebabCase<ImmutableProof>()
 		);
 
-		this._verifiableStorage = VerifiableStorageConnectorFactory.get(
-			options?.verifiableStorageType ?? "verifiable-storage"
-		);
+		this._notarizationConnectorType = options?.notarizationConnectorType ?? "notarization";
+		this._notarizationConnector = NotarizationConnectorFactory.get(this._notarizationConnectorType);
 
 		this._logging = ComponentFactory.getIfExists<ILoggingComponent>(
 			options?.loggingComponentType ?? "logging"
@@ -158,6 +163,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		}
 
 		this._config = options?.config ?? {};
+
 		this._verificationMethodId = this._config.verificationMethodId ?? "immutable-proof-assertion";
 	}
 
@@ -186,10 +192,23 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	/**
 	 * Create a new proof.
 	 * @param document The document to create the proof for.
+	 * @param options Optional settings for the proof.
+	 * @param options.deleteLock An ISO 8601 date-time string specifying when the notarization lock expires; if omitted no lock is applied.
 	 * @returns The id of the new proof.
 	 */
-	public async create(document: IJsonLdNodeObject): Promise<string> {
+	public async create(
+		document: IJsonLdNodeObject,
+		options?: { deleteLock?: string }
+	): Promise<string> {
 		Guards.object<IJsonLdNodeObject>(ImmutableProofService.CLASS_NAME, nameof(document), document);
+
+		if (!Is.empty(options?.deleteLock)) {
+			Guards.dateTimeString(
+				ImmutableProofService.CLASS_NAME,
+				nameof(options.deleteLock),
+				options.deleteLock
+			);
+		}
 
 		const contextIds = await ContextIdStore.getContextIds();
 		ContextIdHelper.guard(contextIds, ContextIdKeys.Organization);
@@ -239,8 +258,10 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				proofId: fullId,
 				identity: contextIds[ContextIdKeys.Organization],
 				identityConnectorType: this._identityConnectorType,
+				notarizationConnectorType: this._notarizationConnectorType,
 				verificationMethodId: this._verificationMethodId,
-				credentialSubject
+				credentialSubject,
+				deleteLockDateTime: options?.deleteLock
 			};
 
 			await this._backgroundTaskComponent.create("immutable-proof", proofTaskPayload, {
@@ -317,7 +338,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	}
 
 	/**
-	 * Remove the verifiable storage for the proof.
+	 * Remove the notarization for the proof.
 	 * @param id The id of the proof to remove the storage from.
 	 * @returns Nothing.
 	 * @throws NotFoundError if the proof is not found.
@@ -344,18 +365,18 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				throw new NotFoundError(ImmutableProofService.CLASS_NAME, "proofNotFound", id);
 			}
 
-			if (Is.stringValue(streamEntity.verifiableStorageId)) {
-				await this._verifiableStorage.remove(
+			if (Is.stringValue(streamEntity.notarizationId)) {
+				await this._notarizationConnector.remove(
 					contextIds[ContextIdKeys.Organization],
-					streamEntity.verifiableStorageId
+					streamEntity.notarizationId
 				);
-				delete streamEntity.verifiableStorageId;
+				delete streamEntity.notarizationId;
 				await this._proofStorage.set(streamEntity);
 			}
 		} catch (error) {
 			throw new GeneralError(
 				ImmutableProofService.CLASS_NAME,
-				"removeVerifiableFailed",
+				"removeNotarizationFailed",
 				undefined,
 				error
 			);
@@ -378,27 +399,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				const proofEntity = await this._proofStorage.get(proofId);
 
 				if (Is.object(proofEntity)) {
-					// Extract the proof from the task result vc
-					const proof: IProof = task.result.verifiableCredential.proof as IProof;
-
-					// The proof context is always the last one in the generated vc contexts
-					// as that was the last operation performed, so we can extract it and use it for the proof itself
-					proof["@context"] = task.result.verifiableCredential["@context"][
-						task.result.verifiableCredential["@context"].length - 1
-					] as IProof["@context"];
-
-					// Remove the verification method so that we reduce the linkage between
-					// the proof and the identity that issued it, we will reinstate on verification
-					delete proof.verificationMethod;
-
-					// Store the proof in the verifiable storage and get the id of where it is stored so we can retrieve it later
-					const verifiableCreateResult = await this._verifiableStorage.create(
-						task.payload.identity,
-						ObjectHelper.toBytes(proof)
-					);
-
-					// Update the proof entity with the verifiable storage id so we can retrieve it later
-					proofEntity.verifiableStorageId = verifiableCreateResult.id;
+					proofEntity.notarizationId = task.result.notarizationId;
 
 					// Update the date created if we can extract it from the VC
 					const validFrom = VerifiableCredentialHelper.getValidFrom(
@@ -482,22 +483,19 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		let verified = false;
 		let failure: ImmutableProofFailure | undefined = ImmutableProofFailure.NotIssued;
 
-		if (Is.stringValue(proofEntity.verifiableStorageId)) {
+		if (Is.stringValue(proofEntity.notarizationId)) {
 			failure = ImmutableProofFailure.ProofMissing;
-			const immutableResult = await this._verifiableStorage.get(proofEntity.verifiableStorageId);
+			const notarization = await this._notarizationConnector.get(proofEntity.notarizationId);
 
-			if (Is.uint8Array(immutableResult.data)) {
-				const proof = ObjectHelper.fromBytes<IProof>(immutableResult.data);
+			if (Is.uint8Array(notarization.data)) {
+				const proof = ObjectHelper.fromBytes<IProof>(notarization.data);
 
 				const proofWithReceipt = {
 					...proof,
 					verificationMethod: `${proofEntity.organizationId}#${this._verificationMethodId}`,
-					verifiableStorageId: proofEntity.verifiableStorageId,
-					immutableReceipt: immutableResult.receipt
+					notarizationId: proofEntity.notarizationId
 				};
 
-				// Add the proof from the verifiable storage
-				// expand it with the verifiable storage id and receipt
 				verifiableCredential.proof = proofWithReceipt;
 
 				if (verify && Is.object<IProof>(proof)) {

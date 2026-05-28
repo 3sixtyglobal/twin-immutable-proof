@@ -30,4 +30,15 @@ export interface IImmutableProofTaskPayload {
 	 * The subject to create the proof for.
 	 */
 	credentialSubject: IImmutableProof;
+
+	/**
+	 * The notarization connector type.
+	 */
+	notarizationConnectorType: string;
+
+	/**
+	 * An ISO 8601 date-time string specifying when the notarization lock expires.
+	 * If omitted, no deletion lock is applied.
+	 */
+	deleteLockDateTime?: string;
 }

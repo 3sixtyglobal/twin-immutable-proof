@@ -45,14 +45,20 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	/**
 	 * Create a new proof.
 	 * @param document The document to create the proof for.
+	 * @param options Optional settings for the proof.
+	 * @param options.deleteLock An ISO 8601 date-time string specifying when the notarization lock expires; if omitted no lock is applied.
 	 * @returns The id of the new proof.
 	 */
-	public async create(document: IJsonLdNodeObject): Promise<string> {
+	public async create(
+		document: IJsonLdNodeObject,
+		options?: { deleteLock?: string }
+	): Promise<string> {
 		Guards.object(ImmutableProofRestClient.CLASS_NAME, nameof(document), document);
 
 		const response = await this.fetch<IImmutableProofCreateRequest, ICreatedResponse>("/", "POST", {
 			body: {
-				document
+				document,
+				options
 			}
 		});
 

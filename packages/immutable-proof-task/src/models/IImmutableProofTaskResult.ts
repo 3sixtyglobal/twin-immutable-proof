@@ -15,4 +15,9 @@ export interface IImmutableProofTaskResult {
 	 * The proof, we only generate a single proof, so restrict to a single proof.
 	 */
 	verifiableCredential: IDidVerifiableCredential;
+
+	/**
+	 * The notarization id returned after storing the proof.
+	 */
+	notarizationId: string;
 }

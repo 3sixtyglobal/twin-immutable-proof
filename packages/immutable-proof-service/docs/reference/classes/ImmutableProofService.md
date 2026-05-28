@@ -170,7 +170,7 @@ NotFoundError if the proof is not found.
 
 > **removeVerifiable**(`id`): `Promise`\<`void`\>
 
-Remove the verifiable storage for the proof.
+Remove the notarization for the proof.
 
 #### Parameters
 

@@ -14,5 +14,16 @@ export interface IImmutableProofCreateRequest {
 		 * The document to create the proof for.
 		 */
 		document: IJsonLdNodeObject;
+
+		/**
+		 * Optional settings for the proof.
+		 */
+		options?: {
+			/**
+			 * An ISO 8601 date-time string specifying when the notarization lock expires.
+			 * If omitted, no deletion lock is applied.
+			 */
+			deleteLock?: string;
+		};
 	};
 }

@@ -5,7 +5,6 @@ import { ImmutableProofContexts } from "../models/immutableProofContexts.js";
 import { ImmutableProofTypes } from "../models/immutableProofTypes.js";
 import ImmutableProofSchema from "../schemas/ImmutableProof.json" with { type: "json" };
 import ImmutableProofFailureSchema from "../schemas/ImmutableProofFailure.json" with { type: "json" };
-import ImmutableProofReceiptSchema from "../schemas/ImmutableProofReceipt.json" with { type: "json" };
 import ImmutableProofVerificationSchema from "../schemas/ImmutableProofVerification.json" with { type: "json" };
 
 /**
@@ -20,10 +19,6 @@ export class ImmutableProofDataTypes {
 			{
 				type: ImmutableProofTypes.ImmutableProof,
 				schema: ImmutableProofSchema
-			},
-			{
-				type: ImmutableProofTypes.ImmutableProofReceipt,
-				schema: ImmutableProofReceiptSchema
 			},
 			{
 				type: ImmutableProofTypes.ImmutableProofVerification,

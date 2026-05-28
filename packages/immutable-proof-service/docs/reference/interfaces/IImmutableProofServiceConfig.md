@@ -15,3 +15,17 @@ The verification method id to use for the proof.
 ```ts
 immutable-proof-assertion
 ```
+
+***
+
+### deleteLockYears? {#deletelockyears}
+
+> `optional` **deleteLockYears?**: `number`
+
+The number of years to lock the notarization against deletion.
+
+#### Default
+
+```ts
+50
+```

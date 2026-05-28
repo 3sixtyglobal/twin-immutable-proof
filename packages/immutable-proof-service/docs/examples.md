@@ -68,7 +68,7 @@ const entity: ImmutableProof = {
   dateCreated: '2026-03-10T09:30:00.000Z',
   proofObjectId: 'https://example.org/documents/100',
   proofObjectIntegrity: 'yEr9VvYCGDh2Ww1YwQMehUy4LlW35mLhX8j8R8U6x0g=',
-  verifiableStorageId: 'verifiable-storage:01JABCDE'
+  notarizationId: 'notarization:01JABCDE'
 };
 
 console.log(entity.organizationId); // did:iota:tst:issuer

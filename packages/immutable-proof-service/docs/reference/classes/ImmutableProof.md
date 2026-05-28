@@ -54,11 +54,11 @@ The associated integrity for the item.
 
 ***
 
-### verifiableStorageId? {#verifiablestorageid}
+### notarizationId? {#notarizationid}
 
-> `optional` **verifiableStorageId?**: `string`
+> `optional` **notarizationId?**: `string`
 
-The verifiable storage id.
+The notarization id.
 
 ***
 
