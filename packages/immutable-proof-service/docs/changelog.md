@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.3-next.14](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.0.3-next.13...immutable-proof-service-v0.0.3-next.14) (2026-05-28)
+
+
+### Features
+
+* replace verifiable storage with notarization as immutable proof ([#41](https://github.com/iotaledger/twin-immutable-proof/issues/41)) ([54f2154](https://github.com/iotaledger/twin-immutable-proof/commit/54f215469b0bdc9ea94cad572ca13b8533144104))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.13 to 0.0.3-next.14
+    * @twin.org/immutable-proof-task bumped from 0.0.3-next.13 to 0.0.3-next.14
+
 ## [0.0.3-next.13](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.0.3-next.12...immutable-proof-service-v0.0.3-next.13) (2026-05-20)
 
 
