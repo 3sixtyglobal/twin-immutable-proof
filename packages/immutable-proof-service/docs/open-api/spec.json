@@ -531,6 +531,16 @@
 				"properties": {
 					"document": {
 						"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
+					},
+					"options": {
+						"type": "object",
+						"properties": {
+							"deleteLock": {
+								"type": "string",
+								"description": "An ISO 8601 date-time string specifying when the notarization lock expires.\nIf omitted, no deletion lock is applied."
+							}
+						},
+						"description": "Optional settings for the proof."
 					}
 				},
 				"required": [

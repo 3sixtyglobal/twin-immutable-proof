@@ -17,3 +17,11 @@ The proof id.
 > **verifiableCredential**: `IDidVerifiableCredential`
 
 The proof, we only generate a single proof, so restrict to a single proof.
+
+***
+
+### notarizationId {#notarizationid}
+
+> **notarizationId**: `string`
+
+The notarization id returned after storing the proof.

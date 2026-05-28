@@ -64,7 +64,7 @@ The class name of the component.
 
 ### create() {#create}
 
-> **create**(`document`): `Promise`\<`string`\>
+> **create**(`document`, `options?`): `Promise`\<`string`\>
 
 Create a new proof.
 
@@ -75,6 +75,16 @@ Create a new proof.
 `IJsonLdNodeObject`
 
 The document to create the proof for.
+
+##### options?
+
+Optional settings for the proof.
+
+###### deleteLock?
+
+`string`
+
+An ISO 8601 date-time string specifying when the notarization lock expires; if omitted no lock is applied.
 
 #### Returns
 

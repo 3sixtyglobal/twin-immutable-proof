@@ -41,3 +41,20 @@ The assertion method id.
 > **credentialSubject**: `IImmutableProof`
 
 The subject to create the proof for.
+
+***
+
+### notarizationConnectorType {#notarizationconnectortype}
+
+> **notarizationConnectorType**: `string`
+
+The notarization connector type.
+
+***
+
+### deleteLockDateTime? {#deletelockdatetime}
+
+> `optional` **deleteLockDateTime?**: `string`
+
+An ISO 8601 date-time string specifying when the notarization lock expires.
+If omitted, no deletion lock is applied.
