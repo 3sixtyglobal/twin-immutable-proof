@@ -100,7 +100,7 @@ The id of the new proof.
 
 ### get() {#get}
 
-> **get**(`id`): `Promise`\<`IDidVerifiableCredential`\>
+> **get**(`id`): `Promise`\<`IImmutableProofCredential`\>
 
 Get a proof.
 
@@ -114,7 +114,7 @@ The id of the proof to get.
 
 #### Returns
 
-`Promise`\<`IDidVerifiableCredential`\>
+`Promise`\<`IImmutableProofCredential`\>
 
 The proof.
 
@@ -158,11 +158,11 @@ NotFoundError if the proof is not found.
 
 ***
 
-### removeVerifiable() {#removeverifiable}
+### remove() {#remove}
 
-> **removeVerifiable**(`id`): `Promise`\<`void`\>
+> **remove**(`id`): `Promise`\<`void`\>
 
-Remove the verifiable storage for the proof.
+Remove the proof and its notarization.
 
 #### Parameters
 
@@ -170,7 +170,7 @@ Remove the verifiable storage for the proof.
 
 `string`
 
-The id of the proof to remove the storage from.
+The id of the proof to remove.
 
 #### Returns
 
@@ -184,4 +184,34 @@ NotFoundError if the proof is not found.
 
 #### Implementation of
 
-`IImmutableProofComponent.removeVerifiable`
+`IImmutableProofComponent.remove`
+
+***
+
+### removeNotarization() {#removenotarization}
+
+> **removeNotarization**(`id`): `Promise`\<`void`\>
+
+Remove only the notarization for the proof, keeping the proof entity.
+
+#### Parameters
+
+##### id
+
+`string`
+
+The id of the proof to remove the notarization from.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+Nothing.
+
+#### Throws
+
+NotFoundError if the proof is not found.
+
+#### Implementation of
+
+`IImmutableProofComponent.removeNotarization`
