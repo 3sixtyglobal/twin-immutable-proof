@@ -182,8 +182,6 @@ jobs:
           repo: ${{ github.repository }}
           pr_number: ${{ needs.merge-next-to-main.outputs.pr_number }}
           pr_url: ${{ needs.merge-next-to-main.outputs.pr_url }}
-          notice_title: Gate 0 – Next to Main PR
-          notice_message: 'Approve and merge to continue the production release: __PR_URL__'
           waiting_message: Waiting for PR #__PR_NUMBER__ to be merged...
           success_message: PR #__PR_NUMBER__ merged. Advancing to version preparation.
           closed_error_title: Gate 0 Failed
@@ -286,8 +284,6 @@ jobs:
           repo: ${{ github.repository }}
           pr_number: ${{ needs.prepare-main.outputs.pr_number }}
           pr_url: ${{ needs.prepare-main.outputs.pr_url }}
-          notice_title: Gate 1 – Main Alignment PR
-          notice_message: 'Approve and merge to continue the production release: __PR_URL__'
           waiting_message: Waiting for PR #__PR_NUMBER__ to be approved and merged...
           success_message: PR #__PR_NUMBER__ merged. Advancing to release preparation.
           closed_error_title: Gate 1 Failed
@@ -390,8 +386,6 @@ jobs:
           repo: ${{ github.repository }}
           pr_number: ${{ needs.prepare-release.outputs.pr_number }}
           pr_url: ${{ needs.prepare-release.outputs.pr_url }}
-          notice_title: Gate 2 – Release PR
-          notice_message: 'Review and merge to publish: __PR_URL__'
           waiting_message: |
             Waiting for release PR #__PR_NUMBER__ to be approved and merged...
             Once merged, packages will publish automatically and next will be realigned.

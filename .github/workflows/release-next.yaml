@@ -82,8 +82,6 @@ jobs:
           repo: ${{ github.repository }}
           pr_number: ${{ needs.prepare.outputs.pr_number }}
           pr_url: ${{ needs.prepare.outputs.pr_url }}
-          notice_title: Gate 1 – Release PR
-          notice_message: 'Review and merge to publish: __PR_URL__'
           waiting_message: Waiting for release PR #__PR_NUMBER__ to be approved and merged...
           success_message: Release PR #__PR_NUMBER__ merged. Proceeding to publish.
           closed_error_title: Gate 1 Failed
