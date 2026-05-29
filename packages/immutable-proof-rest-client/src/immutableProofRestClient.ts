@@ -1,20 +1,26 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import { BaseRestClient } from "@twin.org/api-core";
-import type { IBaseRestClientConfig, ICreatedResponse } from "@twin.org/api-models";
-import { Guards, NotSupportedError } from "@twin.org/core";
+import type {
+	IBaseRestClientConfig,
+	ICreatedResponse,
+	INoContentResponse
+} from "@twin.org/api-models";
+import { Guards } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import type {
 	IImmutableProofComponent,
 	IImmutableProofCreateRequest,
+	IImmutableProofCredential,
 	IImmutableProofGetRequest,
 	IImmutableProofGetResponse,
+	IImmutableProofRemoveNotarizationRequest,
+	IImmutableProofRemoveRequest,
 	IImmutableProofVerification,
 	IImmutableProofVerifyRequest,
 	IImmutableProofVerifyResponse
 } from "@twin.org/immutable-proof-models";
 import { nameof } from "@twin.org/nameof";
-import type { IDidVerifiableCredential } from "@twin.org/standards-w3c-did";
 import { HeaderTypes, MimeTypes } from "@twin.org/web";
 
 /**
@@ -71,7 +77,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	 * @returns The proof.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	public async get(id: string): Promise<IDidVerifiableCredential> {
+	public async get(id: string): Promise<IImmutableProofCredential> {
 		Guards.stringValue(ImmutableProofRestClient.CLASS_NAME, nameof(id), id);
 
 		const response = await this.fetch<IImmutableProofGetRequest, IImmutableProofGetResponse>(
@@ -116,14 +122,38 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	}
 
 	/**
-	 * Remove the verifiable storage for the proof.
-	 * @param id The id of the proof to remove the storage from.
+	 * Remove the proof and its notarization.
+	 * @param id The id of the proof to remove.
 	 * @returns Nothing.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	public async removeVerifiable(id: string): Promise<void> {
-		throw new NotSupportedError(ImmutableProofRestClient.CLASS_NAME, "notSupportedOnClient", {
-			methodName: "removeVerifiable"
+	public async remove(id: string): Promise<void> {
+		Guards.stringValue(ImmutableProofRestClient.CLASS_NAME, nameof(id), id);
+
+		await this.fetch<IImmutableProofRemoveRequest, INoContentResponse>("/:id", "DELETE", {
+			pathParams: {
+				id
+			}
 		});
+	}
+
+	/**
+	 * Remove only the notarization for the proof, keeping the proof entity.
+	 * @param id The id of the proof to remove the notarization from.
+	 * @returns Nothing.
+	 * @throws NotFoundError if the proof is not found.
+	 */
+	public async removeNotarization(id: string): Promise<void> {
+		Guards.stringValue(ImmutableProofRestClient.CLASS_NAME, nameof(id), id);
+
+		await this.fetch<IImmutableProofRemoveNotarizationRequest, INoContentResponse>(
+			"/:id/notarization",
+			"DELETE",
+			{
+				pathParams: {
+					id
+				}
+			}
+		);
 	}
 }

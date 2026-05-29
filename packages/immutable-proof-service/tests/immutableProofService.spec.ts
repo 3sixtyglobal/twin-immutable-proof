@@ -5,7 +5,7 @@ import {
 	BackgroundTaskService,
 	initSchema as initSchemaBackgroundTask
 } from "@twin.org/background-task-service";
-import { ContextIdStore, type IContextIds } from "@twin.org/context";
+import { ContextIdStore } from "@twin.org/context";
 import { ComponentFactory, Converter, ObjectHelper, RandomHelper } from "@twin.org/core";
 import { JsonLdProcessor } from "@twin.org/data-json-ld";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
@@ -230,7 +230,7 @@ describe("ImmutableProofService", () => {
 		ModuleHelper.execModuleMethodThreadMessage = vi
 			.fn()
 			.mockImplementation((module, completed) => ({
-				executeMethod: async (method: string, args?: unknown, contextIds?: IContextIds) => {
+				executeMethod: async (method: string, args?: unknown) => {
 					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
 					completed(method, res);
 				}
@@ -373,7 +373,7 @@ describe("ImmutableProofService", () => {
 		ModuleHelper.execModuleMethodThreadMessage = vi
 			.fn()
 			.mockImplementation((module, completed) => ({
-				executeMethod: async (method: string, args?: unknown, contextIds?: IContextIds) => {
+				executeMethod: async (method: string, args?: unknown) => {
 					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
 					completed(method, res);
 				}
@@ -491,5 +491,176 @@ describe("ImmutableProofService", () => {
 			type: "ImmutableProofVerification",
 			verified: true
 		});
+	});
+
+	test("Can remove notarization from a proof that has been issued", async () => {
+		ModuleHelper.execModuleMethodThreadMessage = vi
+			.fn()
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown) => {
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
+
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await waitForProofGeneration();
+
+		expect(notarizationStorage.getStore()).toHaveLength(1);
+		expect(proofStorage.getStore()[0].notarizationId).toBeDefined();
+
+		await service.removeNotarization(proofId);
+
+		expect(notarizationStorage.getStore()).toHaveLength(0);
+		expect(proofStorage.getStore()).toHaveLength(1);
+		expect(proofStorage.getStore()[0].notarizationId).toBeUndefined();
+	});
+
+	test("Can remove notarization from a proof that has not been issued", async () => {
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await service.removeNotarization(proofId);
+
+		expect(notarizationStorage.getStore()).toHaveLength(0);
+		expect(proofStorage.getStore()).toHaveLength(1);
+	});
+
+	test("Can fail to remove notarization when proof is not found", async () => {
+		const service = new ImmutableProofService();
+		await service.start();
+
+		await expect(
+			service.removeNotarization("immutable-proof:ffffffffffffffffffffffffffffffff")
+		).rejects.toMatchObject({
+			name: "GeneralError",
+			message: "immutableProofService.removeNotarizationFailed"
+		});
+	});
+
+	test("Can remove a proof and its notarization", async () => {
+		ModuleHelper.execModuleMethodThreadMessage = vi
+			.fn()
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown) => {
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
+
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await waitForProofGeneration();
+
+		expect(notarizationStorage.getStore()).toHaveLength(1);
+		expect(proofStorage.getStore()).toHaveLength(1);
+
+		await service.remove(proofId);
+
+		expect(notarizationStorage.getStore()).toHaveLength(0);
+		expect(proofStorage.getStore()).toHaveLength(0);
+	});
+
+	test("Can remove a proof that has not been issued", async () => {
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		expect(proofStorage.getStore()).toHaveLength(1);
+
+		await service.remove(proofId);
+
+		expect(notarizationStorage.getStore()).toHaveLength(0);
+		expect(proofStorage.getStore()).toHaveLength(0);
+	});
+
+	test("Can fail to remove a proof when it is not found", async () => {
+		const service = new ImmutableProofService();
+		await service.start();
+
+		await expect(
+			service.remove("immutable-proof:ffffffffffffffffffffffffffffffff")
+		).rejects.toMatchObject({
+			name: "GeneralError",
+			message: "immutableProofService.removeFailed"
+		});
+	});
+
+	test("Can clean up orphaned notarization when proof is removed before background task completes", async () => {
+		let resolveTask: () => void = () => {};
+		const taskGate = new Promise<void>(resolve => {
+			resolveTask = resolve;
+		});
+
+		ModuleHelper.execModuleMethodThreadMessage = vi
+			.fn()
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown) => {
+					// Hold the task until the gate is released
+					await taskGate;
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
+
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		// Remove the proof while the background task is still blocked
+		await service.remove(proofId);
+
+		expect(proofStorage.getStore()).toHaveLength(0);
+		expect(notarizationStorage.getStore()).toHaveLength(0);
+
+		// Release the background task so it runs to completion
+		resolveTask();
+		await waitForProofGeneration(1, false);
+
+		// The task created a notarization but should have cleaned it up since the proof is gone
+		expect(notarizationStorage.getStore()).toHaveLength(0);
+		expect(proofStorage.getStore()).toHaveLength(0);
 	});
 });

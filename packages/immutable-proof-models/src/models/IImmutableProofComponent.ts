@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 import type { IComponent } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import type { IDidVerifiableCredential } from "@twin.org/standards-w3c-did";
+import type { IImmutableProofCredential } from "./IImmutableProofCredential.js";
 import type { IImmutableProofVerification } from "./IImmutableProofVerification.js";
 
 /**
@@ -24,7 +24,7 @@ export interface IImmutableProofComponent extends IComponent {
 	 * @returns The proof.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	get(id: string): Promise<IDidVerifiableCredential>;
+	get(id: string): Promise<IImmutableProofCredential>;
 
 	/**
 	 * Verify a proof.
@@ -35,10 +35,18 @@ export interface IImmutableProofComponent extends IComponent {
 	verify(id: string): Promise<IImmutableProofVerification>;
 
 	/**
-	 * Remove the verifiable storage for the proof.
-	 * @param id The id of the proof to remove the storage from.
+	 * Remove the proof and its notarization.
+	 * @param id The id of the proof to remove.
 	 * @returns Nothing.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	removeVerifiable(id: string): Promise<void>;
+	remove(id: string): Promise<void>;
+
+	/**
+	 * Remove only the notarization for the proof, keeping the proof entity.
+	 * @param id The id of the proof to remove the notarization from.
+	 * @returns Nothing.
+	 * @throws NotFoundError if the proof is not found.
+	 */
+	removeNotarization(id: string): Promise<void>;
 }

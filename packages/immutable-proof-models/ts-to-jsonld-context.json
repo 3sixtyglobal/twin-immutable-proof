@@ -13,6 +13,7 @@
 	},
 	"types": [
 		"./src/models/IImmutableProof.ts",
+		"./src/models/IImmutableProofDataIntegrity.ts",
 		"./src/models/IImmutableProofVerification.ts",
 		"./src/models/immutableProofFailure.ts"
 	]

@@ -35,6 +35,7 @@ import {
 	ImmutableProofTypes,
 	type IImmutableProof,
 	type IImmutableProofComponent,
+	type IImmutableProofCredential,
 	type IImmutableProofEventBusProofCreated,
 	type IImmutableProofVerification
 } from "@twin.org/immutable-proof-models";
@@ -280,7 +281,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 * @returns The proof.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	public async get(id: string): Promise<IDidVerifiableCredential> {
+	public async get(id: string): Promise<IImmutableProofCredential> {
 		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(id), id);
 
 		const urnParsed = Urn.fromValidString(id);
@@ -338,12 +339,12 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	}
 
 	/**
-	 * Remove the notarization for the proof.
-	 * @param id The id of the proof to remove the storage from.
+	 * Remove the proof and its notarization.
+	 * @param id The id of the proof to remove.
 	 * @returns Nothing.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	public async removeVerifiable(id: string): Promise<void> {
+	public async remove(id: string): Promise<void> {
 		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(id), id);
 		const contextIds = await ContextIdStore.getContextIds();
 		ContextIdHelper.guard(contextIds, ContextIdKeys.Organization);
@@ -358,20 +359,61 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		}
 
 		try {
-			const streamId = urnParsed.namespaceSpecific(0);
-			const streamEntity = await this._proofStorage.get(streamId);
+			const proofId = urnParsed.namespaceSpecific(0);
+			const proofEntity = await this._proofStorage.get(proofId);
 
-			if (Is.empty(streamEntity)) {
+			if (Is.empty(proofEntity)) {
 				throw new NotFoundError(ImmutableProofService.CLASS_NAME, "proofNotFound", id);
 			}
 
-			if (Is.stringValue(streamEntity.notarizationId)) {
+			if (Is.stringValue(proofEntity.notarizationId)) {
 				await this._notarizationConnector.remove(
 					contextIds[ContextIdKeys.Organization],
-					streamEntity.notarizationId
+					proofEntity.notarizationId
 				);
-				delete streamEntity.notarizationId;
-				await this._proofStorage.set(streamEntity);
+			}
+
+			await this._proofStorage.remove(proofId);
+		} catch (error) {
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "removeFailed", undefined, error);
+		}
+	}
+
+	/**
+	 * Remove only the notarization for the proof, keeping the proof entity.
+	 * @param id The id of the proof to remove the notarization from.
+	 * @returns Nothing.
+	 * @throws NotFoundError if the proof is not found.
+	 */
+	public async removeNotarization(id: string): Promise<void> {
+		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(id), id);
+		const contextIds = await ContextIdStore.getContextIds();
+		ContextIdHelper.guard(contextIds, ContextIdKeys.Organization);
+
+		const urnParsed = Urn.fromValidString(id);
+
+		if (urnParsed.namespaceIdentifier() !== ImmutableProofService._NAMESPACE) {
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "namespaceMismatch", {
+				namespace: ImmutableProofService._NAMESPACE,
+				id
+			});
+		}
+
+		try {
+			const proofId = urnParsed.namespaceSpecific(0);
+			const proofEntity = await this._proofStorage.get(proofId);
+
+			if (Is.empty(proofEntity)) {
+				throw new NotFoundError(ImmutableProofService.CLASS_NAME, "proofNotFound", id);
+			}
+
+			if (Is.stringValue(proofEntity.notarizationId)) {
+				await this._notarizationConnector.remove(
+					contextIds[ContextIdKeys.Organization],
+					proofEntity.notarizationId
+				);
+				delete proofEntity.notarizationId;
+				await this._proofStorage.set(proofEntity);
 			}
 		} catch (error) {
 			throw new GeneralError(
@@ -426,6 +468,12 @@ export class ImmutableProofService implements IImmutableProofComponent {
 						ImmutableProofTopics.ProofCreated,
 						{ id: new Urn(ImmutableProofService._NAMESPACE, task.payload.proofId).toString() }
 					);
+				} else if (Is.stringValue(task.result.notarizationId)) {
+					// The proof was removed before the task completed; clean up the orphaned notarization.
+					await this._notarizationConnector.remove(
+						task.payload.identity,
+						task.result.notarizationId
+					);
 				}
 			} else if (task.status === TaskStatus.Failed) {
 				await this._logging?.log({
@@ -453,7 +501,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	): Promise<{
 		verified: boolean;
 		failure?: ImmutableProofFailure;
-		verifiableCredential: IDidVerifiableCredential;
+		verifiableCredential: IImmutableProofCredential;
 	}> {
 		const urnParsed = Urn.fromValidString(id);
 		const proofId = urnParsed.namespaceSpecific(0);
@@ -463,7 +511,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			throw new NotFoundError(ImmutableProofService.CLASS_NAME, "proofNotFound", id);
 		}
 
-		const verifiableCredential: IDidVerifiableCredential = {
+		const verifiableCredential: IImmutableProofCredential = {
 			"@context": [
 				proofEntity.vcContext ?? DidContexts.ContextVCv1,
 				ImmutableProofContexts.Context,
@@ -476,9 +524,12 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				id: proofEntity.proofObjectId,
 				proofIntegrity: proofEntity.proofObjectIntegrity
 			}
-		} as IDidVerifiableCredential;
+		} as IImmutableProofCredential;
 
-		VerifiableCredentialHelper.setValidFrom(verifiableCredential, proofEntity.dateCreated);
+		VerifiableCredentialHelper.setValidFrom(
+			verifiableCredential as IDidVerifiableCredential,
+			proofEntity.dateCreated
+		);
 
 		let verified = false;
 		let failure: ImmutableProofFailure | undefined = ImmutableProofFailure.NotIssued;
@@ -500,8 +551,9 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 				if (verify && Is.object<IProof>(proof)) {
 					try {
-						const result =
-							await this._identityConnector.checkVerifiableCredential(verifiableCredential);
+						const result = await this._identityConnector.checkVerifiableCredential(
+							verifiableCredential as IDidVerifiableCredential
+						);
 						if (result.revoked) {
 							verified = false;
 							failure = ImmutableProofFailure.Revoked;
