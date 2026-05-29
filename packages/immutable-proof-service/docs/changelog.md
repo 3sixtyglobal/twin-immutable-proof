@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.3-next.15](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.0.3-next.14...immutable-proof-service-v0.0.3-next.15) (2026-05-29)
+
+
+### Features
+
+* update remove methods ([#45](https://github.com/iotaledger/twin-immutable-proof/issues/45)) ([9db19bb](https://github.com/iotaledger/twin-immutable-proof/commit/9db19bb4c8e6f5d66139755e8b8a8071a77c4887))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.14 to 0.0.3-next.15
+    * @twin.org/immutable-proof-task bumped from 0.0.3-next.14 to 0.0.3-next.15
+
 ## [0.0.3-next.14](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.0.3-next.13...immutable-proof-service-v0.0.3-next.14) (2026-05-28)
 
 
