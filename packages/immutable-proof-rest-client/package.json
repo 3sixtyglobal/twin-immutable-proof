@@ -4,7 +4,7 @@
 	"description": "HTTP client for calling immutable proof service endpoints from external components",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/iotaledger/immutable-proof.git",
+		"url": "git+https://github.com/iotaledger/twin-immutable-proof.git",
 		"directory": "packages/immutable-proof-rest-client"
 	},
 	"author": "martyn.janes@iota.org",
@@ -76,7 +76,7 @@
 		"immutable-proof"
 	],
 	"bugs": {
-		"url": "git+https://github.com/iotaledger/immutable-proof/issues"
+		"url": "git+https://github.com/iotaledger/twin-immutable-proof/issues"
 	},
 	"homepage": "https://twindev.org"
 }
