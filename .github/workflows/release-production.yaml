@@ -172,6 +172,9 @@ jobs:
       pull-requests: read
 
     steps:
+      - name: Checkout workflow ref
+        uses: actions/checkout@v6
+
       - name: Poll until next → main PR is merged
         uses: ./.github/workflows/wait-for-pr
         with:
@@ -272,6 +275,9 @@ jobs:
       pull-requests: read
 
     steps:
+      - name: Checkout workflow ref
+        uses: actions/checkout@v6
+
       - name: Poll until main alignment PR is merged
         uses: ./.github/workflows/wait-for-pr
         with:
@@ -372,6 +378,9 @@ jobs:
       pull-requests: read
 
     steps:
+      - name: Checkout workflow ref
+        uses: actions/checkout@v6
+
       - name: Poll until release PR is merged
         uses: ./.github/workflows/wait-for-pr
         with:
