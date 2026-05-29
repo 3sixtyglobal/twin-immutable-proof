@@ -21,4 +21,6 @@
 - [immutableProofCreate](functions/immutableProofCreate.md)
 - [immutableProofGet](functions/immutableProofGet.md)
 - [immutableProofVerify](functions/immutableProofVerify.md)
+- [immutableProofRemove](functions/immutableProofRemove.md)
+- [immutableProofRemoveNotarization](functions/immutableProofRemoveNotarization.md)
 - [initSchema](functions/initSchema.md)
