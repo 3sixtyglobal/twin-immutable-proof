@@ -427,7 +427,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 	/**
 	 * Process a proof.
-	 * @param proofEntity The proof entity to process.
+	 * @param task The background task to finalise.
 	 * @internal
 	 */
 	private async finaliseTask(

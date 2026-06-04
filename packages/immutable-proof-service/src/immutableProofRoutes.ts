@@ -23,13 +23,7 @@ import {
 	ImmutableProofTypes
 } from "@twin.org/immutable-proof-models";
 import { nameof } from "@twin.org/nameof";
-import {
-	DidContexts,
-	DidCryptoSuites,
-	ProofTypes,
-	DidTypes,
-	type IProof
-} from "@twin.org/standards-w3c-did";
+import { DidContexts, DidCryptoSuites, ProofTypes, DidTypes } from "@twin.org/standards-w3c-did";
 import { HeaderTypes, HttpStatusCode, MimeTypes } from "@twin.org/web";
 
 /**
@@ -155,7 +149,7 @@ export function generateRestRoutesImmutableProof(
 									verificationMethod:
 										"did:iota:testnet:0xcb07cabaa2f23b7e53d8cdc4228efb351ebb270554d13bc382e4f94ca8d3136b#immutable-proof-assertion",
 									notarizationId: "notarization:iota:0xabcdef1234567890"
-								} as IProof
+								}
 							}
 						}
 					}
@@ -192,7 +186,7 @@ export function generateRestRoutesImmutableProof(
 									verificationMethod:
 										"did:iota:testnet:0xcb07cabaa2f23b7e53d8cdc4228efb351ebb270554d13bc382e4f94ca8d3136b#immutable-proof-assertion",
 									notarizationId: "notarization:iota:0xabcdef1234567890"
-								} as IProof
+								}
 							}
 						}
 					}
