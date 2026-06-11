@@ -87,7 +87,14 @@ describe("ImmutableProofService", () => {
 			entitySchema: nameof<LogEntry>()
 		});
 		EntityStorageConnectorFactory.register("log-entry", () => memoryLoggingEntityStorage);
-		const loggingConnector = new EntityStorageLoggingConnector();
+		ComponentFactory.register("platform", () => ({
+			className: () => "platform",
+			isMultiTenant: () => false,
+			execute: async (method: () => Promise<void>) => method()
+		}));
+		const loggingConnector = new EntityStorageLoggingConnector({
+			config: { batchSize: 0, batchIntervalMs: 0 }
+		});
 		LoggingConnectorFactory.register("logging", () => loggingConnector);
 		ComponentFactory.register("logging", () => loggingConnector);
 
