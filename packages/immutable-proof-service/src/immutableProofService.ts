@@ -147,9 +147,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		this._notarizationConnectorType = options?.notarizationConnectorType ?? "notarization";
 		this._notarizationConnector = NotarizationConnectorFactory.get(this._notarizationConnectorType);
 
-		this._logging = ComponentFactory.getIfExists<ILoggingComponent>(
-			options?.loggingComponentType ?? "logging"
-		);
+		this._logging = ComponentFactory.getIfExists<ILoggingComponent>(options?.loggingComponentType);
 
 		this._identityConnectorType = options?.identityConnectorType ?? "identity";
 

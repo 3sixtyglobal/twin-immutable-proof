@@ -20,7 +20,6 @@ export interface IImmutableProofServiceConstructorOptions {
 
 	/**
 	 * The logging component type.
-	 * @default logging
 	 */
 	loggingComponentType?: string;
 
