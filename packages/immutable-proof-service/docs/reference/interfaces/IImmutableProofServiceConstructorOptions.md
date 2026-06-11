@@ -38,12 +38,6 @@ notarization
 
 The logging component type.
 
-#### Default
-
-```ts
-logging
-```
-
 ***
 
 ### identityConnectorType? {#identityconnectortype}
