@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.3-next.17](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.0.3-next.16...immutable-proof-service-v0.0.3-next.17) (2026-06-11)
+
+
+### Features
+
+* remove default loggers ([1f59001](https://github.com/iotaledger/twin-immutable-proof/commit/1f59001038a9b83b5e3675c4cee2c4131023e9ff))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.0.3-next.16 to 0.0.3-next.17
+    * @twin.org/immutable-proof-task bumped from 0.0.3-next.16 to 0.0.3-next.17
+
 ## [0.0.3-next.16](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.0.3-next.15...immutable-proof-service-v0.0.3-next.16) (2026-05-29)
 
 
