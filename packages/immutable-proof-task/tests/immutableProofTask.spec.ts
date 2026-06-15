@@ -29,13 +29,18 @@ describe("ImmutableProofTask", () => {
 		initSchemaNotarization();
 
 		notarizationStorage = new MemoryEntityStorageConnector<Notarization>({
-			entitySchema: nameof<Notarization>()
+			entitySchema: nameof<Notarization>(),
+			config: { storageKey: "notarization" }
 		});
 		EntityStorageConnectorFactory.register("notarization", () => notarizationStorage);
 		NotarizationConnectorFactory.register(
 			"notarization",
 			() => new EntityStorageNotarizationConnector()
 		);
+	});
+
+	afterEach(async () => {
+		await notarizationStorage.teardown();
 	});
 
 	test("Can process a proof task and store the notarization", async () => {
@@ -57,7 +62,7 @@ describe("ImmutableProofTask", () => {
 		expect(result.verifiableCredential).toBeDefined();
 		expect(result.notarizationId).toEqual(expect.stringMatching(/^notarization:entity-storage:/));
 
-		const notarizationStore = notarizationStorage.getStore();
+		const notarizationStore = await notarizationStorage.getStore();
 		expect(notarizationStore).toHaveLength(1);
 
 		const entry = notarizationStore[0];
@@ -93,7 +98,7 @@ describe("ImmutableProofTask", () => {
 
 		expect(result.notarizationId).toEqual(expect.stringMatching(/^notarization:entity-storage:/));
 
-		const notarizationStore = notarizationStorage.getStore();
+		const notarizationStore = await notarizationStorage.getStore();
 		expect(notarizationStore).toHaveLength(1);
 		expect(notarizationStore[0].deleteLockDateTime).toEqual(deleteLock);
 	});

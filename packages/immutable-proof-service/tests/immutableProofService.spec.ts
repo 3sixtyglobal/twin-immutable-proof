@@ -49,7 +49,8 @@ async function waitForProofGeneration(
 	let count = 0;
 	let generated;
 	do {
-		generated = notarizationStorage.getStore().length === proofCount || count++ === proofCount * 40;
+		generated =
+			(await notarizationStorage.getStore()).length === proofCount || count++ === proofCount * 40;
 		if (generated) {
 			return;
 		}
@@ -57,8 +58,14 @@ async function waitForProofGeneration(
 	} while (!generated && count < 20);
 
 	if (showFail) {
-		console.debug("backgroundTasks", JSON.stringify(backgroundTaskStorage.getStore(), null, 2));
-		console.debug("logEntries", JSON.stringify(memoryLoggingEntityStorage.getStore(), null, 2));
+		console.debug(
+			"backgroundTasks",
+			JSON.stringify(await backgroundTaskStorage.getStore(), null, 2)
+		);
+		console.debug(
+			"logEntries",
+			JSON.stringify(await memoryLoggingEntityStorage.getStore(), null, 2)
+		);
 		throw new Error("Proof generation timed out");
 	}
 }
@@ -84,7 +91,8 @@ describe("ImmutableProofService", () => {
 			.mockImplementation(() => ({ organization: TEST_ORGANIZATION_IDENTITY }));
 
 		memoryLoggingEntityStorage = new MemoryEntityStorageConnector<LogEntry>({
-			entitySchema: nameof<LogEntry>()
+			entitySchema: nameof<LogEntry>(),
+			config: { storageKey: "log-entry" }
 		});
 		EntityStorageConnectorFactory.register("log-entry", () => memoryLoggingEntityStorage);
 		ComponentFactory.register("platform", () => ({
@@ -99,12 +107,14 @@ describe("ImmutableProofService", () => {
 		ComponentFactory.register("logging", () => loggingConnector);
 
 		proofStorage = new MemoryEntityStorageConnector<ImmutableProof>({
-			entitySchema: nameof<ImmutableProof>()
+			entitySchema: nameof<ImmutableProof>(),
+			config: { storageKey: "immutable-proof" }
 		});
 		EntityStorageConnectorFactory.register("immutable-proof", () => proofStorage);
 
 		backgroundTaskStorage = new MemoryEntityStorageConnector<BackgroundTask>({
-			entitySchema: nameof<BackgroundTask>()
+			entitySchema: nameof<BackgroundTask>(),
+			config: { storageKey: "background-task" }
 		});
 		EntityStorageConnectorFactory.register("background-task", () => backgroundTaskStorage);
 
@@ -112,7 +122,8 @@ describe("ImmutableProofService", () => {
 		ComponentFactory.register("background-task", () => backgroundTaskService);
 
 		notarizationStorage = new MemoryEntityStorageConnector<Notarization>({
-			entitySchema: nameof<Notarization>()
+			entitySchema: nameof<Notarization>(),
+			config: { storageKey: "notarization" }
 		});
 		EntityStorageConnectorFactory.register("notarization", () => notarizationStorage);
 
@@ -136,6 +147,13 @@ describe("ImmutableProofService", () => {
 
 	afterAll(async () => {
 		await cleanupTestEnv();
+	});
+
+	afterEach(async () => {
+		await proofStorage.teardown();
+		await notarizationStorage.teardown();
+		await backgroundTaskStorage.teardown();
+		await memoryLoggingEntityStorage.teardown();
 	});
 
 	// test("Can create an instance of the service", async () => {
@@ -258,7 +276,7 @@ describe("ImmutableProofService", () => {
 
 		await waitForProofGeneration();
 
-		const proofStore = proofStorage.getStore();
+		const proofStore = await proofStorage.getStore();
 		expect(proofStore).toEqual([
 			{
 				id: "01010101010101010101010101010101",
@@ -272,7 +290,7 @@ describe("ImmutableProofService", () => {
 			}
 		]);
 
-		const notarizationStore = notarizationStorage.getStore();
+		const notarizationStore = await notarizationStorage.getStore();
 		expect(notarizationStore).toEqual([
 			{
 				id: "04040404040404040404040404040404",
@@ -355,7 +373,7 @@ describe("ImmutableProofService", () => {
 			}
 		});
 
-		const proofStore = proofStorage.getStore();
+		const proofStore = await proofStorage.getStore();
 		expect(proofStore).toEqual([
 			{
 				id: "01010101010101010101010101010101",
@@ -404,7 +422,7 @@ describe("ImmutableProofService", () => {
 
 		await waitForProofGeneration();
 
-		const notarizationStore = notarizationStorage.getStore();
+		const notarizationStore = await notarizationStorage.getStore();
 		expect(notarizationStore).toEqual([
 			{
 				id: "04040404040404040404040404040404",
@@ -465,7 +483,7 @@ describe("ImmutableProofService", () => {
 			}
 		});
 
-		const proofStore = proofStorage.getStore();
+		const proofStore = await proofStorage.getStore();
 		expect(proofStore).toEqual([
 			{
 				id: "01010101010101010101010101010101",
@@ -479,7 +497,7 @@ describe("ImmutableProofService", () => {
 			}
 		]);
 
-		const notarizationStore = notarizationStorage.getStore();
+		const notarizationStore = await notarizationStorage.getStore();
 		expect(notarizationStore).toEqual([
 			{
 				id: "04040404040404040404040404040404",
@@ -524,14 +542,14 @@ describe("ImmutableProofService", () => {
 
 		await waitForProofGeneration();
 
-		expect(notarizationStorage.getStore()).toHaveLength(1);
-		expect(proofStorage.getStore()[0].notarizationId).toBeDefined();
+		expect(await notarizationStorage.getStore()).toHaveLength(1);
+		expect((await proofStorage.getStore())[0].notarizationId).toBeDefined();
 
 		await service.removeNotarization(proofId);
 
-		expect(notarizationStorage.getStore()).toHaveLength(0);
-		expect(proofStorage.getStore()).toHaveLength(1);
-		expect(proofStorage.getStore()[0].notarizationId).toBeUndefined();
+		expect(await notarizationStorage.getStore()).toHaveLength(0);
+		expect(await proofStorage.getStore()).toHaveLength(1);
+		expect((await proofStorage.getStore())[0].notarizationId).toBeUndefined();
 	});
 
 	test("Can remove notarization from a proof that has not been issued", async () => {
@@ -547,8 +565,8 @@ describe("ImmutableProofService", () => {
 
 		await service.removeNotarization(proofId);
 
-		expect(notarizationStorage.getStore()).toHaveLength(0);
-		expect(proofStorage.getStore()).toHaveLength(1);
+		expect(await notarizationStorage.getStore()).toHaveLength(0);
+		expect(await proofStorage.getStore()).toHaveLength(1);
 	});
 
 	test("Can fail to remove notarization when proof is not found", async () => {
@@ -587,13 +605,13 @@ describe("ImmutableProofService", () => {
 
 		await waitForProofGeneration();
 
-		expect(notarizationStorage.getStore()).toHaveLength(1);
-		expect(proofStorage.getStore()).toHaveLength(1);
+		expect(await notarizationStorage.getStore()).toHaveLength(1);
+		expect(await proofStorage.getStore()).toHaveLength(1);
 
 		await service.remove(proofId);
 
-		expect(notarizationStorage.getStore()).toHaveLength(0);
-		expect(proofStorage.getStore()).toHaveLength(0);
+		expect(await notarizationStorage.getStore()).toHaveLength(0);
+		expect(await proofStorage.getStore()).toHaveLength(0);
 	});
 
 	test("Can remove a proof that has not been issued", async () => {
@@ -607,12 +625,12 @@ describe("ImmutableProofService", () => {
 			name: "John Smith"
 		});
 
-		expect(proofStorage.getStore()).toHaveLength(1);
+		expect(await proofStorage.getStore()).toHaveLength(1);
 
 		await service.remove(proofId);
 
-		expect(notarizationStorage.getStore()).toHaveLength(0);
-		expect(proofStorage.getStore()).toHaveLength(0);
+		expect(await notarizationStorage.getStore()).toHaveLength(0);
+		expect(await proofStorage.getStore()).toHaveLength(0);
 	});
 
 	test("Can fail to remove a proof when it is not found", async () => {
@@ -659,15 +677,15 @@ describe("ImmutableProofService", () => {
 		// Remove the proof while the background task is still blocked
 		await service.remove(proofId);
 
-		expect(proofStorage.getStore()).toHaveLength(0);
-		expect(notarizationStorage.getStore()).toHaveLength(0);
+		expect(await proofStorage.getStore()).toHaveLength(0);
+		expect(await notarizationStorage.getStore()).toHaveLength(0);
 
 		// Release the background task so it runs to completion
 		resolveTask();
 		await waitForProofGeneration(1, false);
 
 		// The task created a notarization but should have cleaned it up since the proof is gone
-		expect(notarizationStorage.getStore()).toHaveLength(0);
-		expect(proofStorage.getStore()).toHaveLength(0);
+		expect(await notarizationStorage.getStore()).toHaveLength(0);
+		expect(await proofStorage.getStore()).toHaveLength(0);
 	});
 });
