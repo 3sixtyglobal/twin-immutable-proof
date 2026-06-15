@@ -15,10 +15,10 @@ import type { IImmutableProofTaskResult } from "./models/IImmutableProofTaskResu
 const CLASS_NAME = "ImmutableProofTask";
 
 /**
- * Process a proof.
- * @param engineCloneData The engine clone data.
- * @param payload The payload to process.
- * @returns The proof.
+ * Process a proof task by creating a verifiable credential and notarizing it.
+ * @param engineCloneData The engine clone data used to initialize a cloned engine instance when running in a separate thread.
+ * @param payload The payload containing the proof parameters.
+ * @returns The task result containing the verifiable credential and notarization id.
  */
 export async function processProofTask(
 	engineCloneData: IEngineCoreClone,

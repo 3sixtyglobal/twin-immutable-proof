@@ -12,7 +12,7 @@ export interface IImmutableProofTaskResult {
 	proofId: string;
 
 	/**
-	 * The proof, we only generate a single proof, so restrict to a single proof.
+	 * The verifiable credential produced by the proof task.
 	 */
 	verifiableCredential: IDidVerifiableCredential;
 

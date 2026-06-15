@@ -33,7 +33,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	public static readonly CLASS_NAME: string = nameof<ImmutableProofRestClient>();
 
 	/**
-	 * Create a new instance of ImmutableProofRestClient.
+	 * Creates an instance of ImmutableProofRestClient.
 	 * @param config The configuration for the client.
 	 */
 	constructor(config: IBaseRestClientConfig) {
@@ -124,7 +124,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	/**
 	 * Remove the proof and its notarization.
 	 * @param id The id of the proof to remove.
-	 * @returns Nothing.
+	 * @returns A promise that resolves when the proof and its notarization have been removed.
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	public async remove(id: string): Promise<void> {
@@ -140,7 +140,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	/**
 	 * Remove only the notarization for the proof, keeping the proof entity.
 	 * @param id The id of the proof to remove the notarization from.
-	 * @returns Nothing.
+	 * @returns A promise that resolves when the notarization has been removed.
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	public async removeNotarization(id: string): Promise<void> {

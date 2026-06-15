@@ -136,7 +136,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	private readonly _identityConnectorType: string;
 
 	/**
-	 * Create a new instance of ImmutableProofService.
+	 * Creates an instance of ImmutableProofService.
 	 * @param options The dependencies for the immutable proof connector.
 	 */
 	constructor(options?: IImmutableProofServiceConstructorOptions) {
@@ -177,7 +177,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	/**
 	 * The component needs to be started when the node is initialized.
 	 * @param nodeLoggingComponentType The node logging component type.
-	 * @returns Nothing.
+	 * @returns A promise that resolves when the background task handler has been registered.
 	 */
 	public async start(nodeLoggingComponentType?: string): Promise<void> {
 		await this._backgroundTaskComponent.registerHandler<
@@ -339,7 +339,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	/**
 	 * Remove the proof and its notarization.
 	 * @param id The id of the proof to remove.
-	 * @returns Nothing.
+	 * @returns A promise that resolves when the proof and its notarization have been removed.
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	public async remove(id: string): Promise<void> {
@@ -380,7 +380,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	/**
 	 * Remove only the notarization for the proof, keeping the proof entity.
 	 * @param id The id of the proof to remove the notarization from.
-	 * @returns Nothing.
+	 * @returns A promise that resolves when the notarization has been removed.
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	public async removeNotarization(id: string): Promise<void> {

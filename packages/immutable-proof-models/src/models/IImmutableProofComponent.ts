@@ -37,7 +37,7 @@ export interface IImmutableProofComponent extends IComponent {
 	/**
 	 * Remove the proof and its notarization.
 	 * @param id The id of the proof to remove.
-	 * @returns Nothing.
+	 * @returns A promise that resolves when the proof and its notarization have been removed.
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	remove(id: string): Promise<void>;
@@ -45,7 +45,7 @@ export interface IImmutableProofComponent extends IComponent {
 	/**
 	 * Remove only the notarization for the proof, keeping the proof entity.
 	 * @param id The id of the proof to remove the notarization from.
-	 * @returns Nothing.
+	 * @returns A promise that resolves when the notarization has been removed.
 	 * @throws NotFoundError if the proof is not found.
 	 */
 	removeNotarization(id: string): Promise<void>;

@@ -352,7 +352,7 @@ export async function immutableProofCreate(
 }
 
 /**
- * Get the proof.
+ * Get a proof.
  * @param httpRequestContext The request context for the API.
  * @param componentName The name of the component to use in the routes.
  * @param request The request.
@@ -385,7 +385,7 @@ export async function immutableProofGet(
 }
 
 /**
- * Verify the proof.
+ * Verify a proof.
  * @param httpRequestContext The request context for the API.
  * @param componentName The name of the component to use in the routes.
  * @param request The request.
