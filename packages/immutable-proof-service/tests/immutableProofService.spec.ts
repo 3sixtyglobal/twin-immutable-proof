@@ -98,7 +98,8 @@ describe("ImmutableProofService", () => {
 		ComponentFactory.register("platform", () => ({
 			className: () => "platform",
 			isMultiTenant: () => false,
-			execute: async (method: () => Promise<void>) => method()
+			execute: async (method: () => Promise<void>) => method(),
+			getLocalOriginContext: async () => undefined
 		}));
 		const loggingConnector = new EntityStorageLoggingConnector({
 			config: { batchSize: 0, batchIntervalMs: 0 }
