@@ -16,7 +16,7 @@ Client for performing immutable proof through to REST endpoints.
 
 > **new ImmutableProofRestClient**(`config`): `ImmutableProofRestClient`
 
-Create a new instance of ImmutableProofRestClient.
+Creates an instance of ImmutableProofRestClient.
 
 #### Parameters
 
@@ -176,7 +176,7 @@ The id of the proof to remove.
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the proof and its notarization have been removed.
 
 #### Throws
 
@@ -206,7 +206,7 @@ The id of the proof to remove the notarization from.
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the notarization has been removed.
 
 #### Throws
 

@@ -2,7 +2,7 @@
 
 > **processProofTask**(`engineCloneData`, `payload`): `Promise`\<[`IImmutableProofTaskResult`](../interfaces/IImmutableProofTaskResult.md)\>
 
-Process a proof.
+Process a proof task by creating a verifiable credential and notarizing it.
 
 ## Parameters
 
@@ -10,16 +10,16 @@ Process a proof.
 
 `IEngineCoreClone`
 
-The engine clone data.
+The engine clone data used to initialize a cloned engine instance when running in a separate thread.
 
 ### payload
 
 [`IImmutableProofTaskPayload`](../interfaces/IImmutableProofTaskPayload.md)
 
-The payload to process.
+The payload containing the proof parameters.
 
 ## Returns
 
 `Promise`\<[`IImmutableProofTaskResult`](../interfaces/IImmutableProofTaskResult.md)\>
 
-The proof.
+The task result containing the verifiable credential and notarization id.

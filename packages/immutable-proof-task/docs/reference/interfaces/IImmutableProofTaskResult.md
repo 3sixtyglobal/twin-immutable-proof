@@ -16,7 +16,7 @@ The proof id.
 
 > **verifiableCredential**: `IDidVerifiableCredential`
 
-The proof, we only generate a single proof, so restrict to a single proof.
+The verifiable credential produced by the proof task.
 
 ***
 

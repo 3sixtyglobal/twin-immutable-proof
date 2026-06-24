@@ -12,7 +12,7 @@ Class for performing immutable proof operations.
 
 > **new ImmutableProofService**(`options?`): `ImmutableProofService`
 
-Create a new instance of ImmutableProofService.
+Creates an instance of ImmutableProofService.
 
 #### Parameters
 
@@ -72,7 +72,7 @@ The node logging component type.
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the background task handler has been registered.
 
 #### Implementation of
 
@@ -194,7 +194,7 @@ The id of the proof to remove.
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the proof and its notarization have been removed.
 
 #### Throws
 
@@ -224,7 +224,7 @@ The id of the proof to remove the notarization from.
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the notarization has been removed.
 
 #### Throws
 
