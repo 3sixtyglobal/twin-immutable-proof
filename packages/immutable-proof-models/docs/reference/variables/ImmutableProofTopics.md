@@ -4,9 +4,9 @@
 
 The topics for immutable proof event bus notifications.
 
-## Type declaration
+## Type Declaration
 
-### ProofCreated
+### ProofCreated {#proofcreated}
 
 > `readonly` **ProofCreated**: `"immutable-proof:proof-created"` = `"immutable-proof:proof-created"`
 

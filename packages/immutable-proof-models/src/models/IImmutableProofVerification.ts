@@ -1,8 +1,8 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { ImmutableProofContexts } from "./immutableProofContexts";
-import type { ImmutableProofFailure } from "./immutableProofFailure";
-import type { ImmutableProofTypes } from "./immutableProofTypes";
+import type { ImmutableProofContexts } from "./immutableProofContexts.js";
+import type { ImmutableProofFailure } from "./immutableProofFailure.js";
+import type { ImmutableProofTypes } from "./immutableProofTypes.js";
 
 /**
  * Interface describing an immutable proof verification.
@@ -11,7 +11,7 @@ export interface IImmutableProofVerification {
 	/**
 	 * JSON-LD Context.
 	 */
-	"@context": typeof ImmutableProofContexts.ContextRoot;
+	"@context": typeof ImmutableProofContexts.Context;
 
 	/**
 	 * JSON-LD Type.
@@ -20,11 +20,13 @@ export interface IImmutableProofVerification {
 
 	/**
 	 * Was the verification successful.
+	 * @json-ld namespace:twin-common
 	 */
 	verified: boolean;
 
 	/**
 	 * If the verification was unsuccessful the failure reason.
+	 * @json-ld type:schema:Text
 	 */
 	failure?: ImmutableProofFailure;
 }

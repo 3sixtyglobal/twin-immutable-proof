@@ -1,6 +1,6 @@
 # TWIN Immutable Proof Task
 
-Background task for generating the proof.
+This package provides background processing for immutable proof generation. It accepts prepared task payloads, resolves the configured identity connector, and produces verifiable credential output for downstream storage and verification.
 
 ## Installation
 

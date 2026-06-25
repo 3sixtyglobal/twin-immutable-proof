@@ -4,34 +4,28 @@
 
 The failure reason of the proof.
 
-## Type declaration
+## Type Declaration
 
-### NotIssued
+### NotIssued {#notissued}
 
 > `readonly` **NotIssued**: `"notIssued"` = `"notIssued"`
 
 Proof not yet issued.
 
-### ProofMissing
+### ProofMissing {#proofmissing}
 
 > `readonly` **ProofMissing**: `"proofMissing"` = `"proofMissing"`
 
 Proof missing.
 
-### CryptoSuiteMismatch
+### VerificationFailure {#verificationfailure}
 
-> `readonly` **CryptoSuiteMismatch**: `"cryptoSuiteMismatch"` = `"cryptoSuiteMismatch"`
+> `readonly` **VerificationFailure**: `"verificationFailure"` = `"verificationFailure"`
 
-Crypto suite mismatch.
+Verification failure.
 
-### ProofTypeMismatch
+### Revoked {#revoked}
 
-> `readonly` **ProofTypeMismatch**: `"proofTypeMismatch"` = `"proofTypeMismatch"`
+> `readonly` **Revoked**: `"revoked"` = `"revoked"`
 
-Proof type.
-
-### SignatureMismatch
-
-> `readonly` **SignatureMismatch**: `"signatureMismatch"` = `"signatureMismatch"`
-
-Signature mismatch.
+Revoked.

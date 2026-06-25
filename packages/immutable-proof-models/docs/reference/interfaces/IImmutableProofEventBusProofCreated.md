@@ -4,7 +4,7 @@ Event bus payload for proof created.
 
 ## Properties
 
-### id
+### id {#id}
 
 > **id**: `string`
 

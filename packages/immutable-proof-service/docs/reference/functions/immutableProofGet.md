@@ -2,7 +2,7 @@
 
 > **immutableProofGet**(`httpRequestContext`, `componentName`, `request`): `Promise`\<`IImmutableProofGetResponse`\>
 
-Get the proof.
+Get a proof.
 
 ## Parameters
 

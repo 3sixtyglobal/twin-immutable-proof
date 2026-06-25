@@ -1,6 +1,7 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import { entity, property, SortDirection } from "@twin.org/entity";
+import type { DidContexts } from "@twin.org/standards-w3c-did";
 
 /**
  * Class describing the immutable proof.
@@ -14,16 +15,10 @@ export class ImmutableProof {
 	public id!: string;
 
 	/**
-	 * The identity of the node which controls the proof.
+	 * The organization id.
 	 */
 	@property({ type: "string" })
-	public nodeIdentity!: string;
-
-	/**
-	 * The identity of the user which created the proof.
-	 */
-	@property({ type: "string" })
-	public userIdentity!: string;
+	public organizationId!: string;
 
 	/**
 	 * The date/time of when the proof was created.
@@ -38,14 +33,20 @@ export class ImmutableProof {
 	public proofObjectId?: string;
 
 	/**
-	 * The associated hash for the item.
+	 * The associated integrity for the item.
 	 */
 	@property({ type: "string" })
-	public proofObjectHash!: string;
+	public proofObjectIntegrity!: string;
 
 	/**
-	 * The verifiable storage id.
+	 * The notarization id.
 	 */
 	@property({ type: "string", optional: true })
-	public verifiableStorageId?: string;
+	public notarizationId?: string;
+
+	/**
+	 * The verifiable credential context.
+	 */
+	@property({ type: "string", optional: true })
+	public vcContext?: typeof DidContexts.ContextVCv1 | typeof DidContexts.ContextVCv2;
 }

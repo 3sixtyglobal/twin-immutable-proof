@@ -8,9 +8,9 @@ Interface describing an immutable proof contract.
 
 ## Methods
 
-### create()
+### create() {#create}
 
-> **create**(`document`, `userIdentity?`, `nodeIdentity?`): `Promise`\<`string`\>
+> **create**(`document`, `options?`): `Promise`\<`string`\>
 
 Create a new proof.
 
@@ -22,17 +22,15 @@ Create a new proof.
 
 The document to create the proof for.
 
-##### userIdentity?
+##### options?
+
+Optional settings for the proof.
+
+###### deleteLock?
 
 `string`
 
-The identity to create the immutable proof operation with.
-
-##### nodeIdentity?
-
-`string`
-
-The node identity to use for vault operations.
+An ISO 8601 date-time string specifying when the notarization lock expires; if omitted no lock is applied.
 
 #### Returns
 
@@ -42,9 +40,9 @@ The id of the new proof.
 
 ***
 
-### get()
+### get() {#get}
 
-> **get**(`id`): `Promise`\<[`IImmutableProof`](IImmutableProof.md)\>
+> **get**(`id`): `Promise`\<[`IImmutableProofCredential`](IImmutableProofCredential.md)\>
 
 Get a proof.
 
@@ -58,7 +56,7 @@ The id of the proof to get.
 
 #### Returns
 
-`Promise`\<[`IImmutableProof`](IImmutableProof.md)\>
+`Promise`\<[`IImmutableProofCredential`](IImmutableProofCredential.md)\>
 
 The proof.
 
@@ -68,7 +66,7 @@ NotFoundError if the proof is not found.
 
 ***
 
-### verify()
+### verify() {#verify}
 
 > **verify**(`id`): `Promise`\<[`IImmutableProofVerification`](IImmutableProofVerification.md)\>
 
@@ -94,11 +92,11 @@ NotFoundError if the proof is not found.
 
 ***
 
-### removeVerifiable()
+### remove() {#remove}
 
-> **removeVerifiable**(`id`, `nodeIdentity?`): `Promise`\<`void`\>
+> **remove**(`id`): `Promise`\<`void`\>
 
-Remove the verifiable storage for the proof.
+Remove the proof and its notarization.
 
 #### Parameters
 
@@ -106,19 +104,39 @@ Remove the verifiable storage for the proof.
 
 `string`
 
-The id of the proof to remove the storage from.
-
-##### nodeIdentity?
-
-`string`
-
-The node identity to use for vault operations.
+The id of the proof to remove.
 
 #### Returns
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the proof and its notarization have been removed.
+
+#### Throws
+
+NotFoundError if the proof is not found.
+
+***
+
+### removeNotarization() {#removenotarization}
+
+> **removeNotarization**(`id`): `Promise`\<`void`\>
+
+Remove only the notarization for the proof, keeping the proof entity.
+
+#### Parameters
+
+##### id
+
+`string`
+
+The id of the proof to remove the notarization from.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+A promise that resolves when the notarization has been removed.
 
 #### Throws
 

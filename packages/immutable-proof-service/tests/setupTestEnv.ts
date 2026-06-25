@@ -26,7 +26,10 @@ const TEST_FOLDER = "./tests/.tmp";
 
 console.debug("Setting up test environment from .env and .env.dev files");
 
-dotenv.config({ path: [path.join(__dirname, ".env"), path.join(__dirname, ".env.dev")] });
+dotenv.config({
+	path: [path.join(__dirname, ".env"), path.join(__dirname, ".env.dev")],
+	quiet: true
+});
 
 initSchemaVault();
 initSchemaIdentity();
@@ -35,16 +38,19 @@ EntityStorageConnectorFactory.register(
 	"vault-key",
 	() =>
 		new MemoryEntityStorageConnector<VaultKey>({
-			entitySchema: nameof<VaultKey>()
+			entitySchema: nameof<VaultKey>(),
+			config: { storageKey: "vault-key" }
 		})
 );
 const secretEntityStorage = new MemoryEntityStorageConnector<VaultSecret>({
-	entitySchema: nameof<VaultSecret>()
+	entitySchema: nameof<VaultSecret>(),
+	config: { storageKey: "vault-secret" }
 });
 EntityStorageConnectorFactory.register("vault-secret", () => secretEntityStorage);
 
 const identityDocumentEntityStorage = new MemoryEntityStorageConnector<IdentityDocument>({
-	entitySchema: nameof<IdentityDocument>()
+	entitySchema: nameof<IdentityDocument>(),
+	config: { storageKey: "identity-document" }
 });
 EntityStorageConnectorFactory.register("identity-document", () => identityDocumentEntityStorage);
 
@@ -54,8 +60,7 @@ VaultConnectorFactory.register("vault", () => TEST_VAULT_CONNECTOR);
 export const TEST_IDENTITY_CONNECTOR = new EntityStorageIdentityConnector();
 IdentityConnectorFactory.register("identity", () => TEST_IDENTITY_CONNECTOR);
 
-export let TEST_NODE_IDENTITY: string;
-export let TEST_USER_IDENTITY: string;
+export let TEST_ORGANIZATION_IDENTITY: string;
 export let TEST_HASH_KEY: string;
 
 /**
@@ -86,11 +91,9 @@ export async function setupTestEnv(): Promise<void> {
 		"assertionMethod",
 		"immutable-proof-assertion"
 	);
-	const didUser = await testIdentityConnector.createDocument("test-user-identity");
 
-	TEST_NODE_IDENTITY = didNode.id;
-	TEST_USER_IDENTITY = didUser.id;
-	TEST_HASH_KEY = `${TEST_NODE_IDENTITY}/immutable-proof-hash`;
+	TEST_ORGANIZATION_IDENTITY = didNode.id;
+	TEST_HASH_KEY = `${TEST_ORGANIZATION_IDENTITY}/immutable-proof-hash`;
 
 	await testVaultConnector.addKey(
 		TEST_HASH_KEY,

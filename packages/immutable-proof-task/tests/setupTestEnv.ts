@@ -23,17 +23,22 @@ import * as dotenv from "dotenv";
 
 console.debug("Setting up test environment from .env and .env.dev files");
 
-dotenv.config({ path: [path.join(__dirname, ".env"), path.join(__dirname, ".env.dev")] });
+dotenv.config({
+	path: [path.join(__dirname, ".env"), path.join(__dirname, ".env.dev")],
+	quiet: true
+});
 
 initSchemaVault();
 initSchemaIdentity();
 
 const keyEntityStorage = new MemoryEntityStorageConnector<VaultKey>({
-	entitySchema: nameof<VaultKey>()
+	entitySchema: nameof<VaultKey>(),
+	config: { storageKey: "vault-key" }
 });
 EntityStorageConnectorFactory.register("vault-key", () => keyEntityStorage);
 const secretEntityStorage = new MemoryEntityStorageConnector<VaultSecret>({
-	entitySchema: nameof<VaultSecret>()
+	entitySchema: nameof<VaultSecret>(),
+	config: { storageKey: "vault-secret" }
 });
 EntityStorageConnectorFactory.register("vault-secret", () => secretEntityStorage);
 
@@ -41,7 +46,8 @@ export const TEST_VAULT_CONNECTOR = new EntityStorageVaultConnector();
 VaultConnectorFactory.register("vault", () => TEST_VAULT_CONNECTOR);
 
 const identityEntityStorage = new MemoryEntityStorageConnector<IdentityDocument>({
-	entitySchema: nameof<IdentityDocument>()
+	entitySchema: nameof<IdentityDocument>(),
+	config: { storageKey: "identity-document" }
 });
 EntityStorageConnectorFactory.register("identity-document", () => identityEntityStorage);
 

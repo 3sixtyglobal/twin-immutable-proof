@@ -1,6 +1,6 @@
 # TWIN Immutable Proof REST Client
 
-Immutable Proof contract implementation which can connect to REST endpoints.
+This package delivers a dedicated client for immutable proof HTTP endpoints. It provides a simple interface for creating proofs, loading proof credentials, and running verification calls without reimplementing request handling in each consuming project.
 
 ## Installation
 

@@ -4,7 +4,7 @@ The result for the immutable proof task.
 
 ## Properties
 
-### proofId
+### proofId {#proofid}
 
 > **proofId**: `string`
 
@@ -12,8 +12,16 @@ The proof id.
 
 ***
 
-### proof
+### verifiableCredential {#verifiablecredential}
 
-> **proof**: `IDataIntegrityProof`
+> **verifiableCredential**: `IDidVerifiableCredential`
 
-The proof.
+The verifiable credential produced by the proof task.
+
+***
+
+### notarizationId {#notarizationid}
+
+> **notarizationId**: `string`
+
+The notarization id returned after storing the proof.

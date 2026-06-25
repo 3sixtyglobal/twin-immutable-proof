@@ -4,7 +4,7 @@ The payload for the immutable proof task.
 
 ## Properties
 
-### proofId
+### proofId {#proofid}
 
 > **proofId**: `string`
 
@@ -12,15 +12,15 @@ The proof id.
 
 ***
 
-### nodeIdentity
+### identity {#identity}
 
-> **nodeIdentity**: `string`
+> **identity**: `string`
 
-The node identity.
+The identity to create the proof for.
 
 ***
 
-### identityConnectorType
+### identityConnectorType {#identityconnectortype}
 
 > **identityConnectorType**: `string`
 
@@ -28,7 +28,7 @@ The identity connector type.
 
 ***
 
-### verificationMethodId
+### verificationMethodId {#verificationmethodid}
 
 > **verificationMethodId**: `string`
 
@@ -36,8 +36,25 @@ The assertion method id.
 
 ***
 
-### document
+### credentialSubject {#credentialsubject}
 
-> **document**: `IJsonLdNodeObject`
+> **credentialSubject**: `IImmutableProof`
 
-The document to create the proof for.
+The subject to create the proof for.
+
+***
+
+### notarizationConnectorType {#notarizationconnectortype}
+
+> **notarizationConnectorType**: `string`
+
+The notarization connector type.
+
+***
+
+### deleteLockDateTime? {#deletelockdatetime}
+
+> `optional` **deleteLockDateTime?**: `string`
+
+An ISO 8601 date-time string specifying when the notarization lock expires.
+If omitted, no deletion lock is applied.

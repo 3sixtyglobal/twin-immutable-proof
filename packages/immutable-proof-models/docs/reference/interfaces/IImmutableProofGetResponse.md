@@ -4,9 +4,9 @@ Response to getting an immutable proof.
 
 ## Properties
 
-### headers?
+### headers? {#headers}
 
-> `optional` **headers**: `object`
+> `optional` **headers?**: `object`
 
 The headers which can be used to determine the response data type.
 
@@ -16,8 +16,8 @@ The headers which can be used to determine the response data type.
 
 ***
 
-### body
+### body {#body}
 
-> **body**: [`IImmutableProof`](IImmutableProof.md)
+> **body**: [`IImmutableProofCredential`](IImmutableProofCredential.md)
 
 The response body.

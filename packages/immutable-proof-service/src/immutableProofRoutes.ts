@@ -3,6 +3,7 @@
 import type {
 	ICreatedResponse,
 	IHttpRequestContext,
+	INoContentResponse,
 	INotFoundResponse,
 	IRestRoute,
 	ITag
@@ -13,6 +14,8 @@ import {
 	type IImmutableProofCreateRequest,
 	type IImmutableProofGetRequest,
 	type IImmutableProofGetResponse,
+	type IImmutableProofRemoveNotarizationRequest,
+	type IImmutableProofRemoveRequest,
 	type IImmutableProofVerifyRequest,
 	type IImmutableProofVerifyResponse,
 	ImmutableProofContexts,
@@ -20,7 +23,7 @@ import {
 	ImmutableProofTypes
 } from "@twin.org/immutable-proof-models";
 import { nameof } from "@twin.org/nameof";
-import { DidContexts, DidCryptoSuites, ProofTypes } from "@twin.org/standards-w3c-did";
+import { DidContexts, DidCryptoSuites, ProofTypes, DidTypes } from "@twin.org/standards-w3c-did";
 import { HeaderTypes, HttpStatusCode, MimeTypes } from "@twin.org/web";
 
 /**
@@ -82,7 +85,7 @@ export function generateRestRoutesImmutableProof(
 						response: {
 							statusCode: HttpStatusCode.created,
 							headers: {
-								[HeaderTypes.Location]: "test:1234567890"
+								[HeaderTypes.Location]: "test%3A1234567890"
 							}
 						}
 					}
@@ -112,7 +115,7 @@ export function generateRestRoutesImmutableProof(
 							[HeaderTypes.Accept]: MimeTypes.Json
 						},
 						pathParams: {
-							id: "ais:1234567890"
+							id: "immutable-proof:1234567890"
 						}
 					}
 				}
@@ -127,22 +130,25 @@ export function generateRestRoutesImmutableProof(
 						response: {
 							body: {
 								"@context": [
-									ImmutableProofContexts.ContextRoot,
-									ImmutableProofContexts.ContextRootCommon
+									DidContexts.ContextVCv1,
+									ImmutableProofContexts.Context,
+									ImmutableProofContexts.ContextCommon
 								],
-								type: ImmutableProofTypes.ImmutableProof,
-								id: "ais:1234567890",
-								nodeIdentity: "node-1",
-								userIdentity: "user-1",
-								proofObjectId: "test:1234567890",
-								proofObjectHash: "EAOKyDN0mYQbBh91eMdVeroxQx1H4GfnRbmt6n/2L/Y=",
+								type: [DidTypes.VerifiableCredential, ImmutableProofTypes.ImmutableProof],
+								id: "immutable-proof:1234567890",
+								credentialSubject: {
+									id: "ais:1234567890",
+									proofIntegrity: "EAOKyDN0mYQbBh91eMdVeroxQx1H4GfnRbmt6n/2L/Y="
+								},
 								proof: {
-									"@context": DidContexts.ContextDataIntegrity,
 									type: ProofTypes.DataIntegrityProof,
 									cryptosuite: DidCryptoSuites.EdDSAJcs2022,
 									created: "2024-08-22T11:56:56.272Z",
 									proofPurpose: "assertionMethod",
-									proofValue: "7DdiPPYtxLjCD3wA1po2rv..."
+									proofValue: "7DdiPPYtxLjCD3wA1po2rv...",
+									verificationMethod:
+										"did:iota:testnet:0xcb07cabaa2f23b7e53d8cdc4228efb351ebb270554d13bc382e4f94ca8d3136b#immutable-proof-assertion",
+									notarizationId: "notarization:iota:0xabcdef1234567890"
 								}
 							}
 						}
@@ -161,22 +167,25 @@ export function generateRestRoutesImmutableProof(
 							},
 							body: {
 								"@context": [
-									ImmutableProofContexts.ContextRoot,
-									ImmutableProofContexts.ContextRootCommon
+									DidContexts.ContextVCv1,
+									ImmutableProofContexts.Context,
+									ImmutableProofContexts.ContextCommon
 								],
-								type: ImmutableProofTypes.ImmutableProof,
-								id: "ais:1234567890",
-								nodeIdentity: "node-1",
-								userIdentity: "user-1",
-								proofObjectId: "test:1234567890",
-								proofObjectHash: "EAOKyDN0mYQbBh91eMdVeroxQx1H4GfnRbmt6n/2L/Y=",
+								type: [DidTypes.VerifiableCredential, ImmutableProofTypes.ImmutableProof],
+								id: "immutable-proof:1234567890",
+								credentialSubject: {
+									id: "ais:1234567890",
+									proofIntegrity: "EAOKyDN0mYQbBh91eMdVeroxQx1H4GfnRbmt6n/2L/Y="
+								},
 								proof: {
-									"@context": DidContexts.ContextDataIntegrity,
 									type: ProofTypes.DataIntegrityProof,
 									cryptosuite: DidCryptoSuites.EdDSAJcs2022,
 									created: "2024-08-22T11:56:56.272Z",
 									proofPurpose: "assertionMethod",
-									proofValue: "7DdiPPYtxLjCD3wA1po2rv..."
+									proofValue: "7DdiPPYtxLjCD3wA1po2rv...",
+									verificationMethod:
+										"did:iota:testnet:0xcb07cabaa2f23b7e53d8cdc4228efb351ebb270554d13bc382e4f94ca8d3136b#immutable-proof-assertion",
+									notarizationId: "notarization:iota:0xabcdef1234567890"
 								}
 							}
 						}
@@ -204,7 +213,7 @@ export function generateRestRoutesImmutableProof(
 					id: "immutableProofVerifyRequestExample",
 					request: {
 						pathParams: {
-							id: "ais:1234567890"
+							id: "immutable-proof:1234567890"
 						}
 					}
 				}
@@ -218,7 +227,7 @@ export function generateRestRoutesImmutableProof(
 						id: "immutableProofVerifyResponseExample",
 						response: {
 							body: {
-								"@context": ImmutableProofContexts.ContextRoot,
+								"@context": ImmutableProofContexts.Context,
 								type: ImmutableProofTypes.ImmutableProofVerification,
 								verified: true
 							}
@@ -233,10 +242,10 @@ export function generateRestRoutesImmutableProof(
 						id: "immutableProofVerifyResponseFailExample",
 						response: {
 							body: {
-								"@context": ImmutableProofContexts.ContextRoot,
+								"@context": ImmutableProofContexts.Context,
 								type: ImmutableProofTypes.ImmutableProofVerification,
 								verified: false,
-								failure: ImmutableProofFailure.ProofTypeMismatch
+								failure: ImmutableProofFailure.VerificationFailure
 							}
 						}
 					}
@@ -248,7 +257,72 @@ export function generateRestRoutesImmutableProof(
 		]
 	};
 
-	return [createRoute, getRoute, verifyRoute];
+	const removeRoute: IRestRoute<IImmutableProofRemoveRequest, INoContentResponse> = {
+		operationId: "immutableProofRemove",
+		summary: "Remove a proof",
+		tag: tagsImmutableProof[0].name,
+		method: "DELETE",
+		path: `${baseRouteName}/:id`,
+		handler: async (httpRequestContext, request) =>
+			immutableProofRemove(httpRequestContext, componentName, request),
+		requestType: {
+			type: nameof<IImmutableProofRemoveRequest>(),
+			examples: [
+				{
+					id: "immutableProofRemoveRequestExample",
+					request: {
+						pathParams: {
+							id: "immutable-proof:1234567890"
+						}
+					}
+				}
+			]
+		},
+		responseType: [
+			{
+				type: nameof<INoContentResponse>()
+			},
+			{
+				type: nameof<INotFoundResponse>()
+			}
+		]
+	};
+
+	const removeNotarizationRoute: IRestRoute<
+		IImmutableProofRemoveNotarizationRequest,
+		INoContentResponse
+	> = {
+		operationId: "immutableProofRemoveNotarization",
+		summary: "Remove the notarization for a proof",
+		tag: tagsImmutableProof[0].name,
+		method: "DELETE",
+		path: `${baseRouteName}/:id/notarization`,
+		handler: async (httpRequestContext, request) =>
+			immutableProofRemoveNotarization(httpRequestContext, componentName, request),
+		requestType: {
+			type: nameof<IImmutableProofRemoveNotarizationRequest>(),
+			examples: [
+				{
+					id: "immutableProofRemoveNotarizationRequestExample",
+					request: {
+						pathParams: {
+							id: "immutable-proof:1234567890"
+						}
+					}
+				}
+			]
+		},
+		responseType: [
+			{
+				type: nameof<INoContentResponse>()
+			},
+			{
+				type: nameof<INotFoundResponse>()
+			}
+		]
+	};
+
+	return [createRoute, getRoute, verifyRoute, removeRoute, removeNotarizationRoute];
 }
 
 /**
@@ -267,11 +341,7 @@ export async function immutableProofCreate(
 	Guards.object(ROUTES_SOURCE, nameof(request.body.document), request.body.document);
 
 	const component = ComponentFactory.get<IImmutableProofComponent>(componentName);
-	const result = await component.create(
-		request.body.document,
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
-	);
+	const result = await component.create(request.body.document, request.body.options);
 
 	return {
 		statusCode: HttpStatusCode.created,
@@ -282,7 +352,7 @@ export async function immutableProofCreate(
 }
 
 /**
- * Get the proof.
+ * Get a proof.
  * @param httpRequestContext The request context for the API.
  * @param componentName The name of the component to use in the routes.
  * @param request The request.
@@ -315,7 +385,7 @@ export async function immutableProofGet(
 }
 
 /**
- * Verify the proof.
+ * Verify a proof.
  * @param httpRequestContext The request context for the API.
  * @param componentName The name of the component to use in the routes.
  * @param request The request.
@@ -344,5 +414,61 @@ export async function immutableProofVerify(
 			[HeaderTypes.ContentType]: mimeType === "json" ? MimeTypes.Json : MimeTypes.JsonLd
 		},
 		body: result
+	};
+}
+
+/**
+ * Remove the proof and its notarization.
+ * @param httpRequestContext The request context for the API.
+ * @param componentName The name of the component to use in the routes.
+ * @param request The request.
+ * @returns The response object with additional http response properties.
+ */
+export async function immutableProofRemove(
+	httpRequestContext: IHttpRequestContext,
+	componentName: string,
+	request: IImmutableProofRemoveRequest
+): Promise<INoContentResponse> {
+	Guards.object<IImmutableProofRemoveRequest>(ROUTES_SOURCE, nameof(request), request);
+	Guards.object<IImmutableProofRemoveRequest["pathParams"]>(
+		ROUTES_SOURCE,
+		nameof(request.pathParams),
+		request.pathParams
+	);
+	Guards.stringValue(ROUTES_SOURCE, nameof(request.pathParams.id), request.pathParams.id);
+
+	const component = ComponentFactory.get<IImmutableProofComponent>(componentName);
+	await component.remove(request.pathParams.id);
+
+	return {
+		statusCode: HttpStatusCode.noContent
+	};
+}
+
+/**
+ * Remove the notarization for a proof, keeping the proof entity.
+ * @param httpRequestContext The request context for the API.
+ * @param componentName The name of the component to use in the routes.
+ * @param request The request.
+ * @returns The response object with additional http response properties.
+ */
+export async function immutableProofRemoveNotarization(
+	httpRequestContext: IHttpRequestContext,
+	componentName: string,
+	request: IImmutableProofRemoveNotarizationRequest
+): Promise<INoContentResponse> {
+	Guards.object<IImmutableProofRemoveNotarizationRequest>(ROUTES_SOURCE, nameof(request), request);
+	Guards.object<IImmutableProofRemoveNotarizationRequest["pathParams"]>(
+		ROUTES_SOURCE,
+		nameof(request.pathParams),
+		request.pathParams
+	);
+	Guards.stringValue(ROUTES_SOURCE, nameof(request.pathParams.id), request.pathParams.id);
+
+	const component = ComponentFactory.get<IImmutableProofComponent>(componentName);
+	await component.removeNotarization(request.pathParams.id);
+
+	return {
+		statusCode: HttpStatusCode.noContent
 	};
 }

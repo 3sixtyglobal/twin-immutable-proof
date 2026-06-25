@@ -17,19 +17,14 @@ export const ImmutableProofFailure = {
 	ProofMissing: "proofMissing",
 
 	/**
-	 * Crypto suite mismatch.
+	 * Verification failure.
 	 */
-	CryptoSuiteMismatch: "cryptoSuiteMismatch",
+	VerificationFailure: "verificationFailure",
 
 	/**
-	 * Proof type.
+	 * Revoked.
 	 */
-	ProofTypeMismatch: "proofTypeMismatch",
-
-	/**
-	 * Signature mismatch.
-	 */
-	SignatureMismatch: "signatureMismatch"
+	Revoked: "revoked"
 } as const;
 
 /**

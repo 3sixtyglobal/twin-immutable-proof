@@ -4,9 +4,9 @@ Options for the immutable proof service constructor.
 
 ## Properties
 
-### immutableProofEntityStorageType?
+### immutableProofEntityStorageType? {#immutableproofentitystoragetype}
 
-> `optional` **immutableProofEntityStorageType**: `string`
+> `optional` **immutableProofEntityStorageType?**: `string`
 
 The entity storage for proofs.
 
@@ -18,23 +18,31 @@ immutable-proof
 
 ***
 
-### verifiableStorageType?
+### notarizationConnectorType? {#notarizationconnectortype}
 
-> `optional` **verifiableStorageType**: `string`
+> `optional` **notarizationConnectorType?**: `string`
 
-The verifiable storage.
+The notarization connector type.
 
 #### Default
 
 ```ts
-verifiable-storage
+notarization
 ```
 
 ***
 
-### identityConnectorType?
+### loggingComponentType? {#loggingcomponenttype}
 
-> `optional` **identityConnectorType**: `string`
+> `optional` **loggingComponentType?**: `string`
+
+The logging component type.
+
+***
+
+### identityConnectorType? {#identityconnectortype}
+
+> `optional` **identityConnectorType?**: `string`
 
 The identity connector type.
 
@@ -46,11 +54,11 @@ identity
 
 ***
 
-### backgroundTaskConnectorType?
+### backgroundTaskComponentType? {#backgroundtaskcomponenttype}
 
-> `optional` **backgroundTaskConnectorType**: `string`
+> `optional` **backgroundTaskComponentType?**: `string`
 
-The background task connector type.
+The background task component type.
 
 #### Default
 
@@ -60,16 +68,16 @@ background-task
 
 ***
 
-### eventBusComponentType?
+### eventBusComponentType? {#eventbuscomponenttype}
 
-> `optional` **eventBusComponentType**: `string`
+> `optional` **eventBusComponentType?**: `string`
 
 The event bus component type, defaults to no event bus.
 
 ***
 
-### config?
+### config? {#config}
 
-> `optional` **config**: [`IImmutableProofServiceConfig`](IImmutableProofServiceConfig.md)
+> `optional` **config?**: [`IImmutableProofServiceConfig`](IImmutableProofServiceConfig.md)
 
 The configuration for the connector.

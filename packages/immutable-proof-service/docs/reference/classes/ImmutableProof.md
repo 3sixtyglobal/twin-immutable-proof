@@ -14,7 +14,7 @@ Class describing the immutable proof.
 
 ## Properties
 
-### id
+### id {#id}
 
 > **id**: `string`
 
@@ -22,23 +22,15 @@ The id of the proof.
 
 ***
 
-### nodeIdentity
+### organizationId {#organizationid}
 
-> **nodeIdentity**: `string`
+> **organizationId**: `string`
 
-The identity of the node which controls the proof.
-
-***
-
-### userIdentity
-
-> **userIdentity**: `string`
-
-The identity of the user which created the proof.
+The organization id.
 
 ***
 
-### dateCreated
+### dateCreated {#datecreated}
 
 > **dateCreated**: `string`
 
@@ -46,24 +38,32 @@ The date/time of when the proof was created.
 
 ***
 
-### proofObjectId?
+### proofObjectId? {#proofobjectid}
 
-> `optional` **proofObjectId**: `string`
+> `optional` **proofObjectId?**: `string`
 
 The associated id for the item.
 
 ***
 
-### proofObjectHash
+### proofObjectIntegrity {#proofobjectintegrity}
 
-> **proofObjectHash**: `string`
+> **proofObjectIntegrity**: `string`
 
-The associated hash for the item.
+The associated integrity for the item.
 
 ***
 
-### verifiableStorageId?
+### notarizationId? {#notarizationid}
 
-> `optional` **verifiableStorageId**: `string`
+> `optional` **notarizationId?**: `string`
 
-The verifiable storage id.
+The notarization id.
+
+***
+
+### vcContext? {#vccontext}
+
+> `optional` **vcContext?**: `"https://www.w3.org/2018/credentials/v1"` \| `"https://www.w3.org/ns/credentials/v2"`
+
+The verifiable credential context.

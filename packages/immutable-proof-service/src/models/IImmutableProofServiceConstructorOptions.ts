@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IImmutableProofServiceConfig } from "./IImmutableProofServiceConfig";
+import type { IImmutableProofServiceConfig } from "./IImmutableProofServiceConfig.js";
 
 /**
  * Options for the immutable proof service constructor.
@@ -13,10 +13,15 @@ export interface IImmutableProofServiceConstructorOptions {
 	immutableProofEntityStorageType?: string;
 
 	/**
-	 * The verifiable storage.
-	 * @default verifiable-storage
+	 * The notarization connector type.
+	 * @default notarization
 	 */
-	verifiableStorageType?: string;
+	notarizationConnectorType?: string;
+
+	/**
+	 * The logging component type.
+	 */
+	loggingComponentType?: string;
 
 	/**
 	 * The identity connector type.
@@ -25,10 +30,10 @@ export interface IImmutableProofServiceConstructorOptions {
 	identityConnectorType?: string;
 
 	/**
-	 * The background task connector type.
+	 * The background task component type.
 	 * @default background-task
 	 */
-	backgroundTaskConnectorType?: string;
+	backgroundTaskComponentType?: string;
 
 	/**
 	 * The event bus component type, defaults to no event bus.

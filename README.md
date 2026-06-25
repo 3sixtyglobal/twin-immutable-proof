@@ -1,13 +1,15 @@
 # TWIN Immutable Proof
 
-This mono-repository contains the packages to use with immutable proof in TWIN applications.
+This repository provides a focused set of components for creating, storing, and validating immutable proof records across distributed systems. The modules are designed to work together so teams can model proof data, run background processing, expose service endpoints, and integrate through a dedicated client.
+
+Together, the packages support consistent proof lifecycles from initial document hashing through verification and retrieval. This keeps implementations aligned across services while making it easier to adopt immutable proof capabilities in new environments.
 
 ## Packages
 
-- [immutable-proof-models](packages/immutable-proof-models/README.md) - Models which define the structure of the immutable proof contracts and connectors.
-- [immutable-proof-task](packages/immutable-proof-task/README.md) - Background task for generating the immutable proof.
-- [immutable-proof-service](packages/immutable-proof-service/README.md) - Immutable proof contract implementation and REST endpoint definitions.
-- [immutable-proof-rest-client](packages/immutable-proof-rest-client/README.md) - Immutable proof contract implementation which can connect to REST endpoints.
+- [immutable-proof-models](packages/immutable-proof-models/README.md) - Shared model contracts, schema types, and context constants for immutable proof workflows.
+- [immutable-proof-task](packages/immutable-proof-task/README.md) - Background proof processing that creates verifiable credentials from prepared payloads.
+- [immutable-proof-service](packages/immutable-proof-service/README.md) - Core proof lifecycle service with route helpers for create, get, and verify operations.
+- [immutable-proof-rest-client](packages/immutable-proof-rest-client/README.md) - HTTP client for calling immutable proof service endpoints from external components.
 
 ## Contributing
 

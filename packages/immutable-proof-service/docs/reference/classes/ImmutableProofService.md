@@ -12,7 +12,7 @@ Class for performing immutable proof operations.
 
 > **new ImmutableProofService**(`options?`): `ImmutableProofService`
 
-Create a new instance of ImmutableProofService.
+Creates an instance of ImmutableProofService.
 
 #### Parameters
 
@@ -28,29 +28,61 @@ The dependencies for the immutable proof connector.
 
 ## Properties
 
-### NAMESPACE
+### CLASS\_NAME {#class_name}
 
-> `readonly` `static` **NAMESPACE**: `string` = `"immutable-proof"`
-
-The namespace for the service.
-
-***
-
-### CLASS\_NAME
-
-> `readonly` **CLASS\_NAME**: `string`
+> `readonly` `static` **CLASS\_NAME**: `string`
 
 Runtime name for the class.
 
-#### Implementation of
-
-`IImmutableProofComponent.CLASS_NAME`
-
 ## Methods
 
-### create()
+### className() {#classname}
 
-> **create**(`document`, `userIdentity?`, `nodeIdentity?`): `Promise`\<`string`\>
+> **className**(): `string`
+
+Returns the class name of the component.
+
+#### Returns
+
+`string`
+
+The class name of the component.
+
+#### Implementation of
+
+`IImmutableProofComponent.className`
+
+***
+
+### start() {#start}
+
+> **start**(`nodeLoggingComponentType?`): `Promise`\<`void`\>
+
+The component needs to be started when the node is initialized.
+
+#### Parameters
+
+##### nodeLoggingComponentType?
+
+`string`
+
+The node logging component type.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+A promise that resolves when the background task handler has been registered.
+
+#### Implementation of
+
+`IImmutableProofComponent.start`
+
+***
+
+### create() {#create}
+
+> **create**(`document`, `options?`): `Promise`\<`string`\>
 
 Create a new proof.
 
@@ -62,17 +94,15 @@ Create a new proof.
 
 The document to create the proof for.
 
-##### userIdentity?
+##### options?
+
+Optional settings for the proof.
+
+###### deleteLock?
 
 `string`
 
-The identity to create the immutable proof operation with.
-
-##### nodeIdentity?
-
-`string`
-
-The node identity to use for vault operations.
+An ISO 8601 date-time string specifying when the notarization lock expires; if omitted no lock is applied.
 
 #### Returns
 
@@ -86,9 +116,9 @@ The id of the new proof.
 
 ***
 
-### get()
+### get() {#get}
 
-> **get**(`id`): `Promise`\<`IImmutableProof`\>
+> **get**(`id`): `Promise`\<`IImmutableProofCredential`\>
 
 Get a proof.
 
@@ -102,7 +132,7 @@ The id of the proof to get.
 
 #### Returns
 
-`Promise`\<`IImmutableProof`\>
+`Promise`\<`IImmutableProofCredential`\>
 
 The proof.
 
@@ -116,7 +146,7 @@ NotFoundError if the proof is not found.
 
 ***
 
-### verify()
+### verify() {#verify}
 
 > **verify**(`id`): `Promise`\<`IImmutableProofVerification`\>
 
@@ -146,11 +176,11 @@ NotFoundError if the proof is not found.
 
 ***
 
-### removeVerifiable()
+### remove() {#remove}
 
-> **removeVerifiable**(`id`, `nodeIdentity?`): `Promise`\<`void`\>
+> **remove**(`id`): `Promise`\<`void`\>
 
-Remove the verifiable storage for the proof.
+Remove the proof and its notarization.
 
 #### Parameters
 
@@ -158,19 +188,13 @@ Remove the verifiable storage for the proof.
 
 `string`
 
-The id of the proof to remove the storage from.
-
-##### nodeIdentity?
-
-`string`
-
-The node identity to use for vault operations.
+The id of the proof to remove.
 
 #### Returns
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the proof and its notarization have been removed.
 
 #### Throws
 
@@ -178,4 +202,34 @@ NotFoundError if the proof is not found.
 
 #### Implementation of
 
-`IImmutableProofComponent.removeVerifiable`
+`IImmutableProofComponent.remove`
+
+***
+
+### removeNotarization() {#removenotarization}
+
+> **removeNotarization**(`id`): `Promise`\<`void`\>
+
+Remove only the notarization for the proof, keeping the proof entity.
+
+#### Parameters
+
+##### id
+
+`string`
+
+The id of the proof to remove the notarization from.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+A promise that resolves when the notarization has been removed.
+
+#### Throws
+
+NotFoundError if the proof is not found.
+
+#### Implementation of
+
+`IImmutableProofComponent.removeNotarization`

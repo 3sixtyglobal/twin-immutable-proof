@@ -4,16 +4,22 @@
 
 The types of immutable proof data.
 
-## Type declaration
+## Type Declaration
 
-### ImmutableProof
+### ImmutableProof {#immutableproof}
 
 > `readonly` **ImmutableProof**: `"ImmutableProof"` = `"ImmutableProof"`
 
 Represents Immutable Proof.
 
-### ImmutableProofVerification
+### ImmutableProofVerification {#immutableproofverification}
 
 > `readonly` **ImmutableProofVerification**: `"ImmutableProofVerification"` = `"ImmutableProofVerification"`
 
 Represents Immutable Proof Verification.
+
+### ImmutableProofFailure {#immutableprooffailure}
+
+> `readonly` **ImmutableProofFailure**: `"ImmutableProofFailure"` = `"ImmutableProofFailure"`
+
+Represents Immutable Proof Failure.

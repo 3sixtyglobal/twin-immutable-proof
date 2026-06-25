@@ -2,7 +2,7 @@
 
 > **immutableProofVerify**(`httpRequestContext`, `componentName`, `request`): `Promise`\<`IImmutableProofVerifyResponse`\>
 
-Verify the proof.
+Verify a proof.
 
 ## Parameters
 

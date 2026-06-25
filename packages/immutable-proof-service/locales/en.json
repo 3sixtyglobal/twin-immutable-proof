@@ -5,8 +5,15 @@
 			"createFailed": "Creating the proof failed",
 			"getFailed": "Getting the proof failed",
 			"verifyFailed": "Verifying the proof failed",
-			"removeVerifiableFailed": "Removing verifiable entry from the Immutable Proof failed",
-			"proofNotFound": "The proof with the Id \"{notFoundId}\" was not found"
+			"removeFailed": "Removing the Immutable Proof failed",
+			"removeNotarizationFailed": "Removing notarization entry from the Immutable Proof failed",
+			"proofNotFound": "The proof with the Id \"{notFoundId}\" was not found",
+			"createProofFailed": "Creating the immutable proof failed"
+		}
+	},
+	"info": {
+		"immutableProofService": {
+			"createdProof": "The immutable proof with Id \"{proofId}\" has been created successfully"
 		}
 	}
 }

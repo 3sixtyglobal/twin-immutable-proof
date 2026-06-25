@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0.
 import type { IComponent } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import type { IImmutableProof } from "./IImmutableProof";
-import type { IImmutableProofVerification } from "./IImmutableProofVerification";
+import type { IImmutableProofCredential } from "./IImmutableProofCredential.js";
+import type { IImmutableProofVerification } from "./IImmutableProofVerification.js";
 
 /**
  * Interface describing an immutable proof contract.
@@ -12,15 +12,11 @@ export interface IImmutableProofComponent extends IComponent {
 	/**
 	 * Create a new proof.
 	 * @param document The document to create the proof for.
-	 * @param userIdentity The identity to create the immutable proof operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
+	 * @param options Optional settings for the proof.
+	 * @param options.deleteLock An ISO 8601 date-time string specifying when the notarization lock expires; if omitted no lock is applied.
 	 * @returns The id of the new proof.
 	 */
-	create(
-		document: IJsonLdNodeObject,
-		userIdentity?: string,
-		nodeIdentity?: string
-	): Promise<string>;
+	create(document: IJsonLdNodeObject, options?: { deleteLock?: string }): Promise<string>;
 
 	/**
 	 * Get a proof.
@@ -28,7 +24,7 @@ export interface IImmutableProofComponent extends IComponent {
 	 * @returns The proof.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	get(id: string): Promise<IImmutableProof>;
+	get(id: string): Promise<IImmutableProofCredential>;
 
 	/**
 	 * Verify a proof.
@@ -39,11 +35,18 @@ export interface IImmutableProofComponent extends IComponent {
 	verify(id: string): Promise<IImmutableProofVerification>;
 
 	/**
-	 * Remove the verifiable storage for the proof.
-	 * @param id The id of the proof to remove the storage from.
-	 * @param nodeIdentity The node identity to use for vault operations.
-	 * @returns Nothing.
+	 * Remove the proof and its notarization.
+	 * @param id The id of the proof to remove.
+	 * @returns A promise that resolves when the proof and its notarization have been removed.
 	 * @throws NotFoundError if the proof is not found.
 	 */
-	removeVerifiable(id: string, nodeIdentity?: string): Promise<void>;
+	remove(id: string): Promise<void>;
+
+	/**
+	 * Remove only the notarization for the proof, keeping the proof entity.
+	 * @param id The id of the proof to remove the notarization from.
+	 * @returns A promise that resolves when the notarization has been removed.
+	 * @throws NotFoundError if the proof is not found.
+	 */
+	removeNotarization(id: string): Promise<void>;
 }
