@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.0...immutable-proof-task-v0.9.0) (2026-06-25)
+
+
+### Features
+
+* release to production ([cb7ecff](https://github.com/iotaledger/twin-immutable-proof/commit/cb7ecff3e9a1ec8b4391d7efea4a58057b8b66c6))
+* release to production ([#58](https://github.com/iotaledger/twin-immutable-proof/issues/58)) ([e1d8c04](https://github.com/iotaledger/twin-immutable-proof/commit/e1d8c04c4d2c764980ed44b320c3ce6218c9b70b))
+
 ## [0.9.0-next.1](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.0-next.0...immutable-proof-task-v0.9.0-next.1) (2026-06-24)
 
 
