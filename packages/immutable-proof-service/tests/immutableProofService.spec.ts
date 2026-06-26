@@ -243,7 +243,9 @@ describe("ImmutableProofService", () => {
 		let failedTask;
 		for (let i = 0; i < 40; i++) {
 			failedTask = (await backgroundTaskStorage.getStore()).find(t => t.status === "failed");
-			if (failedTask) break;
+			if (failedTask) {
+				break;
+			}
 			await new Promise(resolve => setTimeout(resolve, 200));
 		}
 		expect(failedTask).toBeDefined();
