@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 /**
- * Interface describing additional data integrity fields attached to an immutable proof.
+ * Interface describing additional data integrity fields attached.
  */
 export interface IImmutableProofDataIntegrity {
 	/**
