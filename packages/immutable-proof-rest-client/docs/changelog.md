@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.1-next.3](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-rest-client-v0.9.1-next.2...immutable-proof-rest-client-v0.9.1-next.3) (2026-06-29)
+
+
+### Features
+
+* enhanced rest testing ([#64](https://github.com/iotaledger/twin-immutable-proof/issues/64)) ([5c389d6](https://github.com/iotaledger/twin-immutable-proof/commit/5c389d6da0292f6ceb3b23f5d1380fc9fb5c652c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.1-next.2 to 0.9.1-next.3
+
 ## [0.9.1-next.2](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-rest-client-v0.9.1-next.1...immutable-proof-rest-client-v0.9.1-next.2) (2026-06-26)
 
 
