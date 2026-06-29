@@ -1,10 +1,11 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import { BaseRestClient } from "@twin.org/api-core";
-import type {
-	IBaseRestClientConfig,
-	ICreatedResponse,
-	INoContentResponse
+import {
+	type IBaseRestClientConfig,
+	type ICreatedResponse,
+	type INoContentResponse,
+	HttpHeaderHelper
 } from "@twin.org/api-models";
 import { Guards } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
@@ -21,7 +22,7 @@ import type {
 	IImmutableProofVerifyResponse
 } from "@twin.org/immutable-proof-models";
 import { nameof } from "@twin.org/nameof";
-import { HeaderTypes, MimeTypes } from "@twin.org/web";
+import { HeaderTypes, HttpMethod, MimeTypes } from "@twin.org/web";
 
 /**
  * Client for performing immutable proof through to REST endpoints.
@@ -61,14 +62,18 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	): Promise<string> {
 		Guards.object(ImmutableProofRestClient.CLASS_NAME, nameof(document), document);
 
-		const response = await this.fetch<IImmutableProofCreateRequest, ICreatedResponse>("/", "POST", {
-			body: {
-				document,
-				options
+		const response = await this.fetch<IImmutableProofCreateRequest, ICreatedResponse>(
+			"/",
+			HttpMethod.POST,
+			{
+				body: {
+					document,
+					options
+				}
 			}
-		});
+		);
 
-		return response.headers[HeaderTypes.Location];
+		return HttpHeaderHelper.extractId(response.headers);
 	}
 
 	/**
@@ -82,7 +87,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 
 		const response = await this.fetch<IImmutableProofGetRequest, IImmutableProofGetResponse>(
 			"/:id",
-			"GET",
+			HttpMethod.GET,
 			{
 				headers: {
 					[HeaderTypes.Accept]: MimeTypes.JsonLd
@@ -107,7 +112,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 
 		const response = await this.fetch<IImmutableProofVerifyRequest, IImmutableProofVerifyResponse>(
 			"/:id/verify",
-			"GET",
+			HttpMethod.GET,
 			{
 				headers: {
 					[HeaderTypes.Accept]: MimeTypes.JsonLd
@@ -130,7 +135,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 	public async remove(id: string): Promise<void> {
 		Guards.stringValue(ImmutableProofRestClient.CLASS_NAME, nameof(id), id);
 
-		await this.fetch<IImmutableProofRemoveRequest, INoContentResponse>("/:id", "DELETE", {
+		await this.fetch<IImmutableProofRemoveRequest, INoContentResponse>("/:id", HttpMethod.DELETE, {
 			pathParams: {
 				id
 			}
@@ -148,7 +153,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 
 		await this.fetch<IImmutableProofRemoveNotarizationRequest, INoContentResponse>(
 			"/:id/notarization",
-			"DELETE",
+			HttpMethod.DELETE,
 			{
 				pathParams: {
 					id
