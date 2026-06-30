@@ -73,7 +73,7 @@ export class ImmutableProofRestClient extends BaseRestClient implements IImmutab
 			}
 		);
 
-		return HttpHeaderHelper.extractId(response.headers);
+		return HttpHeaderHelper.extractId(response.headers, `${this.getPathPrefix()}/:id`);
 	}
 
 	/**

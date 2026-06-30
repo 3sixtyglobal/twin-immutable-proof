@@ -1,7 +1,9 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import {
+	HttpContextIdKeys,
 	HttpHeaderHelper,
+	HttpUrlHelper,
 	type ICreatedResponse,
 	type IHttpRequestContext,
 	type INoContentResponse,
@@ -9,6 +11,7 @@ import {
 	type IRestRoute,
 	type ITag
 } from "@twin.org/api-models";
+import { ContextIdStore } from "@twin.org/context";
 import { ComponentFactory, Guards } from "@twin.org/core";
 import {
 	type IImmutableProofComponent,
@@ -59,7 +62,7 @@ export function generateRestRoutesImmutableProof(
 		method: "POST",
 		path: `${baseRouteName}/`,
 		handler: async (httpRequestContext, request) =>
-			immutableProofCreate(httpRequestContext, componentName, request),
+			immutableProofCreate(httpRequestContext, componentName, request, baseRouteName),
 		requestType: {
 			type: nameof<IImmutableProofCreateRequest>(),
 			examples: [
@@ -331,12 +334,14 @@ export function generateRestRoutesImmutableProof(
  * @param httpRequestContext The request context for the API.
  * @param componentName The name of the component to use in the routes.
  * @param request The request.
+ * @param baseRouteName The base route name for the API.
  * @returns The response object with additional http response properties.
  */
 export async function immutableProofCreate(
 	httpRequestContext: IHttpRequestContext,
 	componentName: string,
-	request: IImmutableProofCreateRequest
+	request: IImmutableProofCreateRequest,
+	baseRouteName: string
 ): Promise<ICreatedResponse> {
 	Guards.object<IImmutableProofCreateRequest>(ROUTES_SOURCE, nameof(request), request);
 	Guards.object(ROUTES_SOURCE, nameof(request.body.document), request.body.document);
@@ -344,8 +349,15 @@ export async function immutableProofCreate(
 	const component = ComponentFactory.get<IImmutableProofComponent>(componentName);
 	const result = await component.create(request.body.document, request.body.options);
 
+	const contextIds = await ContextIdStore.getContextIds();
+	const publicOrigin = contextIds?.[HttpContextIdKeys.PublicOrigin];
+
 	const headers: IHttpHeaders = {};
-	HttpHeaderHelper.buildId(headers, result);
+	HttpHeaderHelper.buildId(
+		headers,
+		result,
+		HttpUrlHelper.combineOriginPath(publicOrigin, `${baseRouteName}/:id`)
+	);
 
 	return {
 		statusCode: HttpStatusCode.created,
