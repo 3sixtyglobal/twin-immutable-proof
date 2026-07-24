@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.1-next.6](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.1-next.5...immutable-proof-task-v0.9.1-next.6) (2026-07-24)
+
+
+### Bug Fixes
+
+* reduce thread overhead ([#74](https://github.com/iotaledger/twin-immutable-proof/issues/74)) ([7d3763b](https://github.com/iotaledger/twin-immutable-proof/commit/7d3763beb38da8c30dae48ee4db0f7241c72ca79))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.1-next.5 to 0.9.1-next.6
+
 ## [0.9.1-next.5](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.1-next.4...immutable-proof-task-v0.9.1-next.5) (2026-07-24)
 
 
