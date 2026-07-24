@@ -6,7 +6,7 @@ import {
 	initSchema as initSchemaBackgroundTask
 } from "@twin.org/background-task-service";
 import { ContextIdStore } from "@twin.org/context";
-import { ComponentFactory, Converter, ObjectHelper, RandomHelper } from "@twin.org/core";
+import { ComponentFactory, Converter, Is, ObjectHelper, RandomHelper } from "@twin.org/core";
 import { JsonLdProcessor } from "@twin.org/data-json-ld";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
 import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
@@ -158,6 +158,12 @@ describe("ImmutableProofService", () => {
 		expect(service).toBeDefined();
 	});
 
+	test("Can fail to create an instance of the service with out of range task options", async () => {
+		expect(() => new ImmutableProofService({ config: { taskRetryCount: -1 } })).toThrow();
+		expect(() => new ImmutableProofService({ config: { taskRetryInterval: 0 } })).toThrow();
+		expect(() => new ImmutableProofService({ config: { taskFailureRetainFor: -2 } })).toThrow();
+	});
+
 	test("Can create a proof that is pending", async () => {
 		const service = new ImmutableProofService();
 		await service.start();
@@ -226,7 +232,9 @@ describe("ImmutableProofService", () => {
 	test("Can fail to get a proof when there is no identity connector", async () => {
 		await backgroundTaskService.start();
 
-		const service = new ImmutableProofService();
+		// Retries are disabled so the first failure is terminal, the mocked clock
+		// is frozen so a scheduled retry would otherwise never become due.
+		const service = new ImmutableProofService({ config: { taskRetryCount: 0 } });
 		await service.start();
 
 		const proofId = await service.create({
@@ -694,5 +702,140 @@ describe("ImmutableProofService", () => {
 		// The task created a notarization but should have cleaned it up since the proof is gone
 		expect(await notarizationStorage.getStore()).toHaveLength(0);
 		expect(await proofStorage.getStore()).toHaveLength(0);
+	});
+
+	test("Can create a proof task with retry and retention options", async () => {
+		const service = new ImmutableProofService();
+		await service.start();
+
+		await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		const taskStore = await backgroundTaskStorage.getStore();
+		expect(taskStore).toHaveLength(1);
+		expect(taskStore[0].retriesRemaining).toEqual(5);
+		expect(taskStore[0].retryInterval).toEqual(5000);
+		expect(taskStore[0].retainFor).toEqual(604800000);
+	});
+
+	test("Can create a proof task with configured retry and retention options", async () => {
+		const service = new ImmutableProofService({
+			config: { taskRetryCount: 2, taskRetryInterval: 1000, taskFailureRetainFor: 60000 }
+		});
+		await service.start();
+
+		await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		const taskStore = await backgroundTaskStorage.getStore();
+		expect(taskStore).toHaveLength(1);
+		expect(taskStore[0].retriesRemaining).toEqual(2);
+		expect(taskStore[0].retryInterval).toEqual(1000);
+		expect(taskStore[0].retainFor).toEqual(60000);
+	});
+
+	test("Removes the task record once a proof has been issued", async () => {
+		// Mock the module helper to execute the method in the same thread, so we don't have to create an engine
+		ModuleHelper.execModuleMethodThreadMessage = vi
+			.fn()
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown) => {
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
+
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await waitForProofGeneration();
+
+		// The task record is removed by finaliseTask once the result has been processed.
+		let taskStore;
+		for (let i = 0; i < 40; i++) {
+			taskStore = await backgroundTaskStorage.getStore();
+			if (taskStore.length === 0) {
+				break;
+			}
+			await new Promise(resolve => setTimeout(resolve, 200));
+		}
+		expect(taskStore).toHaveLength(0);
+	});
+
+	test("Retains the task record and leaves the proof unissued when the notarization fails", async () => {
+		// Mock the module helper to execute the method in the same thread, so we don't have to create an engine
+		ModuleHelper.execModuleMethodThreadMessage = vi
+			.fn()
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown) => {
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
+
+		NotarizationConnectorFactory.register(
+			"notarization",
+			() =>
+				({
+					className: () => "failing-notarization",
+					create: async () => {
+						throw new Error("ledger unavailable");
+					}
+				}) as never
+		);
+
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		// The failure is reported in the task result instead of a thrown error, so the
+		// task engine does not retry, the record is retained for later inspection.
+		let failedResultTask;
+		for (let i = 0; i < 40; i++) {
+			failedResultTask = (await backgroundTaskStorage.getStore()).find(
+				t =>
+					t.status === "success" &&
+					Is.object<{ notarizationError?: unknown }>(t.result) &&
+					Is.object(t.result.notarizationError)
+			);
+			if (failedResultTask) {
+				break;
+			}
+			await new Promise(resolve => setTimeout(resolve, 200));
+		}
+		expect(failedResultTask).toBeDefined();
+
+		// The proof remains unissued and no notarization was stored.
+		expect(await notarizationStorage.getStore()).toHaveLength(0);
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].notarizationId).toBeUndefined();
+
+		const result = await service.verify(proofId);
+		expect(result).toMatchObject({ verified: false, failure: "notIssued" });
 	});
 });

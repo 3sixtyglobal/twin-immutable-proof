@@ -1,5 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
+import type { IError } from "@twin.org/core";
 import type { IDidVerifiableCredential } from "@twin.org/standards-w3c-did";
 
 /**
@@ -18,6 +19,14 @@ export interface IImmutableProofTaskResult {
 
 	/**
 	 * The notarization id returned after storing the proof.
+	 * Not set when the notarization phase failed, see notarizationError.
 	 */
-	notarizationId: string;
+	notarizationId?: string;
+
+	/**
+	 * Set when the notarization phase failed. The failure is returned in the result
+	 * instead of being thrown, because the notarization may have reached the ledger
+	 * even though the call failed, and a retry could create a duplicate on-chain object.
+	 */
+	notarizationError?: IError;
 }

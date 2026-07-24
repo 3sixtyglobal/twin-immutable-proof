@@ -41,4 +41,10 @@ export interface IImmutableProofTaskPayload {
 	 * If omitted, no deletion lock is applied.
 	 */
 	deleteLockDateTime?: string;
+
+	/**
+	 * The logging component type to use for step logging inside the task.
+	 * If omitted, no step logging is performed.
+	 */
+	loggingComponentType?: string;
 }

@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { Converter, ObjectHelper } from "@twin.org/core";
+import { ComponentFactory, Converter, GeneralError, ObjectHelper } from "@twin.org/core";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
 import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
 import { ImmutableProofContexts, ImmutableProofTypes } from "@twin.org/immutable-proof-models";
@@ -12,7 +12,7 @@ import {
 } from "@twin.org/notarization-connector-entity-storage";
 import { NotarizationConnectorFactory } from "@twin.org/notarization-models";
 import { setupTestEnv, TEST_NODE_IDENTITY } from "./setupTestEnv.js";
-import { processProofTask } from "../src/immutableProofTask.js";
+import { processProofTask } from "../src/processProofTask.js";
 
 let notarizationStorage: MemoryEntityStorageConnector<Notarization>;
 
@@ -101,5 +101,93 @@ describe("ImmutableProofTask", () => {
 		const notarizationStore = await notarizationStorage.getStore();
 		expect(notarizationStore).toHaveLength(1);
 		expect(notarizationStore[0].deleteLockDateTime).toEqual(deleteLock);
+	});
+
+	test("Returns the failure in the result instead of throwing when the notarization fails", async () => {
+		NotarizationConnectorFactory.register(
+			"notarization",
+			() =>
+				({
+					className: () => "failing-notarization",
+					create: async () => {
+						throw new GeneralError("failingNotarization", "ledgerUnavailable");
+					}
+				}) as never
+		);
+
+		const result = await processProofTask(undefined as never, {
+			proofId: TEST_PROOF_ID,
+			identity: TEST_NODE_IDENTITY,
+			identityConnectorType: "identity",
+			notarizationConnectorType: "notarization",
+			verificationMethodId: "immutable-proof-assertion",
+			credentialSubject: {
+				"@context": [ImmutableProofContexts.Context, ImmutableProofContexts.ContextCommon],
+				type: ImmutableProofTypes.ImmutableProof,
+				id: TEST_PROOF_OBJECT_ID,
+				proofIntegrity: TEST_PROOF_INTEGRITY
+			}
+		});
+
+		expect(result.proofId).toEqual(TEST_PROOF_ID);
+		expect(result.verifiableCredential).toBeDefined();
+		expect(result.notarizationId).toBeUndefined();
+		expect(result.notarizationError).toBeDefined();
+		expect(result.notarizationError?.message).toEqual("failingNotarization.ledgerUnavailable");
+	});
+
+	test("Throws when a failure happens before the notarization phase", async () => {
+		await expect(
+			processProofTask(undefined as never, {
+				proofId: TEST_PROOF_ID,
+				identity: TEST_NODE_IDENTITY,
+				identityConnectorType: "unknown-identity-connector",
+				notarizationConnectorType: "notarization",
+				verificationMethodId: "immutable-proof-assertion",
+				credentialSubject: {
+					"@context": [ImmutableProofContexts.Context, ImmutableProofContexts.ContextCommon],
+					type: ImmutableProofTypes.ImmutableProof,
+					id: TEST_PROOF_OBJECT_ID,
+					proofIntegrity: TEST_PROOF_INTEGRITY
+				}
+			})
+		).rejects.toThrow();
+	});
+
+	test("Logs the task steps when a logging component type is supplied", async () => {
+		const logEntries: { level: string; message: string }[] = [];
+		ComponentFactory.register(
+			"test-task-logging",
+			() =>
+				({
+					className: () => "test-task-logging",
+					log: async (entry: { level: string; message: string }) => {
+						logEntries.push(entry);
+					}
+				}) as never
+		);
+
+		const result = await processProofTask(undefined as never, {
+			proofId: TEST_PROOF_ID,
+			identity: TEST_NODE_IDENTITY,
+			identityConnectorType: "identity",
+			notarizationConnectorType: "notarization",
+			verificationMethodId: "immutable-proof-assertion",
+			credentialSubject: {
+				"@context": [ImmutableProofContexts.Context, ImmutableProofContexts.ContextCommon],
+				type: ImmutableProofTypes.ImmutableProof,
+				id: TEST_PROOF_OBJECT_ID,
+				proofIntegrity: TEST_PROOF_INTEGRITY
+			},
+			loggingComponentType: "test-task-logging"
+		});
+
+		expect(result.notarizationId).toBeDefined();
+		expect(logEntries.map(entry => entry.message)).toEqual([
+			"taskEngineStarted",
+			"taskVerifiableCredentialCreated",
+			"taskNotarizationComplete"
+		]);
+		expect(logEntries.every(entry => entry.level === "debug")).toEqual(true);
 	});
 });
