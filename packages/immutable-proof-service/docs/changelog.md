@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.1-next.5](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.9.1-next.4...immutable-proof-service-v0.9.1-next.5) (2026-07-24)
+
+
+### Features
+
+* add proof task retries, failure retention and step logging ([#71](https://github.com/iotaledger/twin-immutable-proof/issues/71)) ([60e21eb](https://github.com/iotaledger/twin-immutable-proof/commit/60e21ebb8a143e19dd21db5aac35c6d0f1585345))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.1-next.4 to 0.9.1-next.5
+    * @twin.org/immutable-proof-task bumped from 0.9.1-next.4 to 0.9.1-next.5
+
 ## [0.9.1-next.4](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.9.1-next.3...immutable-proof-service-v0.9.1-next.4) (2026-06-30)
 
 
