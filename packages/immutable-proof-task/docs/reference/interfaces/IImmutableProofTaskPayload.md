@@ -58,3 +58,12 @@ The notarization connector type.
 
 An ISO 8601 date-time string specifying when the notarization lock expires.
 If omitted, no deletion lock is applied.
+
+***
+
+### loggingComponentType? {#loggingcomponenttype}
+
+> `optional` **loggingComponentType?**: `string`
+
+The logging component type to use for step logging inside the task.
+If omitted, no step logging is performed.
