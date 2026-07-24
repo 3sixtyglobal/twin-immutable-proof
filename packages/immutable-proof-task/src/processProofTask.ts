@@ -4,7 +4,7 @@ import { ContextIdStore } from "@twin.org/context";
 import { BaseError, ComponentFactory, Guards, Is, ObjectHelper } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import { EngineCore } from "@twin.org/engine-core";
-import type { IEngineCore, IEngineCoreClone } from "@twin.org/engine-models";
+import { type IEngineCore, type IEngineCoreClone, EngineLogLevel } from "@twin.org/engine-models";
 import { IdentityConnectorFactory } from "@twin.org/identity-models";
 import type { ILoggingComponent } from "@twin.org/logging-models";
 import { nameof } from "@twin.org/nameof";
@@ -60,13 +60,31 @@ export async function processProofTask(
 			// If the clone data is not empty we use it to create a new engine as it's a new thread
 			// otherwise we assume the factories are already populated.
 			engine = new EngineCore();
-			engine.populateClone(engineCloneData, await ContextIdStore.getContextIds(), true);
+			engine.populateClone(engineCloneData, await ContextIdStore.getContextIds(), {
+				logLevel: EngineLogLevel.Error,
+				types: [
+					"loggingComponent",
+					"loggingConnector",
+					"identityConnector",
+					"notarizationConnector",
+					"vaultConnector",
+					"entityStorageConnector",
+					"platformComponent",
+					"dltConfig"
+				],
+				entityTypes: [
+					"LogEntry",
+					"LogEntryError",
+					"IdentityDocument",
+					"Notarization",
+					"VaultKey",
+					"VaultSecret"
+				]
+			});
 			await engine.start();
 		}
 
-		logging = Is.stringValue(payload.loggingComponentType)
-			? ComponentFactory.getIfExists<ILoggingComponent>(payload.loggingComponentType)
-			: undefined;
+		logging = ComponentFactory.getIfExists<ILoggingComponent>(payload.loggingComponentType);
 
 		await logging?.log({
 			level: "debug",
