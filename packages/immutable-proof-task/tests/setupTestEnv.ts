@@ -24,7 +24,7 @@ import * as dotenv from "dotenv";
 console.debug("Setting up test environment from .env and .env.dev files");
 
 dotenv.config({
-	path: [path.join(__dirname, ".env"), path.join(__dirname, ".env.dev")],
+	path: [path.join(__dirname, ".env.dev"), path.join(__dirname, ".env")],
 	quiet: true
 });
 

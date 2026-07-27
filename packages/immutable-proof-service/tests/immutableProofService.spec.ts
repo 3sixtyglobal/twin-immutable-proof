@@ -6,7 +6,7 @@ import {
 	initSchema as initSchemaBackgroundTask
 } from "@twin.org/background-task-service";
 import { ContextIdStore } from "@twin.org/context";
-import { ComponentFactory, Converter, ObjectHelper, RandomHelper } from "@twin.org/core";
+import { ComponentFactory, Converter, Is, ObjectHelper, RandomHelper } from "@twin.org/core";
 import { JsonLdProcessor } from "@twin.org/data-json-ld";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
 import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
@@ -135,10 +135,6 @@ describe("ImmutableProofService", () => {
 
 		Date.now = vi.fn().mockImplementation(() => FIRST_TICK);
 		let counter = 1;
-		// RandomHelper.generate = vi
-		// 	.fn()
-		// 	.mockImplementation(length => new Uint8Array(length).fill(counter++));
-
 		RandomHelper.generateUuidV7 = vi
 			.fn()
 			.mockImplementation((format: string) =>
@@ -157,99 +153,117 @@ describe("ImmutableProofService", () => {
 		await memoryLoggingEntityStorage.teardown();
 	});
 
-	// test("Can create an instance of the service", async () => {
-	// 	const service = new ImmutableProofService();
-	// 	expect(service).toBeDefined();
-	// });
+	test("Can create an instance of the service", async () => {
+		const service = new ImmutableProofService();
+		expect(service).toBeDefined();
+	});
 
-	// test("Can create a proof that is pending", async () => {
-	// 	const service = new ImmutableProofService();
-	// 	await service.start();
+	test("Can fail to create an instance of the service with out of range task options", async () => {
+		expect(() => new ImmutableProofService({ config: { taskRetryCount: -1 } })).toThrow();
+		expect(() => new ImmutableProofService({ config: { taskRetryInterval: 0 } })).toThrow();
+		expect(() => new ImmutableProofService({ config: { taskFailureRetainFor: -2 } })).toThrow();
+	});
 
-	// 	const proofId = await service.create({
-	// 		"@context": "https://schema.org",
-	// 		type: "Person",
-	// 		id: "uuid:1234567890",
-	// 		name: "John Smith"
-	// 	});
-	// 	expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
+	test("Can create a proof that is pending", async () => {
+		const service = new ImmutableProofService();
+		await service.start();
 
-	// 	const proofStore = proofStorage.getStore();
-	// 	expect(proofStore).toEqual([
-	// 		{
-	// 			id: "01010101010101010101010101010101",
-	// 			dateCreated: "2024-08-22T11:55:16.271Z",
-	// 			proofObjectId: "uuid:1234567890",
-	// 			proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
-	// 		}
-	// 	]);
-	// });
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+		expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
 
-	// test("Can get a proof that has not been issued", async () => {
-	// 	const service = new ImmutableProofService();
-	// 	await service.start();
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore).toEqual([
+			{
+				id: "01010101010101010101010101010101",
+				dateCreated: "2024-08-22T11:55:16.271Z",
+				organizationId: TEST_ORGANIZATION_IDENTITY,
+				proofObjectId: "uuid:1234567890",
+				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
+			}
+		]);
+	});
 
-	// 	const proofId = await service.create({
-	// 		"@context": "https://schema.org",
-	// 		type: "Person",
-	// 		id: "uuid:1234567890",
-	// 		name: "John Smith"
-	// 	});
-	// 	expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
+	test("Can get a proof that has not been issued", async () => {
+		const service = new ImmutableProofService();
+		await service.start();
 
-	// 	const proofStore = proofStorage.getStore();
-	// 	expect(proofStore).toEqual([
-	// 		{
-	// 			id: "01010101010101010101010101010101",
-	// 			proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
-	// 			dateCreated: "2024-08-22T11:55:16.271Z",
-	// 			proofObjectId: "uuid:1234567890"
-	// 		}
-	// 	]);
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+		expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
 
-	// 	const proof = await service.get(proofId);
-	// 	expect(proof).toEqual({
-	// 		"@context": [
-	// 			"https://schema.twindev.org/immutable-proof/",
-	// 			"https://schema.twindev.org/common/",
-	// 			"https://www.w3.org/2018/credentials/v1"
-	// 		],
-	// 		type: ["VerifiableCredential", "ImmutableProof"],
-	// 		id: "immutable-proof:01010101010101010101010101010101",
-	// 		credentialSubject: {
-	// 			id: "uuid:1234567890",
-	// 			proofIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
-	// 		}
-	// 	});
-	// });
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore).toEqual([
+			{
+				id: "01010101010101010101010101010101",
+				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
+				dateCreated: "2024-08-22T11:55:16.271Z",
+				organizationId: TEST_ORGANIZATION_IDENTITY,
+				proofObjectId: "uuid:1234567890"
+			}
+		]);
 
-	// test("Can fail to get a proof when there is no identity connector", async () => {
-	// 	await backgroundTaskService.start();
+		const proof = await service.get(proofId);
+		expect(proof).toEqual({
+			"@context": [
+				"https://www.w3.org/2018/credentials/v1",
+				"https://schema.twindev.org/immutable-proof/",
+				"https://schema.twindev.org/common/"
+			],
+			type: ["VerifiableCredential", "ImmutableProof"],
+			id: "immutable-proof:01010101010101010101010101010101",
+			issuer: TEST_ORGANIZATION_IDENTITY,
+			issuanceDate: "2024-08-22T11:55:16.271Z",
+			credentialSubject: {
+				id: "uuid:1234567890",
+				proofIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
+			}
+		});
+	});
 
-	// 	const service = new ImmutableProofService();
-	// 	await service.start();
+	test("Can fail to get a proof when there is no identity connector", async () => {
+		await backgroundTaskService.start();
 
-	// 	const proofId = await service.create({
-	// 		"@context": "https://schema.org",
-	// 		type: "Person",
-	// 		id: "uuid:1234567890",
-	// 		name: "John Smith"
-	// 	});
-	// 	expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
+		// Retries are disabled so the first failure is terminal, the mocked clock
+		// is frozen so a scheduled retry would otherwise never become due.
+		const service = new ImmutableProofService({ config: { taskRetryCount: 0 } });
+		await service.start();
 
-	// 	await waitForProofGeneration(1, false);
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+		expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
 
-	// 	const failLogEntry = memoryLoggingEntityStorage
-	// 		.getStore()
-	// 		.find(entry => entry.message === "createProofFailed");
-	// 	expect(failLogEntry).toBeDefined();
+		// Poll the background task store for a failed task. The task runs in a worker thread
+		// that has its own globalThis, so factory registrations from the main thread are not
+		// visible — IdentityConnectorFactory.get("identity") throws factory.noGet.
+		let failedTask;
+		for (let i = 0; i < 40; i++) {
+			failedTask = (await backgroundTaskStorage.getStore()).find(t => t.status === "failed");
+			if (failedTask) {
+				break;
+			}
+			await new Promise(resolve => setTimeout(resolve, 200));
+		}
+		expect(failedTask).toBeDefined();
 
-	// 	expect(failLogEntry?.error?.[0].message).toEqual("factory.noGet");
-	// 	expect(failLogEntry?.error?.[0].properties).toEqual({
-	// 		typeName: "identity-connector",
-	// 		name: "identity"
-	// 	});
-	// });
+		expect(failedTask?.error?.message).toEqual("factory.noGet");
+		expect(failedTask?.error?.properties).toEqual({
+			typeName: "identity-connector",
+			name: "identity"
+		});
+	});
 
 	test("Can get a proof that has been issued", async () => {
 		// Mock the module helper to execute the method in the same thread, so we don't have to create an engine
@@ -278,14 +292,16 @@ describe("ImmutableProofService", () => {
 		await waitForProofGeneration();
 
 		const proofStore = await proofStorage.getStore();
+		const notarizationId = proofStore[0]?.notarizationId ?? "";
+		const notarizationUUID = notarizationId.split(":").pop() ?? "";
+
 		expect(proofStore).toEqual([
 			{
 				id: "01010101010101010101010101010101",
-				organizationId:
-					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+				organizationId: TEST_ORGANIZATION_IDENTITY,
 				proofObjectId: "uuid:1234567890",
 				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
-				notarizationId: "notarization:entity-storage:04040404040404040404040404040404",
+				notarizationId,
 				dateCreated: "2024-08-22T11:55:16.271Z",
 				vcContext: "https://www.w3.org/2018/credentials/v1"
 			}
@@ -294,7 +310,7 @@ describe("ImmutableProofService", () => {
 		const notarizationStore = await notarizationStorage.getStore();
 		expect(notarizationStore).toEqual([
 			{
-				id: "04040404040404040404040404040404",
+				id: notarizationUUID,
 				mode: "locked",
 				dateCreated: expect.any(String),
 				data: expect.any(String),
@@ -323,8 +339,7 @@ describe("ImmutableProofService", () => {
 			],
 			id: "immutable-proof:01010101010101010101010101010101",
 			issuanceDate: "2024-08-22T11:55:16.271Z",
-			issuer:
-				"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+			issuer: TEST_ORGANIZATION_IDENTITY,
 			type: ["VerifiableCredential", "ImmutableProof"],
 			credentialSubject: {
 				id: "uuid:1234567890",
@@ -337,7 +352,7 @@ describe("ImmutableProofService", () => {
 				proofPurpose: "assertionMethod",
 				proofValue: expect.any(String),
 				verificationMethod: expect.any(String),
-				notarizationId: "notarization:entity-storage:04040404040404040404040404040404"
+				notarizationId
 			}
 		});
 	});
@@ -364,8 +379,7 @@ describe("ImmutableProofService", () => {
 				"https://schema.twindev.org/common/"
 			],
 			id: "immutable-proof:01010101010101010101010101010101",
-			issuer:
-				"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+			issuer: TEST_ORGANIZATION_IDENTITY,
 			issuanceDate: "2024-08-22T11:55:16.271Z",
 			type: ["VerifiableCredential", "ImmutableProof"],
 			credentialSubject: {
@@ -381,8 +395,7 @@ describe("ImmutableProofService", () => {
 				dateCreated: "2024-08-22T11:55:16.271Z",
 				proofObjectId: "uuid:1234567890",
 				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
-				organizationId:
-					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
+				organizationId: TEST_ORGANIZATION_IDENTITY
 			}
 		]);
 
@@ -426,7 +439,7 @@ describe("ImmutableProofService", () => {
 		const notarizationStore = await notarizationStorage.getStore();
 		expect(notarizationStore).toEqual([
 			{
-				id: "04040404040404040404040404040404",
+				id: expect.any(String),
 				mode: "locked",
 				dateCreated: expect.any(String),
 				data: expect.any(String),
@@ -456,6 +469,10 @@ describe("ImmutableProofService", () => {
 
 		await waitForProofGeneration();
 
+		const proofStore = await proofStorage.getStore();
+		const notarizationId = proofStore[0]?.notarizationId ?? "";
+		const notarizationUUID = notarizationId.split(":").pop() ?? "";
+
 		const proof = await service.get(proofId);
 		expect(proof).toEqual({
 			"@context": [
@@ -467,8 +484,7 @@ describe("ImmutableProofService", () => {
 			id: "immutable-proof:01010101010101010101010101010101",
 			type: ["VerifiableCredential", "ImmutableProof"],
 			issuanceDate: "2024-08-22T11:55:16.271Z",
-			issuer:
-				"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+			issuer: TEST_ORGANIZATION_IDENTITY,
 			proof: {
 				type: "DataIntegrityProof",
 				created: "2024-08-22T11:55:16.271Z",
@@ -476,7 +492,7 @@ describe("ImmutableProofService", () => {
 				proofPurpose: "assertionMethod",
 				proofValue: expect.any(String),
 				verificationMethod: expect.any(String),
-				notarizationId: "notarization:entity-storage:04040404040404040404040404040404"
+				notarizationId
 			},
 			credentialSubject: {
 				id: "uuid:1234567890",
@@ -484,16 +500,14 @@ describe("ImmutableProofService", () => {
 			}
 		});
 
-		const proofStore = await proofStorage.getStore();
 		expect(proofStore).toEqual([
 			{
 				id: "01010101010101010101010101010101",
 				proofObjectId: "uuid:1234567890",
 				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
-				notarizationId: "notarization:entity-storage:04040404040404040404040404040404",
+				notarizationId,
 				dateCreated: "2024-08-22T11:55:16.271Z",
-				organizationId:
-					"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+				organizationId: TEST_ORGANIZATION_IDENTITY,
 				vcContext: "https://www.w3.org/2018/credentials/v1"
 			}
 		]);
@@ -501,7 +515,7 @@ describe("ImmutableProofService", () => {
 		const notarizationStore = await notarizationStorage.getStore();
 		expect(notarizationStore).toEqual([
 			{
-				id: "04040404040404040404040404040404",
+				id: notarizationUUID,
 				mode: "locked",
 				dateCreated: expect.any(String),
 				data: expect.any(String),
@@ -688,5 +702,140 @@ describe("ImmutableProofService", () => {
 		// The task created a notarization but should have cleaned it up since the proof is gone
 		expect(await notarizationStorage.getStore()).toHaveLength(0);
 		expect(await proofStorage.getStore()).toHaveLength(0);
+	});
+
+	test("Can create a proof task with retry and retention options", async () => {
+		const service = new ImmutableProofService();
+		await service.start();
+
+		await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		const taskStore = await backgroundTaskStorage.getStore();
+		expect(taskStore).toHaveLength(1);
+		expect(taskStore[0].retriesRemaining).toEqual(5);
+		expect(taskStore[0].retryInterval).toEqual(5000);
+		expect(taskStore[0].retainFor).toEqual(604800000);
+	});
+
+	test("Can create a proof task with configured retry and retention options", async () => {
+		const service = new ImmutableProofService({
+			config: { taskRetryCount: 2, taskRetryInterval: 1000, taskFailureRetainFor: 60000 }
+		});
+		await service.start();
+
+		await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		const taskStore = await backgroundTaskStorage.getStore();
+		expect(taskStore).toHaveLength(1);
+		expect(taskStore[0].retriesRemaining).toEqual(2);
+		expect(taskStore[0].retryInterval).toEqual(1000);
+		expect(taskStore[0].retainFor).toEqual(60000);
+	});
+
+	test("Removes the task record once a proof has been issued", async () => {
+		// Mock the module helper to execute the method in the same thread, so we don't have to create an engine
+		ModuleHelper.execModuleMethodThreadMessage = vi
+			.fn()
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown) => {
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
+
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await waitForProofGeneration();
+
+		// The task record is removed by finaliseTask once the result has been processed.
+		let taskStore;
+		for (let i = 0; i < 40; i++) {
+			taskStore = await backgroundTaskStorage.getStore();
+			if (taskStore.length === 0) {
+				break;
+			}
+			await new Promise(resolve => setTimeout(resolve, 200));
+		}
+		expect(taskStore).toHaveLength(0);
+	});
+
+	test("Retains the task record and leaves the proof unissued when the notarization fails", async () => {
+		// Mock the module helper to execute the method in the same thread, so we don't have to create an engine
+		ModuleHelper.execModuleMethodThreadMessage = vi
+			.fn()
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown) => {
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
+
+		NotarizationConnectorFactory.register(
+			"notarization",
+			() =>
+				({
+					className: () => "failing-notarization",
+					create: async () => {
+						throw new Error("ledger unavailable");
+					}
+				}) as never
+		);
+
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		// The failure is reported in the task result instead of a thrown error, so the
+		// task engine does not retry, the record is retained for later inspection.
+		let failedResultTask;
+		for (let i = 0; i < 40; i++) {
+			failedResultTask = (await backgroundTaskStorage.getStore()).find(
+				t =>
+					t.status === "success" &&
+					Is.object<{ notarizationError?: unknown }>(t.result) &&
+					Is.object(t.result.notarizationError)
+			);
+			if (failedResultTask) {
+				break;
+			}
+			await new Promise(resolve => setTimeout(resolve, 200));
+		}
+		expect(failedResultTask).toBeDefined();
+
+		// The proof remains unissued and no notarization was stored.
+		expect(await notarizationStorage.getStore()).toHaveLength(0);
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].notarizationId).toBeUndefined();
+
+		const result = await service.verify(proofId);
+		expect(result).toMatchObject({ verified: false, failure: "notIssued" });
 	});
 });

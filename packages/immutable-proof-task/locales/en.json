@@ -1,1 +1,19 @@
-{}
+{
+	"debug": {
+		"immutableProofTask": {
+			"taskEngineStarted": "The proof task engine started for proof \"{proofId}\" in {elapsedMs}ms",
+			"taskVerifiableCredentialCreated": "The verifiable credential for proof \"{proofId}\" was created in {elapsedMs}ms",
+			"taskNotarizationComplete": "The notarization for proof \"{proofId}\" completed in {elapsedMs}ms, total task time {totalElapsedMs}ms"
+		}
+	},
+	"error": {
+		"immutableProofTask": {
+			"taskNotarizationFailed": "The notarization for proof \"{proofId}\" failed after {elapsedMs}ms, the task will not be retried as the notarization may already be on the ledger"
+		}
+	},
+	"warn": {
+		"immutableProofTask": {
+			"taskEngineStopFailed": "Stopping the task engine for proof \"{proofId}\" failed, the task result is unaffected"
+		}
+	}
+}

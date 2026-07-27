@@ -76,6 +76,24 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	private static readonly _NAMESPACE: string = "immutable-proof";
 
 	/**
+	 * The default number of times to retry a proof task when it fails before the notarization phase.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_TASK_RETRY_COUNT: number = 5;
+
+	/**
+	 * The default interval in milliseconds to wait between proof task retries.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_TASK_RETRY_INTERVAL: number = 5000;
+
+	/**
+	 * The default time in milliseconds to retain the record of a failed proof task, 7 days.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_TASK_FAILURE_RETAIN_FOR: number = 604800000;
+
+	/**
 	 * The configuration for the connector.
 	 * @internal
 	 */
@@ -136,6 +154,30 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	private readonly _identityConnectorType: string;
 
 	/**
+	 * The logging component type, passed to the proof task for step logging.
+	 * @internal
+	 */
+	private readonly _loggingComponentType?: string;
+
+	/**
+	 * The number of times to retry a proof task when it fails before the notarization phase.
+	 * @internal
+	 */
+	private readonly _taskRetryCount: number;
+
+	/**
+	 * The interval in milliseconds to wait between proof task retries.
+	 * @internal
+	 */
+	private readonly _taskRetryInterval: number;
+
+	/**
+	 * The time in milliseconds to retain the record of a failed proof task.
+	 * @internal
+	 */
+	private readonly _taskFailureRetainFor: number;
+
+	/**
 	 * Creates an instance of ImmutableProofService.
 	 * @param options The dependencies for the immutable proof connector.
 	 */
@@ -147,6 +189,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		this._notarizationConnectorType = options?.notarizationConnectorType ?? "notarization";
 		this._notarizationConnector = NotarizationConnectorFactory.get(this._notarizationConnectorType);
 
+		this._loggingComponentType = options?.loggingComponentType;
 		this._logging = ComponentFactory.getIfExists<ILoggingComponent>(options?.loggingComponentType);
 
 		this._identityConnectorType = options?.identityConnectorType ?? "identity";
@@ -163,7 +206,64 @@ export class ImmutableProofService implements IImmutableProofComponent {
 
 		this._config = options?.config ?? {};
 
+		// Validate the task options at construction, otherwise out of range values only
+		// surface as background task component errors on every proof creation.
+		const validationErrors: IValidationFailure[] = [];
+		if (!Is.undefined(this._config.taskRetryCount)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.taskRetryCount),
+				this._config.taskRetryCount
+			);
+			Validation.integer(
+				nameof(this._config.taskRetryCount),
+				this._config.taskRetryCount,
+				validationErrors,
+				undefined,
+				{ minValue: 0 }
+			);
+		}
+		if (!Is.undefined(this._config.taskRetryInterval)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.taskRetryInterval),
+				this._config.taskRetryInterval
+			);
+			Validation.integer(
+				nameof(this._config.taskRetryInterval),
+				this._config.taskRetryInterval,
+				validationErrors,
+				undefined,
+				{ minValue: 1 }
+			);
+		}
+		if (!Is.undefined(this._config.taskFailureRetainFor)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.taskFailureRetainFor),
+				this._config.taskFailureRetainFor
+			);
+			Validation.integer(
+				nameof(this._config.taskFailureRetainFor),
+				this._config.taskFailureRetainFor,
+				validationErrors,
+				undefined,
+				{ minValue: -1 }
+			);
+		}
+		Validation.asValidationError(
+			ImmutableProofService.CLASS_NAME,
+			nameof(this._config),
+			validationErrors
+		);
+
 		this._verificationMethodId = this._config.verificationMethodId ?? "immutable-proof-assertion";
+		this._taskRetryCount =
+			this._config.taskRetryCount ?? ImmutableProofService._DEFAULT_TASK_RETRY_COUNT;
+		this._taskRetryInterval =
+			this._config.taskRetryInterval ?? ImmutableProofService._DEFAULT_TASK_RETRY_INTERVAL;
+		this._taskFailureRetainFor =
+			this._config.taskFailureRetainFor ?? ImmutableProofService._DEFAULT_TASK_FAILURE_RETAIN_FOR;
 	}
 
 	/**
@@ -260,11 +360,20 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				notarizationConnectorType: this._notarizationConnectorType,
 				verificationMethodId: this._verificationMethodId,
 				credentialSubject,
-				deleteLockDateTime: options?.deleteLock
+				deleteLockDateTime: options?.deleteLock,
+				loggingComponentType: this._loggingComponentType
 			};
 
+			// Failed task records are retained so the failure can be inspected later,
+			// successful records are removed in finaliseTask once the result is processed.
+			// A zero retry count maps to undefined as the task engine only accepts counts >= 1
+			// and treats an unspecified count as no retries, if the engine ever implements its
+			// documented "undefined retries forever" this mapping must be revisited, see
+			// https://github.com/iotaledger/twin-background-task/issues/80
 			await this._backgroundTaskComponent.create("immutable-proof", proofTaskPayload, {
-				retainFor: 5000
+				retryCount: this._taskRetryCount > 0 ? this._taskRetryCount : undefined,
+				retryInterval: this._taskRetryInterval,
+				retainFor: this._taskFailureRetainFor
 			});
 
 			return fullId;
@@ -433,6 +542,21 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	): Promise<void> {
 		if (Is.object(task.payload)) {
 			if (task.status === TaskStatus.Success && Is.object(task.result)) {
+				if (Is.object(task.result.notarizationError)) {
+					// The notarization phase failed; the task reports it in the result instead of
+					// throwing so the task engine does not retry, as the notarization may already
+					// have reached the ledger. The task record is retained so it can be inspected.
+					await this._logging?.log({
+						source: ImmutableProofService.CLASS_NAME,
+						level: "error",
+						ts: Date.now(),
+						message: "createProofFailed",
+						error: BaseError.fromError(task.result.notarizationError),
+						data: { proofId: task.payload.proofId }
+					});
+					return;
+				}
+
 				const urnParsed = Urn.fromValidString(task.payload.proofId);
 				const proofId = urnParsed.namespaceSpecific(0);
 
@@ -473,13 +597,28 @@ export class ImmutableProofService implements IImmutableProofComponent {
 						task.result.notarizationId
 					);
 				}
+
+				// The result has been processed, only failed task records need retaining.
+				try {
+					await this._backgroundTaskComponent.remove(task.id);
+				} catch (error) {
+					await this._logging?.log({
+						source: ImmutableProofService.CLASS_NAME,
+						level: "warn",
+						ts: Date.now(),
+						message: "taskRecordRemoveFailed",
+						error: BaseError.fromError(error),
+						data: { proofId: task.payload.proofId }
+					});
+				}
 			} else if (task.status === TaskStatus.Failed) {
 				await this._logging?.log({
 					source: ImmutableProofService.CLASS_NAME,
 					level: "error",
 					ts: Date.now(),
 					message: "createProofFailed",
-					error: BaseError.fromError(task.error)
+					error: BaseError.fromError(task.error),
+					data: { proofId: task.payload.proofId }
 				});
 			}
 		}

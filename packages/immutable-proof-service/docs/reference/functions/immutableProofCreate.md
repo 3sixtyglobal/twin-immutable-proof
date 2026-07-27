@@ -1,6 +1,6 @@
 # Function: immutableProofCreate()
 
-> **immutableProofCreate**(`httpRequestContext`, `componentName`, `request`): `Promise`\<`ICreatedResponse`\>
+> **immutableProofCreate**(`httpRequestContext`, `componentName`, `request`, `baseRouteName`): `Promise`\<`ICreatedResponse`\>
 
 Create a proof.
 
@@ -23,6 +23,12 @@ The name of the component to use in the routes.
 `IImmutableProofCreateRequest`
 
 The request.
+
+### baseRouteName
+
+`string`
+
+The base route name for the API.
 
 ## Returns
 

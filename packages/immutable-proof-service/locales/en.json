@@ -15,5 +15,10 @@
 		"immutableProofService": {
 			"createdProof": "The immutable proof with Id \"{proofId}\" has been created successfully"
 		}
+	},
+	"warn": {
+		"immutableProofService": {
+			"taskRecordRemoveFailed": "Removing the completed task record for proof \"{proofId}\" failed, the record will be removed when its retention expires"
+		}
 	}
 }
