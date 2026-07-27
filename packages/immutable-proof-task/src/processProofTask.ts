@@ -80,7 +80,9 @@ export async function processProofTask(
 					"VaultKey",
 					"VaultSecret"
 				]
-			});
+				// Using cast until all types align in other packages
+				// then we can remove the cast and use the actual type.
+			} as unknown as boolean);
 			await engine.start();
 		}
 
