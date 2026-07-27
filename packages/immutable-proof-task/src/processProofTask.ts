@@ -4,7 +4,7 @@ import { ContextIdStore } from "@twin.org/context";
 import { BaseError, ComponentFactory, Guards, Is, ObjectHelper } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import { EngineCore } from "@twin.org/engine-core";
-import { type IEngineCore, type IEngineCoreClone } from "@twin.org/engine-models";
+import type { IEngineCore, IEngineCoreClone } from "@twin.org/engine-models";
 import { IdentityConnectorFactory } from "@twin.org/identity-models";
 import type { ILoggingComponent } from "@twin.org/logging-models";
 import { nameof } from "@twin.org/nameof";
