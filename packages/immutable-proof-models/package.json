@@ -1,6 +1,6 @@
 {
 	"name": "@twin.org/immutable-proof-models",
-	"version": "0.9.2-next.0",
+	"version": "0.9.2-next.1",
 	"description": "Shared model contracts, schema types, and context constants for immutable proof workflows",
 	"repository": {
 		"type": "git",
