@@ -3,10 +3,9 @@
 import { ContextIdStore } from "@twin.org/context";
 import { BaseError, ComponentFactory, Guards, Is, ObjectHelper } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import { EngineCore } from "@twin.org/engine-core";
-import type { IEngineCore, IEngineCoreClone } from "@twin.org/engine-models";
 import { IdentityConnectorFactory } from "@twin.org/identity-models";
 import type { ILoggingComponent } from "@twin.org/logging-models";
+import { ModuleHelper } from "@twin.org/modules";
 import { nameof } from "@twin.org/nameof";
 import { NotarizationConnectorFactory, NotarizationMode } from "@twin.org/notarization-models";
 import type { IProof } from "@twin.org/standards-w3c-did";
@@ -21,7 +20,7 @@ import type { IImmutableProofTaskResult } from "./models/IImmutableProofTaskResu
  * @returns The task result containing the verifiable credential and notarization id.
  */
 export async function processProofTask(
-	engineCloneData: IEngineCoreClone,
+	engineCloneData: unknown,
 	payload: IImmutableProofTaskPayload
 ): Promise<IImmutableProofTaskResult> {
 	Guards.objectValue<IImmutableProofTaskPayload>(
@@ -53,36 +52,46 @@ export async function processProofTask(
 
 	const taskStartTime = Date.now();
 
-	let engine: IEngineCore | undefined;
+	let engine:
+		| {
+				start: () => Promise<void>;
+				stop: () => Promise<void>;
+		  }
+		| undefined;
 	let logging: ILoggingComponent | undefined;
 	try {
 		if (!Is.empty(engineCloneData)) {
-			// If the clone data is not empty we use it to create a new engine as it's a new thread
-			// otherwise we assume the factories are already populated.
-			engine = new EngineCore();
-			engine.populateClone(engineCloneData, await ContextIdStore.getContextIds(), {
-				logLevel: "error",
-				types: [
-					"loggingComponent",
-					"loggingConnector",
-					"identityConnector",
-					"notarizationConnector",
-					"vaultConnector",
-					"entityStorageConnector",
-					"platformComponent",
-					"dltConfig"
-				],
-				entityTypes: [
-					"LogEntry",
-					"LogEntryError",
-					"IdentityDocument",
-					"Notarization",
-					"VaultKey",
-					"VaultSecret"
-				]
-				// Using cast until all types align in other packages
-				// then we can remove the cast and use the actual type.
-			} as unknown as boolean);
+			// If the clone data is not empty we are running in a worker thread — create a
+			// cloned engine instance via dynamic import so no static engine dependency is needed.
+			engine = await ModuleHelper.execModuleMethod<{
+				start: () => Promise<void>;
+				stop: () => Promise<void>;
+			}>("@twin.org/engine-core", "EngineCoreBuilder.fromClone", [
+				"engine",
+				engineCloneData,
+				await ContextIdStore.getContextIds(),
+				{
+					logLevel: "error",
+					types: [
+						"loggingComponent",
+						"loggingConnector",
+						"identityConnector",
+						"notarizationConnector",
+						"vaultConnector",
+						"entityStorageConnector",
+						"platformComponent",
+						"dltConfig"
+					],
+					entityTypes: [
+						"LogEntry",
+						"LogEntryError",
+						"IdentityDocument",
+						"Notarization",
+						"VaultKey",
+						"VaultSecret"
+					]
+				}
+			]);
 			await engine.start();
 		}
 

@@ -25,9 +25,8 @@ console.log(payload.identity); // did:iota:tst:issuer
 
 ```typescript
 import { processProofTask } from '@twin.org/immutable-proof-task';
-import type { IEngineCoreClone } from '@twin.org/engine-models';
 
-const engineCloneData: IEngineCoreClone = {
+const engineCloneData = {
   factories: {},
   components: {}
 };
