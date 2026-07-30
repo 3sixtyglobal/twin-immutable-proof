@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2-next.2](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-models-v0.9.2-next.1...immutable-proof-models-v0.9.2-next.2) (2026-07-30)
+
+
+### Miscellaneous Chores
+
+* **immutable-proof-models:** Synchronize repo versions
+
 ## [0.9.2-next.1](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-models-v0.9.2-next.0...immutable-proof-models-v0.9.2-next.1) (2026-07-28)
 
 
