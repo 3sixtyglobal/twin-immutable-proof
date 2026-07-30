@@ -24,7 +24,12 @@ import {
 	type Notarization
 } from "@twin.org/notarization-connector-entity-storage";
 import { NotarizationConnectorFactory } from "@twin.org/notarization-models";
-import { cleanupTestEnv, setupTestEnv, TEST_ORGANIZATION_IDENTITY } from "./setupTestEnv.js";
+import {
+	cleanupTestEnv,
+	setupTestEnv,
+	TEST_IDENTITY_CONNECTOR,
+	TEST_ORGANIZATION_IDENTITY
+} from "./setupTestEnv.js";
 import type { ImmutableProof } from "../src/entities/immutableProof.js";
 import { ImmutableProofService } from "../src/immutableProofService.js";
 import { initSchema } from "../src/schema.js";
@@ -530,6 +535,147 @@ describe("ImmutableProofService", () => {
 			"@context": "https://schema.twindev.org/immutable-proof/",
 			type: "ImmutableProofVerification",
 			verified: true
+		});
+	});
+
+	test("Does not include notarizationId in the proof passed to checkVerifiableCredential", async () => {
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await waitForProofGeneration();
+
+		const checkSpy = vi.spyOn(TEST_IDENTITY_CONNECTOR, "checkVerifiableCredential");
+
+		await service.verify(proofId);
+
+		expect(checkSpy).toHaveBeenCalledOnce();
+		const credential = checkSpy.mock.calls[0][0] as unknown as { [key: string]: unknown };
+		expect((credential.proof as { [key: string]: unknown }).notarizationId).toBeUndefined();
+		checkSpy.mockRestore();
+	});
+
+	test("Reconstitutes signed credential with string type and credentialSubject type for verification", async () => {
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await waitForProofGeneration();
+
+		const checkSpy = vi.spyOn(TEST_IDENTITY_CONNECTOR, "checkVerifiableCredential");
+
+		await service.verify(proofId);
+
+		expect(checkSpy).toHaveBeenCalledOnce();
+		const credential = checkSpy.mock.calls[0][0] as unknown as { [key: string]: unknown };
+
+		// createVerifiableCredential sets type as a plain string, not an array
+		expect(credential.type).toBe("VerifiableCredential");
+
+		// the original credentialSubject carried type; the entity rebuild omits it
+		expect((credential.credentialSubject as { [key: string]: unknown }).type).toBe(
+			"ImmutableProof"
+		);
+		checkSpy.mockRestore();
+	});
+
+	test("Reinstates verificationMethod in the proof passed to checkVerifiableCredential", async () => {
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await waitForProofGeneration();
+
+		const checkSpy = vi.spyOn(TEST_IDENTITY_CONNECTOR, "checkVerifiableCredential");
+
+		await service.verify(proofId);
+
+		expect(checkSpy).toHaveBeenCalledOnce();
+		const credential = checkSpy.mock.calls[0][0] as unknown as { [key: string]: unknown };
+		// verificationMethod is stripped from the proof at signing time and must be reinstated
+		expect((credential.proof as { [key: string]: unknown }).verificationMethod).toBe(
+			`${TEST_ORGANIZATION_IDENTITY}#immutable-proof-assertion`
+		);
+		checkSpy.mockRestore();
+	});
+
+	test("Returns verificationFailure when checkVerifiableCredential throws", async () => {
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await waitForProofGeneration();
+
+		vi.spyOn(TEST_IDENTITY_CONNECTOR, "checkVerifiableCredential").mockRejectedValueOnce(
+			new Error("signature verification failed")
+		);
+
+		const result = await service.verify(proofId);
+		expect(result).toEqual({
+			"@context": "https://schema.twindev.org/immutable-proof/",
+			type: "ImmutableProofVerification",
+			verified: false,
+			failure: "verificationFailure"
+		});
+	});
+
+	test("Returns revoked failure when the verifiable credential is revoked", async () => {
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await waitForProofGeneration();
+
+		vi.spyOn(TEST_IDENTITY_CONNECTOR, "checkVerifiableCredential").mockResolvedValueOnce({
+			revoked: true
+		});
+
+		const result = await service.verify(proofId);
+		expect(result).toEqual({
+			"@context": "https://schema.twindev.org/immutable-proof/",
+			type: "ImmutableProofVerification",
+			verified: false,
+			failure: "revoked"
 		});
 	});
 

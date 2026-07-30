@@ -678,19 +678,40 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			if (Is.uint8Array(notarization.data)) {
 				const proof = ObjectHelper.fromBytes<IProof>(notarization.data);
 
-				const proofWithReceipt = {
+				// Reinstate verificationMethod (stripped at signing time to reduce identity linkage).
+				const proofForVerification = {
 					...proof,
-					verificationMethod: `${proofEntity.organizationId}#${this._verificationMethodId}`,
+					verificationMethod: `${proofEntity.organizationId}#${this._verificationMethodId}`
+				};
+
+				// Keep notarizationId on the proof in the response so callers can read proof.notarizationId,
+				// but do NOT include it in the object passed to checkVerifiableCredential — the hash covers
+				// the whole proof except proofValue, so an injected notarizationId would break the signature.
+				verifiableCredential.proof = {
+					...proofForVerification,
 					notarizationId: proofEntity.notarizationId
 				};
 
-				verifiableCredential.proof = proofWithReceipt;
-
 				if (verify && Is.object<IProof>(proof)) {
 					try {
-						const result = await this._identityConnector.checkVerifiableCredential(
-							verifiableCredential as IDidVerifiableCredential
-						);
+						// Reconstitute the credential as it was originally signed so verification
+						// produces a byte-identical input to what was hashed at signing time.
+						// createVerifiableCredential sets type as a plain string (not an array) and
+						// preserves the credentialSubject type field from the original subject payload,
+						// but the response credential rebuilds type as an array and omits the subject type.
+						const credentialToVerify: IDidVerifiableCredential = {
+							...verifiableCredential,
+							type: DidTypes.VerifiableCredential,
+							credentialSubject: {
+								type: ImmutableProofTypes.ImmutableProof,
+								id: proofEntity.proofObjectId,
+								proofIntegrity: proofEntity.proofObjectIntegrity
+							},
+							proof: proofForVerification as IProof
+						} as IDidVerifiableCredential;
+
+						const result =
+							await this._identityConnector.checkVerifiableCredential(credentialToVerify);
 						if (result.revoked) {
 							verified = false;
 							failure = ImmutableProofFailure.Revoked;
