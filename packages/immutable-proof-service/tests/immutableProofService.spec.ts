@@ -679,6 +679,38 @@ describe("ImmutableProofService", () => {
 		});
 	});
 
+	test("Returns verificationFailure when the stored proofObjectIntegrity has been tampered with", async () => {
+		await backgroundTaskService.start();
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		const proofId = await service.create({
+			"@context": "https://schema.org",
+			type: "Person",
+			id: "uuid:1234567890",
+			name: "John Smith"
+		});
+
+		await waitForProofGeneration();
+
+		// Simulate payload substitution: replace the stored hash with a different value.
+		// The signed credential locked in the original hash, so the Ed25519 check fails.
+		const store = await proofStorage.getStore();
+		await proofStorage.set({
+			...store[0],
+			proofObjectIntegrity: "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+		});
+
+		const result = await service.verify(proofId);
+		expect(result).toEqual({
+			"@context": "https://schema.twindev.org/immutable-proof/",
+			type: "ImmutableProofVerification",
+			verified: false,
+			failure: "verificationFailure"
+		});
+	});
+
 	test("Can remove notarization from a proof that has been issued", async () => {
 		ModuleHelper.execModuleMethodThreadMessage = vi
 			.fn()
