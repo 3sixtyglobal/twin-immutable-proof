@@ -80,6 +80,32 @@ A promise that resolves when the background task handler has been registered.
 
 ***
 
+### stop() {#stop}
+
+> **stop**(`nodeLoggingComponentType?`): `Promise`\<`void`\>
+
+The component needs to be stopped when the node is closed.
+
+#### Parameters
+
+##### nodeLoggingComponentType?
+
+`string`
+
+The node logging component type.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+A promise that resolves when the scheduled sweep has been removed.
+
+#### Implementation of
+
+`IImmutableProofComponent.stop`
+
+***
+
 ### create() {#create}
 
 > **create**(`document`, `options?`): `Promise`\<`string`\>

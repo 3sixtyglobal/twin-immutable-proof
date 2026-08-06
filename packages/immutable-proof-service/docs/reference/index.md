@@ -3,6 +3,7 @@
 ## Classes
 
 - [ImmutableProof](classes/ImmutableProof.md)
+- [ImmutableProofV0](classes/ImmutableProofV0.md)
 - [ImmutableProofService](classes/ImmutableProofService.md)
 
 ## Interfaces

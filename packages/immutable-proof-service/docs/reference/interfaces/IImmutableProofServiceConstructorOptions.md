@@ -76,6 +76,35 @@ The event bus component type, defaults to no event bus.
 
 ***
 
+### platformComponentType? {#platformcomponenttype}
+
+> `optional` **platformComponentType?**: `string`
+
+The platform component type, used to fan the reconciliation sweep out across every
+tenant.
+
+#### Default
+
+```ts
+platform
+```
+
+***
+
+### taskSchedulerComponentType? {#taskschedulercomponenttype}
+
+> `optional` **taskSchedulerComponentType?**: `string`
+
+The task scheduler component type, used to run the reconciliation sweep on a schedule.
+
+#### Default
+
+```ts
+task-scheduler
+```
+
+***
+
 ### config? {#config}
 
 > `optional` **config?**: [`IImmutableProofServiceConfig`](IImmutableProofServiceConfig.md)
