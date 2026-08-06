@@ -1,14 +1,17 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
+import type { IPlatformComponent } from "@twin.org/api-models";
 import {
 	TaskStatus,
 	type IBackgroundTask,
-	type IBackgroundTaskComponent
+	type IBackgroundTaskComponent,
+	type ITaskSchedulerComponent
 } from "@twin.org/background-task-models";
 import { ContextIdHelper, ContextIdKeys, ContextIdStore } from "@twin.org/context";
 import {
 	BaseError,
 	ComponentFactory,
+	Factory,
 	GeneralError,
 	Guards,
 	Is,
@@ -22,6 +25,12 @@ import {
 } from "@twin.org/core";
 import { IntegrityAlgorithm, IntegrityHelper } from "@twin.org/crypto";
 import { JsonLdHelper, JsonLdProcessor, type IJsonLdNodeObject } from "@twin.org/data-json-ld";
+import {
+	ComparisonOperator,
+	LogicalOperator,
+	SortDirection,
+	type EntityCondition
+} from "@twin.org/entity";
 import {
 	EntityStorageConnectorFactory,
 	type IEntityStorageConnector
@@ -76,6 +85,12 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	private static readonly _NAMESPACE: string = "immutable-proof";
 
 	/**
+	 * The id used to register the reconciliation sweep with the task scheduler component.
+	 * @internal
+	 */
+	private static readonly _SWEEP_SCHEDULED_TASK_ID: string = "immutable-proof-reconciliation";
+
+	/**
 	 * The default number of times to retry a proof task when it fails before the notarization phase.
 	 * @internal
 	 */
@@ -92,6 +107,36 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 * @internal
 	 */
 	private static readonly _DEFAULT_TASK_FAILURE_RETAIN_FOR: number = 604800000;
+
+	/**
+	 * The default interval in minutes at which the reconciliation sweep runs.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_SWEEP_INTERVAL_MINUTES: number = 30;
+
+	/**
+	 * The default minimum age in milliseconds before a proof is sweep-eligible, 3 hours.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_SWEEP_STALE_THRESHOLD_MS: number = 10800000;
+
+	/**
+	 * The default number of sweep attempts before a proof is parked.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_SWEEP_MAX_ATTEMPTS: number = 5;
+
+	/**
+	 * The default maximum number of proofs re-enqueued per tenant per sweep cycle.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_SWEEP_BATCH_LIMIT: number = 10;
+
+	/**
+	 * The default minimum time in milliseconds between sweep attempts for the same proof, 1 hour.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_SWEEP_BACKOFF_MS: number = 3600000;
 
 	/**
 	 * The configuration for the connector.
@@ -142,6 +187,18 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	private readonly _eventBusComponent?: IEventBusComponent;
 
 	/**
+	 * The platform component, used to fan the reconciliation sweep out across every tenant.
+	 * @internal
+	 */
+	private readonly _platformComponent: IPlatformComponent;
+
+	/**
+	 * The task scheduler component, used to run the reconciliation sweep on a schedule.
+	 * @internal
+	 */
+	private readonly _taskScheduler: ITaskSchedulerComponent;
+
+	/**
 	 * The verification method id to use for the proofs.
 	 * @internal
 	 */
@@ -178,6 +235,50 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	private readonly _taskFailureRetainFor: number;
 
 	/**
+	 * Whether this instance registered the scheduled sweep, so stop() only removes what
+	 * this instance added and a clone can never cancel the main thread's schedule.
+	 * @internal
+	 */
+	private _sweepScheduled: boolean;
+
+	/**
+	 * How often, in minutes, the reconciliation sweep runs.
+	 * @internal
+	 */
+	private readonly _sweepIntervalMinutes: number;
+
+	/**
+	 * The minimum age in milliseconds before a proof with no notarizationId is sweep-eligible.
+	 * @internal
+	 */
+	private readonly _sweepStaleThresholdMs: number;
+
+	/**
+	 * The number of sweep attempts made for a proof before it is parked.
+	 * @internal
+	 */
+	private readonly _sweepMaxAttempts: number;
+
+	/**
+	 * The maximum number of proofs the sweep re-enqueues per tenant per cycle.
+	 * @internal
+	 */
+	private readonly _sweepBatchLimit: number;
+
+	/**
+	 * The minimum time in milliseconds between sweep attempts for the same proof.
+	 * @internal
+	 */
+	private readonly _sweepBackoffMs: number;
+
+	/**
+	 * Proofs created before this date-time with no interpretable task record are treated
+	 * as pre-submission failures and re-enqueued instead of parked.
+	 * @internal
+	 */
+	private readonly _sweepAssumeRetryableBefore?: string;
+
+	/**
 	 * Creates an instance of ImmutableProofService.
 	 * @param options The dependencies for the immutable proof connector.
 	 */
@@ -203,6 +304,14 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		if (Is.stringValue(options?.eventBusComponentType)) {
 			this._eventBusComponent = ComponentFactory.get(options.eventBusComponentType);
 		}
+
+		this._platformComponent = ComponentFactory.get<IPlatformComponent>(
+			options?.platformComponentType ?? "platform"
+		);
+		this._taskScheduler = ComponentFactory.get<ITaskSchedulerComponent>(
+			options?.taskSchedulerComponentType ?? "task-scheduler"
+		);
+		this._sweepScheduled = false;
 
 		this._config = options?.config ?? {};
 
@@ -251,6 +360,83 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				{ minValue: -1 }
 			);
 		}
+		if (!Is.undefined(this._config.sweepIntervalMinutes)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.sweepIntervalMinutes),
+				this._config.sweepIntervalMinutes
+			);
+			Validation.integer(
+				nameof(this._config.sweepIntervalMinutes),
+				this._config.sweepIntervalMinutes,
+				validationErrors,
+				undefined,
+				{ minValue: 1 }
+			);
+		}
+		if (!Is.undefined(this._config.sweepStaleThresholdMs)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.sweepStaleThresholdMs),
+				this._config.sweepStaleThresholdMs
+			);
+			Validation.integer(
+				nameof(this._config.sweepStaleThresholdMs),
+				this._config.sweepStaleThresholdMs,
+				validationErrors,
+				undefined,
+				{ minValue: 60000 }
+			);
+		}
+		if (!Is.undefined(this._config.sweepMaxAttempts)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.sweepMaxAttempts),
+				this._config.sweepMaxAttempts
+			);
+			Validation.integer(
+				nameof(this._config.sweepMaxAttempts),
+				this._config.sweepMaxAttempts,
+				validationErrors,
+				undefined,
+				{ minValue: 1 }
+			);
+		}
+		if (!Is.undefined(this._config.sweepBatchLimit)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.sweepBatchLimit),
+				this._config.sweepBatchLimit
+			);
+			Validation.integer(
+				nameof(this._config.sweepBatchLimit),
+				this._config.sweepBatchLimit,
+				validationErrors,
+				undefined,
+				{ minValue: 1 }
+			);
+		}
+		if (!Is.undefined(this._config.sweepBackoffMs)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.sweepBackoffMs),
+				this._config.sweepBackoffMs
+			);
+			Validation.integer(
+				nameof(this._config.sweepBackoffMs),
+				this._config.sweepBackoffMs,
+				validationErrors,
+				undefined,
+				{ minValue: 1 }
+			);
+		}
+		if (!Is.empty(this._config.sweepAssumeRetryableBefore)) {
+			Guards.dateTimeString(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.sweepAssumeRetryableBefore),
+				this._config.sweepAssumeRetryableBefore
+			);
+		}
 		Validation.asValidationError(
 			ImmutableProofService.CLASS_NAME,
 			nameof(this._config),
@@ -264,6 +450,17 @@ export class ImmutableProofService implements IImmutableProofComponent {
 			this._config.taskRetryInterval ?? ImmutableProofService._DEFAULT_TASK_RETRY_INTERVAL;
 		this._taskFailureRetainFor =
 			this._config.taskFailureRetainFor ?? ImmutableProofService._DEFAULT_TASK_FAILURE_RETAIN_FOR;
+		this._sweepIntervalMinutes =
+			this._config.sweepIntervalMinutes ?? ImmutableProofService._DEFAULT_SWEEP_INTERVAL_MINUTES;
+		this._sweepStaleThresholdMs =
+			this._config.sweepStaleThresholdMs ?? ImmutableProofService._DEFAULT_SWEEP_STALE_THRESHOLD_MS;
+		this._sweepMaxAttempts =
+			this._config.sweepMaxAttempts ?? ImmutableProofService._DEFAULT_SWEEP_MAX_ATTEMPTS;
+		this._sweepBatchLimit =
+			this._config.sweepBatchLimit ?? ImmutableProofService._DEFAULT_SWEEP_BATCH_LIMIT;
+		this._sweepBackoffMs =
+			this._config.sweepBackoffMs ?? ImmutableProofService._DEFAULT_SWEEP_BACKOFF_MS;
+		this._sweepAssumeRetryableBefore = this._config.sweepAssumeRetryableBefore;
 	}
 
 	/**
@@ -286,6 +483,51 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		>("immutable-proof", "@twin.org/immutable-proof-task", "processProofTask", async task => {
 			await this.finaliseTask(task);
 		});
+
+		// Clones (worker threads running a cloned engine, e.g. inside processProofTask) must
+		// never register their own copy of the scheduled sweep. Safe today because the clone
+		// allow-list doesn't include this component's type, but this guard doesn't depend on
+		// that staying true.
+		const isCloneOrNoEngine =
+			Factory.getFactory<{ isClone: () => boolean }>("engine-core")
+				?.getIfExists("engine")
+				?.isClone() ?? true;
+		if (isCloneOrNoEngine) {
+			return;
+		}
+
+		await this._taskScheduler.addTask(
+			ImmutableProofService._SWEEP_SCHEDULED_TASK_ID,
+			[{ nextTriggerTime: Date.now(), intervalMinutes: this._sweepIntervalMinutes }],
+			async () => {
+				try {
+					await this._platformComponent.execute(async () => this.sweepCurrentPartition());
+				} catch (error) {
+					await this._logging?.log({
+						level: "error",
+						source: ImmutableProofService.CLASS_NAME,
+						ts: Date.now(),
+						message: "sweepFailed",
+						error: BaseError.fromError(error)
+					});
+				}
+			}
+		);
+		this._sweepScheduled = true;
+	}
+
+	/**
+	 * The component needs to be stopped when the node is closed.
+	 * @param nodeLoggingComponentType The node logging component type.
+	 * @returns A promise that resolves when the scheduled sweep has been removed.
+	 */
+	public async stop(nodeLoggingComponentType?: string): Promise<void> {
+		// Only remove the scheduled sweep if this instance registered it — a clone stopping
+		// must not cancel the main thread's schedule.
+		if (this._sweepScheduled) {
+			await this._taskScheduler.removeTask(ImmutableProofService._SWEEP_SCHEDULED_TASK_ID);
+			this._sweepScheduled = false;
+		}
 	}
 
 	/**
@@ -335,48 +577,47 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				ObjectHelper.toBytes(JsonHelper.canonicalize(document))
 			);
 
-			const credentialSubject: IImmutableProof = {
-				"@context": [ImmutableProofContexts.Context, ImmutableProofContexts.ContextCommon],
-				type: ImmutableProofTypes.ImmutableProof,
-				id: proofObjectId,
-				proofIntegrity: proofObjectIntegrity
-			};
-
-			const proofEntity: ImmutableProof = {
+			const proofEntityBase: ImmutableProof = {
 				id,
 				organizationId: contextIds[ContextIdKeys.Organization],
 				dateCreated,
 				proofObjectId,
-				proofObjectIntegrity
-			};
-			await this._proofStorage.set(proofEntity);
-
-			const fullId = new Urn(ImmutableProofService._NAMESPACE, id).toString();
-
-			const proofTaskPayload: IImmutableProofTaskPayload = {
-				proofId: fullId,
-				identity: contextIds[ContextIdKeys.Organization],
-				identityConnectorType: this._identityConnectorType,
-				notarizationConnectorType: this._notarizationConnectorType,
-				verificationMethodId: this._verificationMethodId,
-				credentialSubject,
-				deleteLockDateTime: options?.deleteLock,
-				loggingComponentType: this._loggingComponentType
+				proofObjectIntegrity,
+				deleteLock: options?.deleteLock
 			};
 
-			// Failed task records are retained so the failure can be inspected later,
-			// successful records are removed in finaliseTask once the result is processed.
-			// A zero retry count maps to undefined as the task engine only accepts counts >= 1
-			// and treats an unspecified count as no retries, if the engine ever implements its
-			// documented "undefined retries forever" this mapping must be revisited, see
-			// https://github.com/iotaledger/twin-background-task/issues/80
-			await this._backgroundTaskComponent.create("immutable-proof", proofTaskPayload, {
-				retryCount: this._taskRetryCount > 0 ? this._taskRetryCount : undefined,
-				retryInterval: this._taskRetryInterval,
-				retainFor: this._taskFailureRetainFor
-			});
+			const proofTaskPayload = this.buildTaskPayload(proofEntityBase);
 
-			return fullId;
+			// Create the task before persisting the entity. If the entity write below then
+			// fails, the task is removed too (see catch), so this ordering avoids relying on
+			// the sweep to notice and park an entity that was never enqueued.
+			const taskId = await this._backgroundTaskComponent.create(
+				"immutable-proof",
+				proofTaskPayload,
+				this.buildTaskRetryOptions()
+			);
+
+			try {
+				await this._proofStorage.set({ ...proofEntityBase, taskId });
+			} catch (error) {
+				// The entity failed to persist after the task was created: best-effort remove
+				// the task so it doesn't run for a proof that was never saved.
+				try {
+					await this._backgroundTaskComponent.remove(taskId);
+				} catch (removeError) {
+					await this._logging?.log({
+						source: ImmutableProofService.CLASS_NAME,
+						level: "warn",
+						ts: Date.now(),
+						message: "orphanedTaskRemoveFailed",
+						error: BaseError.fromError(removeError),
+						data: { proofId: proofTaskPayload.proofId, taskId }
+					});
+				}
+				throw error;
+			}
+
+			return proofTaskPayload.proofId;
 		} catch (error) {
 			throw new GeneralError(ImmutableProofService.CLASS_NAME, "createFailed", undefined, error);
 		}
@@ -391,14 +632,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	public async get(id: string): Promise<IImmutableProofCredential> {
 		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(id), id);
 
-		const urnParsed = Urn.fromValidString(id);
-
-		if (urnParsed.namespaceIdentifier() !== ImmutableProofService._NAMESPACE) {
-			throw new GeneralError(ImmutableProofService.CLASS_NAME, "namespaceMismatch", {
-				namespace: ImmutableProofService._NAMESPACE,
-				id
-			});
-		}
+		this.parseProofId(id);
 
 		try {
 			const { verifiableCredential } = await this.internalGet(id, false);
@@ -422,14 +656,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	public async verify(id: string): Promise<IImmutableProofVerification> {
 		Guards.stringValue(ImmutableProofService.CLASS_NAME, nameof(id), id);
 
-		const urnParsed = Urn.fromValidString(id);
-
-		if (urnParsed.namespaceIdentifier() !== ImmutableProofService._NAMESPACE) {
-			throw new GeneralError(ImmutableProofService.CLASS_NAME, "namespaceMismatch", {
-				namespace: ImmutableProofService._NAMESPACE,
-				id
-			});
-		}
+		this.parseProofId(id);
 
 		try {
 			const { verified, failure } = await this.internalGet(id, true);
@@ -456,14 +683,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		const contextIds = await ContextIdStore.getContextIds();
 		ContextIdHelper.guard(contextIds, ContextIdKeys.Organization);
 
-		const urnParsed = Urn.fromValidString(id);
-
-		if (urnParsed.namespaceIdentifier() !== ImmutableProofService._NAMESPACE) {
-			throw new GeneralError(ImmutableProofService.CLASS_NAME, "namespaceMismatch", {
-				namespace: ImmutableProofService._NAMESPACE,
-				id
-			});
-		}
+		const urnParsed = this.parseProofId(id);
 
 		try {
 			const proofId = urnParsed.namespaceSpecific(0);
@@ -497,14 +717,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 		const contextIds = await ContextIdStore.getContextIds();
 		ContextIdHelper.guard(contextIds, ContextIdKeys.Organization);
 
-		const urnParsed = Urn.fromValidString(id);
-
-		if (urnParsed.namespaceIdentifier() !== ImmutableProofService._NAMESPACE) {
-			throw new GeneralError(ImmutableProofService.CLASS_NAME, "namespaceMismatch", {
-				namespace: ImmutableProofService._NAMESPACE,
-				id
-			});
-		}
+		const urnParsed = this.parseProofId(id);
 
 		try {
 			const proofId = urnParsed.namespaceSpecific(0);
@@ -530,6 +743,413 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				error
 			);
 		}
+	}
+
+	/**
+	 * Parse a proof id and check it belongs to this service's namespace.
+	 * @param id The proof id (urn) to parse.
+	 * @returns The parsed urn.
+	 * @throws GeneralError if the urn's namespace does not match this service's namespace.
+	 * @internal
+	 */
+	private parseProofId(id: string): Urn {
+		const urnParsed = Urn.fromValidString(id);
+
+		if (urnParsed.namespaceIdentifier() !== ImmutableProofService._NAMESPACE) {
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "namespaceMismatch", {
+				namespace: ImmutableProofService._NAMESPACE,
+				id
+			});
+		}
+
+		return urnParsed;
+	}
+
+	/**
+	 * Build the background task payload for a proof entity.
+	 * @param proofEntity The proof entity to build the payload for.
+	 * @returns The task payload.
+	 * @internal
+	 */
+	private buildTaskPayload(proofEntity: ImmutableProof): IImmutableProofTaskPayload {
+		const credentialSubject: IImmutableProof = {
+			"@context": [ImmutableProofContexts.Context, ImmutableProofContexts.ContextCommon],
+			type: ImmutableProofTypes.ImmutableProof,
+			id: proofEntity.proofObjectId,
+			proofIntegrity: proofEntity.proofObjectIntegrity
+		};
+
+		return {
+			proofId: new Urn(ImmutableProofService._NAMESPACE, proofEntity.id).toString(),
+			identity: proofEntity.organizationId,
+			identityConnectorType: this._identityConnectorType,
+			notarizationConnectorType: this._notarizationConnectorType,
+			verificationMethodId: this._verificationMethodId,
+			credentialSubject,
+			deleteLockDateTime: proofEntity.deleteLock,
+			loggingComponentType: this._loggingComponentType
+		};
+	}
+
+	/**
+	 * Build the background task creation options shared by initial creation and re-enqueueing.
+	 * @returns The task creation options.
+	 * @internal
+	 */
+	private buildTaskRetryOptions(): {
+		retryCount: number | undefined;
+		retryInterval: number;
+		retainFor: number;
+	} {
+		return {
+			// A zero retry count maps to undefined: the task engine only accepts counts >= 1
+			// and treats an unspecified count as no retries.
+			retryCount: this._taskRetryCount > 0 ? this._taskRetryCount : undefined,
+			retryInterval: this._taskRetryInterval,
+			retainFor: this._taskFailureRetainFor
+		};
+	}
+
+	/**
+	 * Periodically re-enqueue proofs stuck without a notarization so they self-heal without
+	 * operator action, parking any whose failure cannot be proven safe to retry. Assumes the
+	 * ambient context already selects the correct node/tenant partition.
+	 * @returns A promise that resolves when the sweep cycle for the current partition completes.
+	 * @internal
+	 */
+	private async sweepCurrentPartition(): Promise<void> {
+		const staleThreshold = new Date(Date.now() - this._sweepStaleThresholdMs).toISOString();
+
+		let scanned = 0;
+		let reEnqueued = 0;
+		let skippedInFlight = 0;
+		let newlyParked = 0;
+		let legacyTaskCache:
+			| Map<string, IBackgroundTask<IImmutableProofTaskPayload, IImmutableProofTaskResult>>
+			| undefined;
+		const getLegacyTaskCache = async (): Promise<
+			Map<string, IBackgroundTask<IImmutableProofTaskPayload, IImmutableProofTaskResult>>
+		> => {
+			legacyTaskCache ??= await this.buildLegacyTaskCache();
+			return legacyTaskCache;
+		};
+
+		let cursor: string | undefined;
+		do {
+			const condition: EntityCondition<ImmutableProof> = {
+				conditions: [
+					{ property: "notarizationId", comparison: ComparisonOperator.Equals, value: undefined },
+					{
+						property: "dateCreated",
+						comparison: ComparisonOperator.LessThan,
+						value: staleThreshold
+					}
+				],
+				logicalOperator: LogicalOperator.And
+			};
+
+			const page = await this._proofStorage.query(
+				condition,
+				[{ property: "dateCreated", sortDirection: SortDirection.Ascending }],
+				undefined,
+				cursor
+			);
+
+			for (const proofEntity of page.entities as ImmutableProof[]) {
+				if (reEnqueued >= this._sweepBatchLimit) {
+					break;
+				}
+
+				scanned++;
+
+				const outcome = await this.processSweepCandidate(proofEntity, getLegacyTaskCache);
+				if (outcome === "skippedInFlight") {
+					skippedInFlight++;
+				} else if (outcome === "parked") {
+					newlyParked++;
+				} else if (outcome === "reEnqueued") {
+					reEnqueued++;
+				}
+			}
+
+			cursor = page.cursor;
+		} while (Is.stringValue(cursor) && reEnqueued < this._sweepBatchLimit);
+
+		const totalParked = await this.countParkedProofs();
+
+		await this._logging?.log({
+			level: "info",
+			source: ImmutableProofService.CLASS_NAME,
+			ts: Date.now(),
+			message: "sweepCompleted",
+			data: { scanned, reEnqueued, skippedInFlight, newlyParked, totalParked }
+		});
+
+		if (totalParked > 0) {
+			await this._logging?.log({
+				level: "warn",
+				source: ImmutableProofService.CLASS_NAME,
+				ts: Date.now(),
+				message: "sweepParkedTotal",
+				data: { totalParked }
+			});
+		}
+	}
+
+	/**
+	 * Evaluate a single sweep candidate against the guard chain and classification, acting
+	 * on it (skip, park, or re-enqueue) as appropriate.
+	 * @param proofEntity The candidate proof entity.
+	 * @param getLegacyTaskCache Lazily builds, and caches for the current cycle, the task
+	 * lookup for proof entities with no taskId.
+	 * @returns The outcome of evaluating this candidate.
+	 * @internal
+	 */
+	private async processSweepCandidate(
+		proofEntity: ImmutableProof,
+		getLegacyTaskCache: () => Promise<
+			Map<string, IBackgroundTask<IImmutableProofTaskPayload, IImmutableProofTaskResult>>
+		>
+	): Promise<"skipped" | "skippedInFlight" | "parked" | "reEnqueued"> {
+		// Belt-and-braces: the selection query cannot reliably exclude parked proofs —
+		// NotEquals against an absent property returns false under both the shared in-memory
+		// matcher and SQL NULL semantics, which would incorrectly exclude every normal proof
+		// instead of just parked ones. Filtering here instead is correct and no more expensive,
+		// since parked rows still have to be paged past either way.
+		if (proofEntity.isParked) {
+			return "skipped";
+		}
+
+		let task: IBackgroundTask<IImmutableProofTaskPayload, IImmutableProofTaskResult> | undefined;
+		if (Is.stringValue(proofEntity.taskId)) {
+			task = await this._backgroundTaskComponent.get<
+				IImmutableProofTaskPayload,
+				IImmutableProofTaskResult
+			>(proofEntity.taskId);
+		} else {
+			const cache = await getLegacyTaskCache();
+			task = cache.get(new Urn(ImmutableProofService._NAMESPACE, proofEntity.id).toString());
+		}
+
+		if (
+			Is.object(task) &&
+			(task.status === TaskStatus.Pending || task.status === TaskStatus.Processing)
+		) {
+			await this._logging?.log({
+				level: "debug",
+				source: ImmutableProofService.CLASS_NAME,
+				ts: Date.now(),
+				message: "sweepSkippedInFlight",
+				data: { proofId: proofEntity.id }
+			});
+			return "skippedInFlight";
+		}
+
+		if (Is.stringValue(proofEntity.lastSweepAttempt)) {
+			const backoffMs = this._sweepBackoffMs * Math.pow(2, (proofEntity.sweepAttempts ?? 1) - 1);
+			const nextEligible =
+				new Date(proofEntity.lastSweepAttempt).getTime() + Math.min(backoffMs, 86400000);
+			if (nextEligible > Date.now()) {
+				return "skipped";
+			}
+		}
+
+		if (
+			(proofEntity.sweepAttempts ?? 0) >= this._sweepMaxAttempts ||
+			!this.isRetryable(proofEntity, task)
+		) {
+			proofEntity.isParked = true;
+			await this._proofStorage.set(proofEntity);
+			await this._logging?.log({
+				level: "warn",
+				source: ImmutableProofService.CLASS_NAME,
+				ts: Date.now(),
+				message: "sweepParked",
+				data: { proofId: proofEntity.id, sweepAttempts: proofEntity.sweepAttempts ?? 0 }
+			});
+			return "parked";
+		}
+
+		await this.reEnqueueProof(proofEntity);
+		return "reEnqueued";
+	}
+
+	/**
+	 * Decide whether a proof is safe to re-enqueue given its most recent background task
+	 * record. A missing or unclassifiable record parks the proof unless its era is explicitly
+	 * authorised via sweepAssumeRetryableBefore.
+	 * @param proofEntity The proof entity being evaluated.
+	 * @param task The most recent background task for the proof, if one could be found.
+	 * @returns True if the proof is safe to re-enqueue.
+	 * @internal
+	 */
+	private isRetryable(
+		proofEntity: ImmutableProof,
+		task: IBackgroundTask<IImmutableProofTaskPayload, IImmutableProofTaskResult> | undefined
+	): boolean {
+		if (Is.object(task)) {
+			if (task.status === TaskStatus.Failed) {
+				// Thrown errors only occur before the notarization phase, by construction of
+				// processProofTask, so a failed task record is always safe to retry.
+				return true;
+			}
+			if (task.status === TaskStatus.Success && Is.object(task.result?.notarizationError)) {
+				// The connector collapses pre- and post-submission failures into one error code,
+				// so this class is not provably safe unless the era is explicitly authorised.
+				return this.isWithinAssumedRetryableEra(proofEntity);
+			}
+		}
+
+		// No usable task record: either never enqueued (orphan) or the record expired or was
+		// removed. Only safe to assume pre-submission for an explicitly authorised era.
+		return this.isWithinAssumedRetryableEra(proofEntity);
+	}
+
+	/**
+	 * Check whether a proof predates the explicitly configured era known to guarantee
+	 * pre-submission failures.
+	 * @param proofEntity The proof entity being evaluated.
+	 * @returns True if sweepAssumeRetryableBefore is set and the proof predates it.
+	 * @internal
+	 */
+	private isWithinAssumedRetryableEra(proofEntity: ImmutableProof): boolean {
+		if (!Is.stringValue(this._sweepAssumeRetryableBefore)) {
+			return false;
+		}
+		return (
+			new Date(proofEntity.dateCreated).getTime() <
+			new Date(this._sweepAssumeRetryableBefore).getTime()
+		);
+	}
+
+	/**
+	 * Rebuild and re-create the background task for a stuck proof, then persist the updated
+	 * sweep bookkeeping on its entity.
+	 * @param proofEntity The proof entity to re-enqueue.
+	 * @returns A promise that resolves when the task has been created and the entity updated.
+	 * @internal
+	 */
+	private async reEnqueueProof(proofEntity: ImmutableProof): Promise<void> {
+		const ambientContextIds = (await ContextIdStore.getContextIds()) ?? {};
+
+		// Organization is absent from ambient context in multi-tenant mode, but create()'s
+		// payload and downstream guards need it, so inject it from the swept entity itself.
+		const taskId = await ContextIdStore.run(
+			{ ...ambientContextIds, [ContextIdKeys.Organization]: proofEntity.organizationId },
+			async () => {
+				const proofTaskPayload = this.buildTaskPayload(proofEntity);
+				return this._backgroundTaskComponent.create(
+					"immutable-proof",
+					proofTaskPayload,
+					this.buildTaskRetryOptions()
+				);
+			}
+		);
+
+		proofEntity.taskId = taskId;
+		proofEntity.sweepAttempts = (proofEntity.sweepAttempts ?? 0) + 1;
+		proofEntity.lastSweepAttempt = new Date(Date.now()).toISOString();
+
+		await this._proofStorage.set(proofEntity);
+
+		await this._logging?.log({
+			level: "info",
+			source: ImmutableProofService.CLASS_NAME,
+			ts: Date.now(),
+			message: "sweepReEnqueued",
+			data: { proofId: proofEntity.id, taskId }
+		});
+	}
+
+	/**
+	 * Build a cache of the most recent background task for each proof, keyed by proof urn, by
+	 * paging through every relevant status for the immutable-proof task type. Only needed for
+	 * proof entities written before taskId was persisted. Any superseded task found for a proof
+	 * is removed, since the cached, more recent one will provide the eventual result.
+	 * @returns A map of proof urn to its most recent background task.
+	 * @internal
+	 */
+	private async buildLegacyTaskCache(): Promise<
+		Map<string, IBackgroundTask<IImmutableProofTaskPayload, IImmutableProofTaskResult>>
+	> {
+		const cache = new Map<
+			string,
+			IBackgroundTask<IImmutableProofTaskPayload, IImmutableProofTaskResult>
+		>();
+		const superseded: { taskId: string; proofId: string }[] = [];
+
+		for (const status of [
+			TaskStatus.Pending,
+			TaskStatus.Processing,
+			TaskStatus.Success,
+			TaskStatus.Failed
+		]) {
+			let cursor: string | undefined;
+			do {
+				const page = await this._backgroundTaskComponent.query(
+					"immutable-proof",
+					status,
+					undefined,
+					undefined,
+					cursor
+				);
+				for (const task of page.entities as IBackgroundTask<
+					IImmutableProofTaskPayload,
+					IImmutableProofTaskResult
+				>[]) {
+					if (Is.stringValue(task.payload?.proofId)) {
+						// Iterating one query per status can surface an older task after a newer
+						// one (e.g. a stale Failed record after the sweep already re-enqueued a
+						// still-Processing task for the same proof), so keep whichever is
+						// actually more recent rather than whichever was seen last.
+						const proofId = task.payload.proofId;
+						const existing = cache.get(proofId);
+						if (
+							!existing ||
+							new Date(task.dateModified).getTime() > new Date(existing.dateModified).getTime()
+						) {
+							if (existing) {
+								superseded.push({ taskId: existing.id, proofId });
+							}
+							cache.set(proofId, task);
+						} else {
+							superseded.push({ taskId: task.id, proofId });
+						}
+					}
+				}
+				cursor = page.cursor;
+			} while (Is.stringValue(cursor));
+		}
+
+		// Removed only once the full cache is built, so an older record is never deleted
+		// while a query for another status is still paging through it.
+		for (const { taskId, proofId } of superseded) {
+			try {
+				await this._backgroundTaskComponent.remove(taskId);
+			} catch (error) {
+				await this._logging?.log({
+					source: ImmutableProofService.CLASS_NAME,
+					level: "warn",
+					ts: Date.now(),
+					message: "supersededTaskRemoveFailed",
+					error: BaseError.fromError(error),
+					data: { proofId, taskId }
+				});
+			}
+		}
+
+		return cache;
+	}
+
+	/**
+	 * Count the proofs currently parked in the current partition.
+	 * @returns The number of parked proofs.
+	 * @internal
+	 */
+	private async countParkedProofs(): Promise<number> {
+		return this._proofStorage.count({
+			conditions: [{ property: "isParked", comparison: ComparisonOperator.Equals, value: true }]
+		});
 	}
 
 	/**

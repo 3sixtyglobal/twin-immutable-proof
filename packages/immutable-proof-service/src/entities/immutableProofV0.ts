@@ -1,13 +1,13 @@
-// Copyright 2024 IOTA Stiftung.
+// Copyright 2026 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import { entity, property, SortDirection } from "@twin.org/entity";
 import type { DidContexts } from "@twin.org/standards-w3c-did";
 
 /**
- * Class describing the immutable proof.
+ * Class describing the immutable proof, version 0.
  */
-@entity({ version: 1 })
-export class ImmutableProof {
+@entity({ version: 0 })
+export class ImmutableProofV0 {
 	/**
 	 * The id of the proof.
 	 */
@@ -49,35 +49,4 @@ export class ImmutableProof {
 	 */
 	@property({ type: "string", optional: true })
 	public vcContext?: typeof DidContexts.ContextVCv1 | typeof DidContexts.ContextVCv2;
-
-	/**
-	 * The id of the most recently enqueued background task for this proof.
-	 */
-	@property({ type: "string", optional: true })
-	public taskId?: string;
-
-	/**
-	 * The date/time the notarization lock expires, persisted so a reconciliation sweep can
-	 * rebuild the original task payload without losing the caller's requested delete lock.
-	 */
-	@property({ type: "string", format: "date-time", optional: true })
-	public deleteLock?: string;
-
-	/**
-	 * The number of reconciliation sweep attempts made for this proof.
-	 */
-	@property({ type: "number", optional: true })
-	public sweepAttempts?: number;
-
-	/**
-	 * The date/time of the most recent reconciliation sweep attempt.
-	 */
-	@property({ type: "string", format: "date-time", optional: true })
-	public lastSweepAttempt?: string;
-
-	/**
-	 * Set to true when the reconciliation sweep has exhausted its attempts; absent otherwise.
-	 */
-	@property({ type: "boolean", optional: true })
-	public isParked?: boolean;
 }

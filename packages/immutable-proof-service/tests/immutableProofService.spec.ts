@@ -1,12 +1,20 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
+import { TaskStatus } from "@twin.org/background-task-models";
 import {
 	type BackgroundTask,
 	BackgroundTaskService,
 	initSchema as initSchemaBackgroundTask
 } from "@twin.org/background-task-service";
-import { ContextIdStore } from "@twin.org/context";
-import { ComponentFactory, Converter, Is, ObjectHelper, RandomHelper } from "@twin.org/core";
+import { ContextIdKeys, ContextIdStore } from "@twin.org/context";
+import {
+	ComponentFactory,
+	Converter,
+	Factory,
+	Is,
+	ObjectHelper,
+	RandomHelper
+} from "@twin.org/core";
 import { JsonLdProcessor } from "@twin.org/data-json-ld";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
 import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
@@ -39,6 +47,11 @@ let notarizationStorage: MemoryEntityStorageConnector<Notarization>;
 let backgroundTaskStorage: MemoryEntityStorageConnector<BackgroundTask>;
 let backgroundTaskService: BackgroundTaskService;
 let memoryLoggingEntityStorage: MemoryEntityStorageConnector<LogEntry>;
+
+// Captured before beforeEach overrides ContextIdStore.getContextIds with a fixed-value mock,
+// so the multi-tenant tests can restore real AsyncLocalStorage-backed behaviour and actually
+// observe the tenant context that ContextIdStore.run() establishes.
+const realGetContextIds = ContextIdStore.getContextIds.bind(ContextIdStore);
 
 const FIRST_TICK = 1724327716271;
 
@@ -75,6 +88,41 @@ async function waitForProofGeneration(
 	}
 }
 
+/**
+ * Build a proof entity fixture for sweep tests, stuck without a notarization and stale by
+ * default (older than the 60000ms minimum sweepStaleThresholdMs used throughout these tests).
+ * @param overrides Properties to override on the fixture.
+ * @returns The proof entity fixture.
+ */
+function makeStuckProofEntity(overrides: Partial<ImmutableProof> = {}): ImmutableProof {
+	return {
+		id: "proof-1",
+		organizationId: TEST_ORGANIZATION_IDENTITY,
+		dateCreated: new Date(FIRST_TICK - 61000).toISOString(),
+		proofObjectId: "uuid:1234567890",
+		proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
+		...overrides
+	};
+}
+
+/**
+ * Build a background task entity fixture for sweep tests, of type "immutable-proof" and
+ * terminally failed by default.
+ * @param overrides Properties to override on the fixture.
+ * @returns The background task entity fixture.
+ */
+function makeSweepTaskEntity(overrides: Partial<BackgroundTask> = {}): BackgroundTask {
+	return {
+		id: "task-1",
+		type: "immutable-proof",
+		threadId: "main",
+		dateCreated: new Date(FIRST_TICK - 61000).toISOString(),
+		dateModified: new Date(FIRST_TICK - 61000).toISOString(),
+		status: TaskStatus.Failed,
+		...overrides
+	};
+}
+
 describe("ImmutableProofService", () => {
 	beforeAll(async () => {
 		await setupTestEnv();
@@ -106,6 +154,29 @@ describe("ImmutableProofService", () => {
 			execute: async (method: () => Promise<void>) => method(),
 			getLocalOriginContext: async () => undefined
 		}));
+
+		// Not a clone by default, matching a normal running node, so the sweep's clone guard
+		// doesn't skip scheduling. getCloneData is required too: BackgroundTaskService's
+		// workerProcessTasks() reads it unconditionally for every dispatched task, not just
+		// sweep-related ones, so any test spawning a real (unmocked) worker thread would
+		// otherwise crash on a missing method.
+		Factory.createFactory("engine-core").register("engine", () => ({
+			className: () => "MockEngineCore",
+			isClone: () => false,
+			getCloneData: () => undefined
+		}));
+
+		// A minimal scheduler stub that runs the sweep once, synchronously, when start()
+		// registers it — real periodic re-triggering isn't exercised at the unit level.
+		ComponentFactory.register("task-scheduler", () => ({
+			className: () => "task-scheduler",
+			addTask: async (taskId: string, times: unknown, taskCallback: () => Promise<void>) => {
+				await taskCallback();
+			},
+			removeTask: async () => {},
+			tasksInfo: async () => ({ tasks: {} })
+		}));
+
 		const loggingConnector = new EntityStorageLoggingConnector({
 			config: { batchSize: 0, batchIntervalMs: 0 }
 		});
@@ -169,6 +240,29 @@ describe("ImmutableProofService", () => {
 		expect(() => new ImmutableProofService({ config: { taskFailureRetainFor: -2 } })).toThrow();
 	});
 
+	test("Can fail to create an instance of the service with out of range sweep options", async () => {
+		expect(() => new ImmutableProofService({ config: { sweepStaleThresholdMs: 59999 } })).toThrow();
+		expect(() => new ImmutableProofService({ config: { sweepMaxAttempts: 0 } })).toThrow();
+		expect(() => new ImmutableProofService({ config: { sweepBatchLimit: 0 } })).toThrow();
+		expect(() => new ImmutableProofService({ config: { sweepBackoffMs: 0 } })).toThrow();
+		expect(
+			() => new ImmutableProofService({ config: { sweepAssumeRetryableBefore: "not-a-date" } })
+		).toThrow();
+	});
+
+	test("Can create an instance of the service with boundary sweep options", async () => {
+		const service = new ImmutableProofService({
+			config: {
+				sweepStaleThresholdMs: 60000,
+				sweepMaxAttempts: 1,
+				sweepBatchLimit: 1,
+				sweepBackoffMs: 1,
+				sweepAssumeRetryableBefore: "2026-07-24T00:00:00.000Z"
+			}
+		});
+		expect(service).toBeDefined();
+	});
+
 	test("Can create a proof that is pending", async () => {
 		const service = new ImmutableProofService();
 		await service.start();
@@ -188,9 +282,82 @@ describe("ImmutableProofService", () => {
 				dateCreated: "2024-08-22T11:55:16.271Z",
 				organizationId: TEST_ORGANIZATION_IDENTITY,
 				proofObjectId: "uuid:1234567890",
-				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
+				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
+				taskId: "background-task:entity-storage:02020202020202020202020202020202"
 			}
 		]);
+	});
+
+	test("Can fail to create a proof and leave no orphaned entity when the task cannot be created", async () => {
+		// The task is created before the entity is persisted, so a failure here must never
+		// leave a proof entity with nothing enqueued to notarize it.
+		vi.spyOn(backgroundTaskService, "create").mockRejectedValueOnce(
+			new Error("background task storage unavailable")
+		);
+
+		const service = new ImmutableProofService();
+		await service.start();
+
+		await expect(
+			service.create({
+				"@context": "https://schema.org",
+				type: "Person",
+				id: "uuid:1234567890",
+				name: "John Smith"
+			})
+		).rejects.toMatchObject({
+			name: "GeneralError",
+			message: "immutableProofService.createFailed"
+		});
+
+		expect(await proofStorage.getStore()).toHaveLength(0);
+	});
+
+	test("Can remove the orphaned background task when the proof entity fails to persist", async () => {
+		const service = new ImmutableProofService();
+		await service.start();
+
+		vi.spyOn(proofStorage, "set").mockRejectedValueOnce(new Error("entity storage unavailable"));
+
+		await expect(
+			service.create({
+				"@context": "https://schema.org",
+				type: "Person",
+				id: "uuid:1234567890",
+				name: "John Smith"
+			})
+		).rejects.toMatchObject({
+			name: "GeneralError",
+			message: "immutableProofService.createFailed"
+		});
+
+		expect(await proofStorage.getStore()).toHaveLength(0);
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(0);
+	});
+
+	test("Can fail to create a proof when both the entity persist and the orphaned task removal fail", async () => {
+		const service = new ImmutableProofService();
+		await service.start();
+
+		vi.spyOn(proofStorage, "set").mockRejectedValueOnce(new Error("entity storage unavailable"));
+		vi.spyOn(backgroundTaskService, "remove").mockRejectedValueOnce(
+			new Error("background task storage unavailable")
+		);
+
+		await expect(
+			service.create({
+				"@context": "https://schema.org",
+				type: "Person",
+				id: "uuid:1234567890",
+				name: "John Smith"
+			})
+		).rejects.toMatchObject({
+			name: "GeneralError",
+			message: "immutableProofService.createFailed"
+		});
+
+		expect(await proofStorage.getStore()).toHaveLength(0);
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(1);
 	});
 
 	test("Can get a proof that has not been issued", async () => {
@@ -212,7 +379,8 @@ describe("ImmutableProofService", () => {
 				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
 				dateCreated: "2024-08-22T11:55:16.271Z",
 				organizationId: TEST_ORGANIZATION_IDENTITY,
-				proofObjectId: "uuid:1234567890"
+				proofObjectId: "uuid:1234567890",
+				taskId: "background-task:entity-storage:02020202020202020202020202020202"
 			}
 		]);
 
@@ -308,7 +476,8 @@ describe("ImmutableProofService", () => {
 				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
 				notarizationId,
 				dateCreated: "2024-08-22T11:55:16.271Z",
-				vcContext: "https://www.w3.org/2018/credentials/v1"
+				vcContext: "https://www.w3.org/2018/credentials/v1",
+				taskId: "background-task:entity-storage:02020202020202020202020202020202"
 			}
 		]);
 
@@ -400,7 +569,8 @@ describe("ImmutableProofService", () => {
 				dateCreated: "2024-08-22T11:55:16.271Z",
 				proofObjectId: "uuid:1234567890",
 				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
-				organizationId: TEST_ORGANIZATION_IDENTITY
+				organizationId: TEST_ORGANIZATION_IDENTITY,
+				taskId: "background-task:entity-storage:02020202020202020202020202020202"
 			}
 		]);
 
@@ -438,6 +608,21 @@ describe("ImmutableProofService", () => {
 			{ deleteLock: "2030-01-01T00:00:00.000Z" }
 		);
 		expect(proofId).toEqual("immutable-proof:01010101010101010101010101010101");
+
+		// The entity is written in a single set() call that already includes taskId and
+		// deleteLock, both populated from the same create() invocation that created the task.
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore).toEqual([
+			{
+				id: "01010101010101010101010101010101",
+				dateCreated: "2024-08-22T11:55:16.271Z",
+				organizationId: TEST_ORGANIZATION_IDENTITY,
+				proofObjectId: "uuid:1234567890",
+				proofObjectIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ=",
+				taskId: "background-task:entity-storage:02020202020202020202020202020202",
+				deleteLock: "2030-01-01T00:00:00.000Z"
+			}
+		]);
 
 		await waitForProofGeneration();
 
@@ -513,7 +698,8 @@ describe("ImmutableProofService", () => {
 				notarizationId,
 				dateCreated: "2024-08-22T11:55:16.271Z",
 				organizationId: TEST_ORGANIZATION_IDENTITY,
-				vcContext: "https://www.w3.org/2018/credentials/v1"
+				vcContext: "https://www.w3.org/2018/credentials/v1",
+				taskId: "background-task:entity-storage:02020202020202020202020202020202"
 			}
 		]);
 
@@ -1015,5 +1201,424 @@ describe("ImmutableProofService", () => {
 
 		const result = await service.verify(proofId);
 		expect(result).toMatchObject({ verified: false, failure: "notIssued" });
+
+		// The passive create() path never touches sweep bookkeeping, only taskId, which it
+		// always sets.
+		expect(proofStore[0].taskId).toBeDefined();
+		expect(proofStore[0].sweepAttempts).toBeUndefined();
+		expect(proofStore[0].lastSweepAttempt).toBeUndefined();
+		expect(proofStore[0].isParked).toBeUndefined();
+	});
+
+	test("Sweep re-enqueues a stuck proof whose task failed, updating taskId, sweepAttempts and lastSweepAttempt", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({ taskId: "background-task:entity-storage:task-1" })
+		);
+		await backgroundTaskStorage.set(makeSweepTaskEntity({ status: TaskStatus.Failed }));
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000 }
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore).toHaveLength(1);
+		expect(proofStore[0].taskId).toEqual(
+			"background-task:entity-storage:01010101010101010101010101010101"
+		);
+		expect(proofStore[0].sweepAttempts).toEqual(1);
+		expect(proofStore[0].lastSweepAttempt).toEqual("2024-08-22T11:55:16.271Z");
+
+		const taskStore = await backgroundTaskStorage.getStore();
+		expect(taskStore).toHaveLength(2);
+		const newTask = taskStore.find(t => t.id !== "task-1");
+		expect(newTask?.payload).toMatchObject({
+			proofId: "immutable-proof:proof-1",
+			identity: TEST_ORGANIZATION_IDENTITY,
+			credentialSubject: {
+				id: "uuid:1234567890",
+				proofIntegrity: "sha256-cou0p7fk7LU5tcc/Hy6qIws8YKV9GAFI13ZNFMwmlEQ="
+			}
+		});
+	});
+
+	test("Sweep leaves a proof untouched when its task is still in flight", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({ taskId: "background-task:entity-storage:task-1" })
+		);
+		await backgroundTaskStorage.set(makeSweepTaskEntity({ status: TaskStatus.Processing }));
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000 }
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].taskId).toEqual("background-task:entity-storage:task-1");
+		expect(proofStore[0].sweepAttempts).toBeUndefined();
+		expect(proofStore[0].lastSweepAttempt).toBeUndefined();
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(1);
+	});
+
+	test("Sweep leaves a fresh proof untouched when it is younger than the staleness threshold", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({
+				taskId: "background-task:entity-storage:task-1",
+				dateCreated: new Date(FIRST_TICK - 1000).toISOString()
+			})
+		);
+		await backgroundTaskStorage.set(makeSweepTaskEntity({ status: TaskStatus.Failed }));
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000 }
+		});
+		await service.start();
+
+		expect((await proofStorage.getStore())[0].sweepAttempts).toBeUndefined();
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(1);
+	});
+
+	test("Sweep leaves a proof untouched while its backoff has not elapsed", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({
+				taskId: "background-task:entity-storage:task-1",
+				sweepAttempts: 1,
+				lastSweepAttempt: new Date(FIRST_TICK - 1000).toISOString()
+			})
+		);
+		await backgroundTaskStorage.set(makeSweepTaskEntity({ status: TaskStatus.Failed }));
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000, sweepBackoffMs: 60000 }
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].sweepAttempts).toEqual(1);
+		expect(proofStore[0].taskId).toEqual("background-task:entity-storage:task-1");
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(1);
+	});
+
+	test("Sweep parks a proof once its attempts reach the configured cap", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({
+				taskId: "background-task:entity-storage:task-1",
+				sweepAttempts: 3,
+				lastSweepAttempt: new Date(FIRST_TICK - 300000).toISOString()
+			})
+		);
+		await backgroundTaskStorage.set(makeSweepTaskEntity({ status: TaskStatus.Failed }));
+
+		const service = new ImmutableProofService({
+			config: {
+				sweepStaleThresholdMs: 60000,
+				sweepBackoffMs: 60000,
+				sweepMaxAttempts: 3
+			}
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].isParked).toEqual(true);
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(1);
+	});
+
+	test("Sweep parks a proof whose task succeeded with a notarization error and no era override is configured", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({ taskId: "background-task:entity-storage:task-1" })
+		);
+		await backgroundTaskStorage.set(
+			makeSweepTaskEntity({
+				status: TaskStatus.Success,
+				result: { notarizationError: { name: "GeneralError", message: "ledger unavailable" } }
+			})
+		);
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000 }
+		});
+		await service.start();
+
+		expect((await proofStorage.getStore())[0].isParked).toEqual(true);
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(1);
+	});
+
+	test("Sweep re-enqueues a notarization-error task when its era is explicitly authorised", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({ taskId: "background-task:entity-storage:task-1" })
+		);
+		await backgroundTaskStorage.set(
+			makeSweepTaskEntity({
+				status: TaskStatus.Success,
+				result: { notarizationError: { name: "GeneralError", message: "ledger unavailable" } }
+			})
+		);
+
+		const service = new ImmutableProofService({
+			config: {
+				sweepStaleThresholdMs: 60000,
+				sweepAssumeRetryableBefore: new Date(FIRST_TICK).toISOString()
+			}
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].isParked).toBeUndefined();
+		expect(proofStore[0].sweepAttempts).toEqual(1);
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(2);
+	});
+
+	test("Sweep parks a proof with a missing task record and no era override configured", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({ taskId: "background-task:entity-storage:missing-task" })
+		);
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000 }
+		});
+		await service.start();
+
+		expect((await proofStorage.getStore())[0].isParked).toEqual(true);
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(0);
+	});
+
+	test("Sweep re-enqueues a proof with a missing task record when its era is explicitly authorised", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({ taskId: "background-task:entity-storage:missing-task" })
+		);
+
+		const service = new ImmutableProofService({
+			config: {
+				sweepStaleThresholdMs: 60000,
+				sweepAssumeRetryableBefore: new Date(FIRST_TICK).toISOString()
+			}
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].isParked).toBeUndefined();
+		expect(proofStore[0].sweepAttempts).toEqual(1);
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(1);
+	});
+
+	test("Sweep skips a legacy proof with no taskId when the page-scan finds its task still in flight", async () => {
+		const proofEntity = makeStuckProofEntity();
+		await proofStorage.set(proofEntity);
+		await backgroundTaskStorage.set(
+			makeSweepTaskEntity({
+				status: TaskStatus.Processing,
+				payload: { proofId: `immutable-proof:${proofEntity.id}` }
+			})
+		);
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000 }
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].taskId).toBeUndefined();
+		expect(proofStore[0].sweepAttempts).toBeUndefined();
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(1);
+	});
+
+	test("Sweep treats a legacy proof as in-flight when its newer task is Processing, removing the superseded Failed record", async () => {
+		const proofEntity = makeStuckProofEntity();
+		await proofStorage.set(proofEntity);
+		await backgroundTaskStorage.set(
+			makeSweepTaskEntity({
+				id: "task-old",
+				status: TaskStatus.Failed,
+				dateCreated: new Date(FIRST_TICK - 120000).toISOString(),
+				dateModified: new Date(FIRST_TICK - 120000).toISOString(),
+				payload: { proofId: `immutable-proof:${proofEntity.id}` }
+			})
+		);
+		await backgroundTaskStorage.set(
+			makeSweepTaskEntity({
+				id: "task-new",
+				status: TaskStatus.Processing,
+				dateCreated: new Date(FIRST_TICK - 30000).toISOString(),
+				dateModified: new Date(FIRST_TICK - 30000).toISOString(),
+				payload: { proofId: `immutable-proof:${proofEntity.id}` }
+			})
+		);
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000 }
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].taskId).toBeUndefined();
+		expect(proofStore[0].sweepAttempts).toBeUndefined();
+
+		const remainingTasks = await backgroundTaskStorage.getStore();
+		expect(remainingTasks).toHaveLength(1);
+		expect(remainingTasks[0].id).toEqual("task-new");
+	});
+
+	test("Sweep heals a truly orphaned proof with no taskId and no matching task record when its era is explicitly authorised", async () => {
+		await proofStorage.set(makeStuckProofEntity());
+
+		const service = new ImmutableProofService({
+			config: {
+				sweepStaleThresholdMs: 60000,
+				sweepAssumeRetryableBefore: new Date(FIRST_TICK).toISOString()
+			}
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].isParked).toBeUndefined();
+		expect(proofStore[0].taskId).toBeDefined();
+		expect(proofStore[0].sweepAttempts).toEqual(1);
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(1);
+	});
+
+	test("Sweep respects the batch limit and re-enqueues the oldest eligible proofs first", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({
+				id: "proof-a",
+				dateCreated: new Date(FIRST_TICK - 90000).toISOString()
+			})
+		);
+		await proofStorage.set(
+			makeStuckProofEntity({
+				id: "proof-b",
+				dateCreated: new Date(FIRST_TICK - 80000).toISOString()
+			})
+		);
+		await proofStorage.set(
+			makeStuckProofEntity({
+				id: "proof-c",
+				dateCreated: new Date(FIRST_TICK - 70000).toISOString()
+			})
+		);
+
+		const service = new ImmutableProofService({
+			config: {
+				sweepStaleThresholdMs: 60000,
+				sweepBatchLimit: 2,
+				sweepAssumeRetryableBefore: new Date(FIRST_TICK).toISOString()
+			}
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		const byId = new Map(proofStore.map(p => [p.id, p]));
+		expect(byId.get("proof-a")?.sweepAttempts).toEqual(1);
+		expect(byId.get("proof-b")?.sweepAttempts).toEqual(1);
+		expect(byId.get("proof-c")?.sweepAttempts).toBeUndefined();
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(2);
+	});
+
+	test("Sweep throws contextIdMissing on a tenant-partitioned store when no tenant is in ambient context", async () => {
+		const tenantPartitionedProofStorage = new MemoryEntityStorageConnector<ImmutableProof>({
+			entitySchema: nameof<ImmutableProof>(),
+			config: { storageKey: "immutable-proof-tenant-canary" },
+			partitionContextIds: [ContextIdKeys.Tenant]
+		});
+		EntityStorageConnectorFactory.register("immutable-proof", () => tenantPartitionedProofStorage);
+
+		ContextIdStore.getContextIds = realGetContextIds;
+
+		await ContextIdStore.run({ organization: TEST_ORGANIZATION_IDENTITY }, async () => {
+			await expect(tenantPartitionedProofStorage.set(makeStuckProofEntity())).rejects.toMatchObject(
+				{
+					name: "GeneralError",
+					message: expect.stringContaining("contextIdMissing")
+				}
+			);
+		});
+	});
+
+	test("Sweep fans out across tenants via the platform component, healing a stuck proof in each", async () => {
+		const tenantPartitionedProofStorage = new MemoryEntityStorageConnector<ImmutableProof>({
+			entitySchema: nameof<ImmutableProof>(),
+			config: { storageKey: "immutable-proof-multi-tenant" },
+			partitionContextIds: [ContextIdKeys.Tenant]
+		});
+		EntityStorageConnectorFactory.register("immutable-proof", () => tenantPartitionedProofStorage);
+
+		ContextIdStore.getContextIds = realGetContextIds;
+
+		const tenants = ["tenant-a", "tenant-b"];
+		ComponentFactory.register("platform", () => ({
+			className: () => "platform",
+			isMultiTenant: () => true,
+			execute: async (method: () => Promise<void>) => {
+				const baseContextIds = (await ContextIdStore.getContextIds()) ?? {};
+				for (const tenant of tenants) {
+					await ContextIdStore.run({ ...baseContextIds, [ContextIdKeys.Tenant]: tenant }, method);
+				}
+			},
+			getLocalOriginContext: async () => undefined
+		}));
+
+		for (const tenant of tenants) {
+			await ContextIdStore.run(
+				{ [ContextIdKeys.Tenant]: tenant, [ContextIdKeys.Organization]: `org-${tenant}` },
+				async () => {
+					await tenantPartitionedProofStorage.set(
+						makeStuckProofEntity({ id: `proof-${tenant}`, organizationId: `org-${tenant}` })
+					);
+				}
+			);
+		}
+
+		const service = new ImmutableProofService({
+			config: {
+				sweepStaleThresholdMs: 60000,
+				sweepAssumeRetryableBefore: new Date(FIRST_TICK).toISOString()
+			}
+		});
+		await service.start();
+
+		for (const tenant of tenants) {
+			const proofEntity = await ContextIdStore.run({ [ContextIdKeys.Tenant]: tenant }, async () =>
+				tenantPartitionedProofStorage.get(`proof-${tenant}`)
+			);
+			expect(proofEntity?.sweepAttempts).toEqual(1);
+			expect(proofEntity?.taskId).toBeDefined();
+		}
+
+		const taskStore = await backgroundTaskStorage.getStore();
+		for (const tenant of tenants) {
+			const task = taskStore.find(t => t.contextIds?.[ContextIdKeys.Tenant] === tenant);
+			expect(task).toBeDefined();
+			expect(task?.contextIds?.[ContextIdKeys.Organization]).toEqual(`org-${tenant}`);
+		}
+	});
+
+	test("Stop removes the scheduled sweep only when this instance registered it", async () => {
+		const calls = { added: 0, removed: 0 };
+		ComponentFactory.register("task-scheduler", () => ({
+			className: () => "task-scheduler",
+			addTask: async () => {
+				calls.added++;
+			},
+			removeTask: async () => {
+				calls.removed++;
+			},
+			tasksInfo: async () => ({ tasks: {} })
+		}));
+
+		const service = new ImmutableProofService();
+		await service.start();
+		await service.stop();
+		expect(calls.added).toEqual(1);
+		expect(calls.removed).toEqual(1);
+
+		Factory.createFactory("engine-core").register("engine", () => ({
+			className: () => "MockEngineCore",
+			isClone: () => true,
+			getCloneData: () => undefined
+		}));
+		const cloneService = new ImmutableProofService();
+		await cloneService.start();
+		await cloneService.stop();
+		expect(calls.added).toEqual(1);
+		expect(calls.removed).toEqual(1);
 	});
 });
