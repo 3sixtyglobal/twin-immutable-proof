@@ -61,7 +61,7 @@ export async function processProofTask(
 	let logging: ILoggingComponent | undefined;
 	try {
 		if (!Is.empty(engineCloneData)) {
-			// If the clone data is not empty we are running in a worker thread — create a
+			// If the clone data is not empty we are running in a worker thread - create a
 			// cloned engine instance via dynamic import so no static engine dependency is needed.
 			engine = await ModuleHelper.execModuleMethod<{
 				start: () => Promise<void>;

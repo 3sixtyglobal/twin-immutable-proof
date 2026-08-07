@@ -1,5 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
+import { HealthCategory, HealthStatus } from "@twin.org/api-models";
 import { TaskStatus } from "@twin.org/background-task-models";
 import {
 	type BackgroundTask,
@@ -420,7 +421,7 @@ describe("ImmutableProofService", () => {
 
 		// Poll the background task store for a failed task. The task runs in a worker thread
 		// that has its own globalThis, so factory registrations from the main thread are not
-		// visible — IdentityConnectorFactory.get("identity") throws factory.noGet.
+		// visible - IdentityConnectorFactory.get("identity") throws factory.noGet.
 		let failedTask;
 		for (let i = 0; i < 40; i++) {
 			failedTask = (await backgroundTaskStorage.getStore()).find(t => t.status === "failed");
@@ -1620,5 +1621,23 @@ describe("ImmutableProofService", () => {
 		await cloneService.stop();
 		expect(calls.added).toEqual(1);
 		expect(calls.removed).toEqual(1);
+	});
+
+	describe("ImmutableProofService health checks", () => {
+		test("health check returns ok status when notarization connector is accessible", async () => {
+			const service = new ImmutableProofService();
+			const results = await service.healthApplication(vi.fn());
+			expect(results).toHaveLength(1);
+			const result = results?.[0];
+			expect(result?.category).toBe(HealthCategory.Application);
+			expect(result?.status).toBe(HealthStatus.Ok);
+		});
+
+		test("health check returns empty results without org context", async () => {
+			ContextIdStore.getContextIds = vi.fn().mockReturnValue({});
+			const service = new ImmutableProofService();
+			const results = await service.healthApplication(vi.fn());
+			expect(results).toHaveLength(0);
+		});
 	});
 });

@@ -12,6 +12,12 @@
 			"sweepFailed": "The reconciliation sweep cycle failed"
 		}
 	},
+	"health": {
+		"immutableProofService": {
+			"healthDescription": "Immutable proof service application health check",
+			"getNotarizationFailed": "Failed to retrieve the health check notarization"
+		}
+	},
 	"info": {
 		"immutableProofService": {
 			"createdProof": "The immutable proof with Id \"{proofId}\" has been created successfully",

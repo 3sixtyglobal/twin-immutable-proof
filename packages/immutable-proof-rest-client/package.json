@@ -40,6 +40,7 @@
 	"devDependencies": {
 		"@twin.org/nameof-transformer": "next",
 		"@twin.org/nameof-vitest-plugin": "next",
+		"@twin.org/standards-w3c-did": "next",
 		"@twin.org/validate-locales": "next",
 		"@vitest/coverage-v8": "4.1.10",
 		"copyfiles": "2.4.1",

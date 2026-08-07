@@ -1,6 +1,13 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IPlatformComponent } from "@twin.org/api-models";
+import {
+	HealthCategory,
+	HealthStatus,
+	type HealthApplicationCallback,
+	type IHealth,
+	type IHealthProviderComponent,
+	type IPlatformComponent
+} from "@twin.org/api-models";
 import {
 	TaskStatus,
 	type IBackgroundTask,
@@ -56,6 +63,7 @@ import type { ILoggingComponent } from "@twin.org/logging-models";
 import { nameof, nameofKebabCase } from "@twin.org/nameof";
 import {
 	NotarizationConnectorFactory,
+	NotarizationMode,
 	type INotarizationConnector
 } from "@twin.org/notarization-models";
 import {
@@ -72,7 +80,7 @@ import type { IImmutableProofServiceConstructorOptions } from "./models/IImmutab
 /**
  * Class for performing immutable proof operations.
  */
-export class ImmutableProofService implements IImmutableProofComponent {
+export class ImmutableProofService implements IImmutableProofComponent, IHealthProviderComponent {
 	/**
 	 * Runtime name for the class.
 	 */
@@ -469,6 +477,55 @@ export class ImmutableProofService implements IImmutableProofComponent {
 	 */
 	public className(): string {
 		return ImmutableProofService.CLASS_NAME;
+	}
+
+	/**
+	 * Runs a full notarization lifecycle (create, get, remove) against the organisation identity
+	 * from the current context.
+	 * @param callback The callback to invoke with the health status of the service.
+	 * @returns The health status of the service.
+	 */
+	public async healthApplication(
+		callback: HealthApplicationCallback
+	): Promise<IHealth[] | undefined> {
+		const contextIds = (await ContextIdStore.getContextIds()) ?? {};
+		const orgId = contextIds[ContextIdKeys.Organization];
+
+		if (!Is.stringValue(orgId)) {
+			return [];
+		}
+
+		try {
+			const notarizationId = await this._notarizationConnector.create(orgId, {
+				mode: NotarizationMode.Dynamic,
+				data: new Uint8Array([0])
+			});
+			const info = await this._notarizationConnector.get(notarizationId);
+			await this._notarizationConnector.remove(orgId, notarizationId);
+			return [
+				{
+					source: ImmutableProofService.CLASS_NAME,
+					category: HealthCategory.Application,
+					status: Is.object(info) ? HealthStatus.Ok : HealthStatus.Error,
+					description: "healthDescription",
+					message: Is.object(info) ? undefined : "getNotarizationFailed",
+					data: {
+						notarizationId
+					}
+				}
+			];
+		} catch (error) {
+			return [
+				{
+					source: ImmutableProofService.CLASS_NAME,
+					category: HealthCategory.Application,
+					status: HealthStatus.Error,
+					description: "healthDescription",
+					message: "getNotarizationFailed",
+					error: BaseError.fromError(error)
+				}
+			];
+		}
 	}
 
 	/**
@@ -1305,7 +1362,7 @@ export class ImmutableProofService implements IImmutableProofComponent {
 				};
 
 				// Keep notarizationId on the proof in the response so callers can read proof.notarizationId,
-				// but do NOT include it in the object passed to checkVerifiableCredential — the hash covers
+				// but do NOT include it in the object passed to checkVerifiableCredential - the hash covers
 				// the whole proof except proofValue, so an injected notarizationId would break the signature.
 				verifiableCredential.proof = {
 					...proofForVerification,
