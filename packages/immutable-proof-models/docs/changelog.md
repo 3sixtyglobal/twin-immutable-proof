@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2-next.4](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-models-v0.9.2-next.3...immutable-proof-models-v0.9.2-next.4) (2026-08-07)
+
+
+### Features
+
+* health provider ([#96](https://github.com/iotaledger/twin-immutable-proof/issues/96)) ([b01e203](https://github.com/iotaledger/twin-immutable-proof/commit/b01e203dd8cd65ee31580401b529feb67edfb90f))
+
 ## [0.9.2-next.3](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-models-v0.9.2-next.2...immutable-proof-models-v0.9.2-next.3) (2026-08-06)
 
 
