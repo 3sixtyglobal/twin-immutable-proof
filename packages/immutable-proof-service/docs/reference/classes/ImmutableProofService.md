@@ -5,6 +5,7 @@ Class for performing immutable proof operations.
 ## Implements
 
 - `IImmutableProofComponent`
+- `IHealthProviderComponent`
 
 ## Constructors
 
@@ -51,6 +52,33 @@ The class name of the component.
 #### Implementation of
 
 `IImmutableProofComponent.className`
+
+***
+
+### healthApplication() {#healthapplication}
+
+> **healthApplication**(`callback`): `Promise`\<`IHealth`[] \| `undefined`\>
+
+Runs a full notarization lifecycle (create, get, remove) against the organisation identity
+from the current context.
+
+#### Parameters
+
+##### callback
+
+`HealthApplicationCallback`
+
+The callback to invoke with the health status of the service.
+
+#### Returns
+
+`Promise`\<`IHealth`[] \| `undefined`\>
+
+The health status of the service.
+
+#### Implementation of
+
+`IHealthProviderComponent.healthApplication`
 
 ***
 
