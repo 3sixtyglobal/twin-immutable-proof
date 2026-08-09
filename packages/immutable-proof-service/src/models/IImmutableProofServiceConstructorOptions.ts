@@ -54,6 +54,11 @@ export interface IImmutableProofServiceConstructorOptions {
 	taskSchedulerComponentType?: string;
 
 	/**
+	 * The component type for the optional telemetry component used for event metrics.
+	 */
+	telemetryComponentType?: string;
+
+	/**
 	 * The configuration for the connector.
 	 */
 	config?: IImmutableProofServiceConfig;

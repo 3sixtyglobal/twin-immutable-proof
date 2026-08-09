@@ -45,6 +45,7 @@
 		"@twin.org/nameof": "next",
 		"@twin.org/notarization-models": "next",
 		"@twin.org/standards-w3c-did": "next",
+		"@twin.org/telemetry-models": "next",
 		"@twin.org/web": "next"
 	},
 	"devDependencies": {

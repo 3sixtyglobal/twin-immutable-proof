@@ -47,6 +47,8 @@ import { IdentityConnectorFactory, type IIdentityConnector } from "@twin.org/ide
 import {
 	ImmutableProofContexts,
 	ImmutableProofFailure,
+	ImmutableProofMetricIds,
+	ImmutableProofMetrics,
 	ImmutableProofTopics,
 	ImmutableProofTypes,
 	type IImmutableProof,
@@ -73,6 +75,7 @@ import {
 	type IDidVerifiableCredential,
 	type IProof
 } from "@twin.org/standards-w3c-did";
+import { MetricHelper, type ITelemetryComponent } from "@twin.org/telemetry-models";
 import type { ImmutableProof } from "./entities/immutableProof.js";
 import type { IImmutableProofServiceConfig } from "./models/IImmutableProofServiceConfig.js";
 import type { IImmutableProofServiceConstructorOptions } from "./models/IImmutableProofServiceConstructorOptions.js";
@@ -287,6 +290,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	private readonly _sweepAssumeRetryableBefore?: string;
 
 	/**
+	 * The optional telemetry component used for event metrics.
+	 * @internal
+	 */
+	private readonly _telemetryComponent?: ITelemetryComponent;
+
+	/**
 	 * Creates an instance of ImmutableProofService.
 	 * @param options The dependencies for the immutable proof connector.
 	 */
@@ -469,6 +478,10 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 		this._sweepBackoffMs =
 			this._config.sweepBackoffMs ?? ImmutableProofService._DEFAULT_SWEEP_BACKOFF_MS;
 		this._sweepAssumeRetryableBefore = this._config.sweepAssumeRetryableBefore;
+
+		this._telemetryComponent = ComponentFactory.getIfExists<ITelemetryComponent>(
+			options?.telemetryComponentType
+		);
 	}
 
 	/**
@@ -534,6 +547,8 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	 * @returns A promise that resolves when the background task handler has been registered.
 	 */
 	public async start(nodeLoggingComponentType?: string): Promise<void> {
+		await MetricHelper.createMetrics(this._telemetryComponent, ImmutableProofMetrics);
+
 		await this._backgroundTaskComponent.registerHandler<
 			IImmutableProofTaskPayload,
 			IImmutableProofTaskResult
@@ -674,6 +689,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 				throw error;
 			}
 
+			await MetricHelper.metricIncrement(
+				this._telemetryComponent,
+				ImmutableProofMetricIds.ProofsCreated,
+				{ hasDeleteLock: Is.stringValue(options?.deleteLock) }
+			);
+
 			return proofTaskPayload.proofId;
 		} catch (error) {
 			throw new GeneralError(ImmutableProofService.CLASS_NAME, "createFailed", undefined, error);
@@ -718,6 +739,19 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 		try {
 			const { verified, failure } = await this.internalGet(id, true);
 
+			if (verified) {
+				await MetricHelper.metricIncrement(
+					this._telemetryComponent,
+					ImmutableProofMetricIds.VerificationsSucceeded
+				);
+			} else {
+				await MetricHelper.metricIncrement(
+					this._telemetryComponent,
+					ImmutableProofMetricIds.VerificationsFailed,
+					{ failureReason: failure }
+				);
+			}
+
 			return {
 				"@context": ImmutableProofContexts.Context,
 				type: ImmutableProofTypes.ImmutableProofVerification,
@@ -758,6 +792,11 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 			}
 
 			await this._proofStorage.remove(proofId);
+
+			await MetricHelper.metricIncrement(
+				this._telemetryComponent,
+				ImmutableProofMetricIds.ProofsRemoved
+			);
 		} catch (error) {
 			throw new GeneralError(ImmutableProofService.CLASS_NAME, "removeFailed", undefined, error);
 		}
@@ -791,6 +830,11 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 				);
 				delete proofEntity.notarizationId;
 				await this._proofStorage.set(proofEntity);
+
+				await MetricHelper.metricIncrement(
+					this._telemetryComponent,
+					ImmutableProofMetricIds.NotarizationsRemoved
+				);
 			}
 		} catch (error) {
 			throw new GeneralError(

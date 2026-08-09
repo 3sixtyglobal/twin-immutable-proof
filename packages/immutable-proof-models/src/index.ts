@@ -16,5 +16,7 @@ export * from "./models/IImmutableProofDataIntegrity.js";
 export * from "./models/IImmutableProofVerification.js";
 export * from "./models/immutableProofContexts.js";
 export * from "./models/immutableProofFailure.js";
+export * from "./models/immutableProofMetricIds.js";
+export * from "./models/immutableProofMetrics.js";
 export * from "./models/immutableProofTopics.js";
 export * from "./models/immutableProofTypes.js";
