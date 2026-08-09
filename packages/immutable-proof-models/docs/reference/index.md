@@ -24,6 +24,7 @@
 
 - [ImmutableProofContexts](type-aliases/ImmutableProofContexts.md)
 - [ImmutableProofFailure](type-aliases/ImmutableProofFailure.md)
+- [ImmutableProofMetricIds](type-aliases/ImmutableProofMetricIds.md)
 - [ImmutableProofTopics](type-aliases/ImmutableProofTopics.md)
 - [ImmutableProofTypes](type-aliases/ImmutableProofTypes.md)
 
@@ -31,5 +32,7 @@
 
 - [ImmutableProofContexts](variables/ImmutableProofContexts.md)
 - [ImmutableProofFailure](variables/ImmutableProofFailure.md)
+- [ImmutableProofMetricIds](variables/ImmutableProofMetricIds.md)
+- [ImmutableProofMetrics](variables/ImmutableProofMetrics.md)
 - [ImmutableProofTopics](variables/ImmutableProofTopics.md)
 - [ImmutableProofTypes](variables/ImmutableProofTypes.md)
