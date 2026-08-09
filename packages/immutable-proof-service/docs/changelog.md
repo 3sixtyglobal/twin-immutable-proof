@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.2-next.5](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.9.2-next.4...immutable-proof-service-v0.9.2-next.5) (2026-08-09)
+
+
+### Features
+
+* add event-driven telemetry metrics ([#99](https://github.com/iotaledger/twin-immutable-proof/issues/99)) ([9ceb5dc](https://github.com/iotaledger/twin-immutable-proof/commit/9ceb5dcea75dcd239f5c551208c68d756ecf89a2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.2-next.4 to 0.9.2-next.5
+    * @twin.org/immutable-proof-task bumped from 0.9.2-next.4 to 0.9.2-next.5
+
 ## [0.9.2-next.4](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.9.2-next.3...immutable-proof-service-v0.9.2-next.4) (2026-08-07)
 
 
