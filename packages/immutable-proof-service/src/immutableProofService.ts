@@ -594,7 +594,7 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	 * @returns A promise that resolves when the scheduled sweep has been removed.
 	 */
 	public async stop(nodeLoggingComponentType?: string): Promise<void> {
-		// Only remove the scheduled sweep if this instance registered it — a clone stopping
+		// Only remove the scheduled sweep if this instance registered it - a clone stopping
 		// must not cancel the main thread's schedule.
 		if (this._sweepScheduled) {
 			await this._taskScheduler.removeTask(ImmutableProofService._SWEEP_SCHEDULED_TASK_ID);
@@ -1012,7 +1012,7 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 			Map<string, IBackgroundTask<IImmutableProofTaskPayload, IImmutableProofTaskResult>>
 		>
 	): Promise<"skipped" | "skippedInFlight" | "parked" | "reEnqueued"> {
-		// Belt-and-braces: the selection query cannot reliably exclude parked proofs —
+		// Belt-and-braces: the selection query cannot reliably exclude parked proofs -
 		// NotEquals against an absent property returns false under both the shared in-memory
 		// matcher and SQL NULL semantics, which would incorrectly exclude every normal proof
 		// instead of just parked ones. Filtering here instead is correct and no more expensive,
