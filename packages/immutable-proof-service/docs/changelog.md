@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.2-next.6](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.9.2-next.5...immutable-proof-service-v0.9.2-next.6) (2026-08-21)
+
+
+### Features
+
+* tracing ([#104](https://github.com/iotaledger/twin-immutable-proof/issues/104)) ([63069ac](https://github.com/iotaledger/twin-immutable-proof/commit/63069acf2813da477c0baf31b15ed52ce33129b1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.2-next.5 to 0.9.2-next.6
+    * @twin.org/immutable-proof-task bumped from 0.9.2-next.5 to 0.9.2-next.6
+
 ## [0.9.2-next.5](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.9.2-next.4...immutable-proof-service-v0.9.2-next.5) (2026-08-09)
 
 
