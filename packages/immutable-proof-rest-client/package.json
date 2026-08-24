@@ -1,6 +1,6 @@
 {
 	"name": "@twin.org/immutable-proof-rest-client",
-	"version": "0.9.2-next.6",
+	"version": "0.9.3-next.0",
 	"description": "HTTP client for calling immutable proof service endpoints from external components",
 	"repository": {
 		"type": "git",
@@ -33,7 +33,7 @@
 		"@twin.org/core": "next",
 		"@twin.org/data-json-ld": "next",
 		"@twin.org/entity": "next",
-		"@twin.org/immutable-proof-models": "0.9.2-next.6",
+		"@twin.org/immutable-proof-models": "0.9.3-next.0",
 		"@twin.org/nameof": "next",
 		"@twin.org/web": "next"
 	},
