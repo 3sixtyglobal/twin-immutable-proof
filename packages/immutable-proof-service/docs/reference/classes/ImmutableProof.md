@@ -67,3 +67,44 @@ The notarization id.
 > `optional` **vcContext?**: `"https://www.w3.org/2018/credentials/v1"` \| `"https://www.w3.org/ns/credentials/v2"`
 
 The verifiable credential context.
+
+***
+
+### taskId? {#taskid}
+
+> `optional` **taskId?**: `string`
+
+The id of the most recently enqueued background task for this proof.
+
+***
+
+### deleteLock? {#deletelock}
+
+> `optional` **deleteLock?**: `string`
+
+The date/time the notarization lock expires, persisted so a reconciliation sweep can
+rebuild the original task payload without losing the caller's requested delete lock.
+
+***
+
+### sweepAttempts? {#sweepattempts}
+
+> `optional` **sweepAttempts?**: `number`
+
+The number of reconciliation sweep attempts made for this proof.
+
+***
+
+### lastSweepAttempt? {#lastsweepattempt}
+
+> `optional` **lastSweepAttempt?**: `string`
+
+The date/time of the most recent reconciliation sweep attempt.
+
+***
+
+### isParked? {#isparked}
+
+> `optional` **isParked?**: `boolean`
+
+Set to true when the reconciliation sweep has exhausted its attempts; absent otherwise.

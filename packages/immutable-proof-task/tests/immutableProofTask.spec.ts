@@ -44,7 +44,7 @@ describe("ImmutableProofTask", () => {
 	});
 
 	test("Can process a proof task and store the notarization", async () => {
-		const result = await processProofTask(undefined as never, {
+		const result = await processProofTask(undefined, {
 			proofId: TEST_PROOF_ID,
 			identity: TEST_NODE_IDENTITY,
 			identityConnectorType: "identity",
@@ -81,7 +81,7 @@ describe("ImmutableProofTask", () => {
 	test("Can process a proof task with a delete lock", async () => {
 		const deleteLock = "2030-01-01T00:00:00.000Z";
 
-		const result = await processProofTask(undefined as never, {
+		const result = await processProofTask(undefined, {
 			proofId: TEST_PROOF_ID,
 			identity: TEST_NODE_IDENTITY,
 			identityConnectorType: "identity",
@@ -115,7 +115,7 @@ describe("ImmutableProofTask", () => {
 				}) as never
 		);
 
-		const result = await processProofTask(undefined as never, {
+		const result = await processProofTask(undefined, {
 			proofId: TEST_PROOF_ID,
 			identity: TEST_NODE_IDENTITY,
 			identityConnectorType: "identity",
@@ -138,7 +138,7 @@ describe("ImmutableProofTask", () => {
 
 	test("Throws when a failure happens before the notarization phase", async () => {
 		await expect(
-			processProofTask(undefined as never, {
+			processProofTask(undefined, {
 				proofId: TEST_PROOF_ID,
 				identity: TEST_NODE_IDENTITY,
 				identityConnectorType: "unknown-identity-connector",
@@ -167,7 +167,7 @@ describe("ImmutableProofTask", () => {
 				}) as never
 		);
 
-		const result = await processProofTask(undefined as never, {
+		const result = await processProofTask(undefined, {
 			proofId: TEST_PROOF_ID,
 			identity: TEST_NODE_IDENTITY,
 			identityConnectorType: "identity",

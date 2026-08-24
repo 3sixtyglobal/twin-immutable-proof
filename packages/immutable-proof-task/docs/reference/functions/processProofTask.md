@@ -8,7 +8,7 @@ Process a proof task by creating a verifiable credential and notarizing it.
 
 ### engineCloneData
 
-`IEngineCoreClone`
+`unknown`
 
 The engine clone data used to initialize a cloned engine instance when running in a separate thread.
 

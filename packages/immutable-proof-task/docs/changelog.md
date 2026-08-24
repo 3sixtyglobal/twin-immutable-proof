@@ -1,5 +1,113 @@
 # Changelog
 
+## [0.9.2-next.6](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.2-next.5...immutable-proof-task-v0.9.2-next.6) (2026-08-21)
+
+
+### Miscellaneous Chores
+
+* **immutable-proof-task:** Synchronize repo versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.2-next.5 to 0.9.2-next.6
+
+## [0.9.2-next.5](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.2-next.4...immutable-proof-task-v0.9.2-next.5) (2026-08-09)
+
+
+### Miscellaneous Chores
+
+* **immutable-proof-task:** Synchronize repo versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.2-next.4 to 0.9.2-next.5
+
+## [0.9.2-next.4](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.2-next.3...immutable-proof-task-v0.9.2-next.4) (2026-08-07)
+
+
+### Features
+
+* health provider ([#96](https://github.com/iotaledger/twin-immutable-proof/issues/96)) ([b01e203](https://github.com/iotaledger/twin-immutable-proof/commit/b01e203dd8cd65ee31580401b529feb67edfb90f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.2-next.3 to 0.9.2-next.4
+
+## [0.9.2-next.3](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.2-next.2...immutable-proof-task-v0.9.2-next.3) (2026-08-06)
+
+
+### Miscellaneous Chores
+
+* **immutable-proof-task:** Synchronize repo versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.2-next.2 to 0.9.2-next.3
+
+## [0.9.2-next.2](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.2-next.1...immutable-proof-task-v0.9.2-next.2) (2026-07-30)
+
+
+### Miscellaneous Chores
+
+* **immutable-proof-task:** Synchronize repo versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.2-next.1 to 0.9.2-next.2
+
+## [0.9.2-next.1](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.2-next.0...immutable-proof-task-v0.9.2-next.1) (2026-07-28)
+
+
+### Features
+
+* add context id features ([#14](https://github.com/iotaledger/twin-immutable-proof/issues/14)) ([ed5a594](https://github.com/iotaledger/twin-immutable-proof/commit/ed5a594eaa7d50f74b1c09a7a560d48b33a4ecd1))
+* add proof task retries, failure retention and step logging ([#71](https://github.com/iotaledger/twin-immutable-proof/issues/71)) ([60e21eb](https://github.com/iotaledger/twin-immutable-proof/commit/60e21ebb8a143e19dd21db5aac35c6d0f1585345))
+* add validate-locales ([d6a7c07](https://github.com/iotaledger/twin-immutable-proof/commit/d6a7c0794a1922981a42f56cc24724d7cee727f6))
+* eslint migration to flat config ([9e63e42](https://github.com/iotaledger/twin-immutable-proof/commit/9e63e420ba686db78dca806d111f646c057083d6))
+* eslint migration to flat config ([c8536f2](https://github.com/iotaledger/twin-immutable-proof/commit/c8536f219c7709c6c08b9266e537831f9054dda9))
+* immutable proof as vc ([#31](https://github.com/iotaledger/twin-immutable-proof/issues/31)) ([79cdb03](https://github.com/iotaledger/twin-immutable-proof/commit/79cdb03eb86c4f6d2ab1d5bf235f74ff74e8b877))
+* remove engine dependency ([#86](https://github.com/iotaledger/twin-immutable-proof/issues/86)) ([c840878](https://github.com/iotaledger/twin-immutable-proof/commit/c84087829f50a6efd52b2c14e5ebcca85401dd73))
+* replace verifiable storage with notarization as immutable proof ([#41](https://github.com/iotaledger/twin-immutable-proof/issues/41)) ([54f2154](https://github.com/iotaledger/twin-immutable-proof/commit/54f215469b0bdc9ea94cad572ca13b8533144104))
+* typescript 6 update ([34d8aea](https://github.com/iotaledger/twin-immutable-proof/commit/34d8aea0ea0c1e1252de1882517abb1683d98313))
+* update background tasks ([f25741c](https://github.com/iotaledger/twin-immutable-proof/commit/f25741c704e2c8311bc98bc69d4d926c523c781e))
+* update dependencies ([1ec6b18](https://github.com/iotaledger/twin-immutable-proof/commit/1ec6b18e93198a8fc4935700863cdab1c3df7b64))
+* update dependencies ([7d6b321](https://github.com/iotaledger/twin-immutable-proof/commit/7d6b321928ca0434ee530816b1440f1687b94a6e))
+* update framework core ([e708d4d](https://github.com/iotaledger/twin-immutable-proof/commit/e708d4dd3febcfbcd64663d5be004eab1d26c0fb))
+* use shared store mechanism ([#3](https://github.com/iotaledger/twin-immutable-proof/issues/3)) ([7042a40](https://github.com/iotaledger/twin-immutable-proof/commit/7042a40f0ef8b01463f07aeb1efae4f417162fa1))
+
+
+### Bug Fixes
+
+* missing type definition ([4235bf4](https://github.com/iotaledger/twin-immutable-proof/commit/4235bf49cbde3e97dd03be0d924bf60189f24223))
+* missing type definition ([661eaed](https://github.com/iotaledger/twin-immutable-proof/commit/661eaed5d9730e5c8b23ede5a800d43abf85bb5f))
+* missing type definition ([fc78ec3](https://github.com/iotaledger/twin-immutable-proof/commit/fc78ec3c3c317809bc10bde19bf4de18306ece1a))
+* package dependencies ([4514e66](https://github.com/iotaledger/twin-immutable-proof/commit/4514e6632f40a91659e3dc92c474459fc146130c))
+* pass context ids to populateClone ([#24](https://github.com/iotaledger/twin-immutable-proof/issues/24)) ([f360e71](https://github.com/iotaledger/twin-immutable-proof/commit/f360e71d6895d9abbc85e1f5ffb2579e9d9666ac))
+* reduce thread overhead ([#74](https://github.com/iotaledger/twin-immutable-proof/issues/74)) ([7d3763b](https://github.com/iotaledger/twin-immutable-proof/commit/7d3763beb38da8c30dae48ee4db0f7241c72ca79))
+* use async getStore in tests ([ec0b3b3](https://github.com/iotaledger/twin-immutable-proof/commit/ec0b3b38271fddf38a4b521cf871cc9cc01049f4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.2-next.0 to 0.9.2-next.1
+
 ## [0.9.1](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.1...immutable-proof-task-v0.9.1) (2026-07-27)
 
 

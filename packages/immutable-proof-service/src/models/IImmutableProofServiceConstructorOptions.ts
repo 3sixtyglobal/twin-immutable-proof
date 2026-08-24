@@ -41,6 +41,29 @@ export interface IImmutableProofServiceConstructorOptions {
 	eventBusComponentType?: string;
 
 	/**
+	 * The platform component type, used to fan the reconciliation sweep out across every
+	 * tenant.
+	 * @default platform
+	 */
+	platformComponentType?: string;
+
+	/**
+	 * The task scheduler component type, used to run the reconciliation sweep on a schedule.
+	 * @default task-scheduler
+	 */
+	taskSchedulerComponentType?: string;
+
+	/**
+	 * The component type for the optional telemetry component used for event metrics.
+	 */
+	telemetryComponentType?: string;
+
+	/**
+	 * The component type for the optional tracing component used for spans.
+	 */
+	tracingComponentType?: string;
+
+	/**
 	 * The configuration for the connector.
 	 */
 	config?: IImmutableProofServiceConfig;

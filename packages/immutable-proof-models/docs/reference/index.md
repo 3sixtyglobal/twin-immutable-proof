@@ -24,6 +24,9 @@
 
 - [ImmutableProofContexts](type-aliases/ImmutableProofContexts.md)
 - [ImmutableProofFailure](type-aliases/ImmutableProofFailure.md)
+- [ImmutableProofMetricIds](type-aliases/ImmutableProofMetricIds.md)
+- [ImmutableProofSpanAttributes](type-aliases/ImmutableProofSpanAttributes.md)
+- [ImmutableProofSpanNames](type-aliases/ImmutableProofSpanNames.md)
 - [ImmutableProofTopics](type-aliases/ImmutableProofTopics.md)
 - [ImmutableProofTypes](type-aliases/ImmutableProofTypes.md)
 
@@ -31,5 +34,9 @@
 
 - [ImmutableProofContexts](variables/ImmutableProofContexts.md)
 - [ImmutableProofFailure](variables/ImmutableProofFailure.md)
+- [ImmutableProofMetricIds](variables/ImmutableProofMetricIds.md)
+- [ImmutableProofMetrics](variables/ImmutableProofMetrics.md)
+- [ImmutableProofSpanAttributes](variables/ImmutableProofSpanAttributes.md)
+- [ImmutableProofSpanNames](variables/ImmutableProofSpanNames.md)
 - [ImmutableProofTopics](variables/ImmutableProofTopics.md)
 - [ImmutableProofTypes](variables/ImmutableProofTypes.md)

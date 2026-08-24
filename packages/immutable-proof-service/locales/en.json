@@ -8,17 +8,35 @@
 			"removeFailed": "Removing the Immutable Proof failed",
 			"removeNotarizationFailed": "Removing notarization entry from the Immutable Proof failed",
 			"proofNotFound": "The proof with the Id \"{notFoundId}\" was not found",
-			"createProofFailed": "Creating the immutable proof failed"
+			"createProofFailed": "Creating the immutable proof failed",
+			"sweepFailed": "The reconciliation sweep cycle failed"
+		}
+	},
+	"health": {
+		"immutableProofService": {
+			"healthDescription": "Immutable proof service application health check",
+			"getNotarizationFailed": "Failed to retrieve the health check notarization"
 		}
 	},
 	"info": {
 		"immutableProofService": {
-			"createdProof": "The immutable proof with Id \"{proofId}\" has been created successfully"
+			"createdProof": "The immutable proof with Id \"{proofId}\" has been created successfully",
+			"sweepReEnqueued": "Re-enqueued stuck proof \"{proofId}\" as task \"{taskId}\"",
+			"sweepCompleted": "Reconciliation sweep cycle completed (scanned: {scanned}, reEnqueued: {reEnqueued}, skippedInFlight: {skippedInFlight}, newlyParked: {newlyParked}, totalParked: {totalParked})"
 		}
 	},
 	"warn": {
 		"immutableProofService": {
-			"taskRecordRemoveFailed": "Removing the completed task record for proof \"{proofId}\" failed, the record will be removed when its retention expires"
+			"taskRecordRemoveFailed": "Removing the completed task record for proof \"{proofId}\" failed, the record will be removed when its retention expires",
+			"orphanedTaskRemoveFailed": "Removing the background task \"{taskId}\" for proof \"{proofId}\" failed after the proof entity could not be persisted; the task will still run to completion",
+			"supersededTaskRemoveFailed": "Removing the superseded background task \"{taskId}\" for proof \"{proofId}\" failed, the record will be removed when its retention expires",
+			"sweepParked": "Parked proof \"{proofId}\" after {sweepAttempts} sweep attempts",
+			"sweepParkedTotal": "{totalParked} proof(s) are currently parked and require operator investigation"
+		}
+	},
+	"debug": {
+		"immutableProofService": {
+			"sweepSkippedInFlight": "Skipped sweeping proof \"{proofId}\", a task is already in flight"
 		}
 	}
 }

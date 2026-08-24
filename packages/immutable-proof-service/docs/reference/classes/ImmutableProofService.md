@@ -5,6 +5,7 @@ Class for performing immutable proof operations.
 ## Implements
 
 - `IImmutableProofComponent`
+- `IHealthProviderComponent`
 
 ## Constructors
 
@@ -54,6 +55,33 @@ The class name of the component.
 
 ***
 
+### healthApplication() {#healthapplication}
+
+> **healthApplication**(`callback`): `Promise`\<`IHealth`[] \| `undefined`\>
+
+Runs a full notarization lifecycle (create, get, remove) against the organisation identity
+from the current context.
+
+#### Parameters
+
+##### callback
+
+`HealthApplicationCallback`
+
+The callback to invoke with the health status of the service.
+
+#### Returns
+
+`Promise`\<`IHealth`[] \| `undefined`\>
+
+The health status of the service.
+
+#### Implementation of
+
+`IHealthProviderComponent.healthApplication`
+
+***
+
 ### start() {#start}
 
 > **start**(`nodeLoggingComponentType?`): `Promise`\<`void`\>
@@ -77,6 +105,32 @@ A promise that resolves when the background task handler has been registered.
 #### Implementation of
 
 `IImmutableProofComponent.start`
+
+***
+
+### stop() {#stop}
+
+> **stop**(`nodeLoggingComponentType?`): `Promise`\<`void`\>
+
+The component needs to be stopped when the node is closed.
+
+#### Parameters
+
+##### nodeLoggingComponentType?
+
+`string`
+
+The node logging component type.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+A promise that resolves when the scheduled sweep has been removed.
+
+#### Implementation of
+
+`IImmutableProofComponent.stop`
 
 ***
 
