@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.2](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-rest-client-v0.9.2...immutable-proof-rest-client-v0.9.2) (2026-08-24)
+
+
+### Features
+
+* release to production ([cb7ecff](https://github.com/iotaledger/twin-immutable-proof/commit/cb7ecff3e9a1ec8b4391d7efea4a58057b8b66c6))
+* release to production ([#110](https://github.com/iotaledger/twin-immutable-proof/issues/110)) ([7bfe455](https://github.com/iotaledger/twin-immutable-proof/commit/7bfe4557a6d2dd3c160d09577da86db26cd7c7ab))
+* release to production ([#58](https://github.com/iotaledger/twin-immutable-proof/issues/58)) ([e1d8c04](https://github.com/iotaledger/twin-immutable-proof/commit/e1d8c04c4d2c764980ed44b320c3ce6218c9b70b))
+* release to production ([#82](https://github.com/iotaledger/twin-immutable-proof/issues/82)) ([1d9f43a](https://github.com/iotaledger/twin-immutable-proof/commit/1d9f43a2eaf8d6d6504c23601cc345c5f84d1ec4))
+
 ## [0.9.2-next.6](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-rest-client-v0.9.2-next.5...immutable-proof-rest-client-v0.9.2-next.6) (2026-08-21)
 
 
