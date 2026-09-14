@@ -37,6 +37,13 @@ export interface IImmutableProofServiceConfig {
 	taskFailureRetainFor?: number;
 
 	/**
+	 * How long in milliseconds the proof task worker stays idle before it shuts down. Set to 0 to
+	 * shut it down after every task, or -1 to never shut it down, the minimum value otherwise is 1.
+	 * @default 60000 (1 minute)
+	 */
+	taskWorkerIdleTimeout?: number;
+
+	/**
 	 * How often, in minutes, the reconciliation sweep runs. The sweep re-enqueues proofs
 	 * whose task exhausted its retries or was never created, so they self-heal without
 	 * operator action, running on a schedule via the task scheduler component and fanning

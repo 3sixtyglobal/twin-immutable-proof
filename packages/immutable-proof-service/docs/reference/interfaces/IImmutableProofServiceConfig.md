@@ -67,6 +67,21 @@ the minimum value is -1.
 
 ***
 
+### taskWorkerIdleTimeout? {#taskworkeridletimeout}
+
+> `optional` **taskWorkerIdleTimeout?**: `number`
+
+How long in milliseconds the proof task worker stays idle before it shuts down. Set to 0 to
+shut it down after every task, or -1 to never shut it down, the minimum value otherwise is 1.
+
+#### Default
+
+```ts
+60000 (1 minute)
+```
+
+***
+
 ### sweepIntervalMinutes? {#sweepintervalminutes}
 
 > `optional` **sweepIntervalMinutes?**: `number`

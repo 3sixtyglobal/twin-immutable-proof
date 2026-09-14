@@ -120,6 +120,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	private static readonly _DEFAULT_TASK_FAILURE_RETAIN_FOR: number = 604800000;
 
 	/**
+	 * The default idle timeout in milliseconds for the proof task worker, 1 minute.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_TASK_WORKER_IDLE_TIMEOUT: number = 60000;
+
+	/**
 	 * The default interval in minutes at which the reconciliation sweep runs.
 	 * @internal
 	 */
@@ -244,6 +250,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	 * @internal
 	 */
 	private readonly _taskFailureRetainFor: number;
+
+	/**
+	 * The idle timeout in milliseconds for the proof task worker.
+	 * @internal
+	 */
+	private readonly _taskWorkerIdleTimeout: number;
 
 	/**
 	 * Whether this instance registered the scheduled sweep, so stop() only removes what
@@ -377,6 +389,20 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 				{ minValue: -1 }
 			);
 		}
+		if (!Is.undefined(this._config.taskWorkerIdleTimeout)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.taskWorkerIdleTimeout),
+				this._config.taskWorkerIdleTimeout
+			);
+			Validation.integer(
+				nameof(this._config.taskWorkerIdleTimeout),
+				this._config.taskWorkerIdleTimeout,
+				validationErrors,
+				undefined,
+				{ minValue: -1 }
+			);
+		}
 		if (!Is.undefined(this._config.sweepIntervalMinutes)) {
 			Guards.integer(
 				ImmutableProofService.CLASS_NAME,
@@ -467,6 +493,8 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 			this._config.taskRetryInterval ?? ImmutableProofService._DEFAULT_TASK_RETRY_INTERVAL;
 		this._taskFailureRetainFor =
 			this._config.taskFailureRetainFor ?? ImmutableProofService._DEFAULT_TASK_FAILURE_RETAIN_FOR;
+		this._taskWorkerIdleTimeout =
+			this._config.taskWorkerIdleTimeout ?? ImmutableProofService._DEFAULT_TASK_WORKER_IDLE_TIMEOUT;
 		this._sweepIntervalMinutes =
 			this._config.sweepIntervalMinutes ?? ImmutableProofService._DEFAULT_SWEEP_INTERVAL_MINUTES;
 		this._sweepStaleThresholdMs =
@@ -552,9 +580,21 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 		await this._backgroundTaskComponent.registerHandler<
 			IImmutableProofTaskPayload,
 			IImmutableProofTaskResult
-		>("immutable-proof", "@twin.org/immutable-proof-task", "processProofTask", async task => {
-			await this.finaliseTask(task);
-		});
+		>(
+			"immutable-proof",
+			"@twin.org/immutable-proof-task",
+			"processProofTask",
+			async task => {
+				await this.finaliseTask(task);
+			},
+			{
+				idleShutdownTimeout: this._taskWorkerIdleTimeout,
+				initialiseMethod: "processProofTaskStart",
+				initialiseMethodParams: async () => [this._loggingComponentType],
+				shutdownMethod: "processProofTaskEnd",
+				shutdownMethodParams: async () => [this._loggingComponentType]
+			}
+		);
 
 		// Clones (worker threads running a cloned engine, e.g. inside processProofTask) must
 		// never register their own copy of the scheduled sweep. Safe today because the clone

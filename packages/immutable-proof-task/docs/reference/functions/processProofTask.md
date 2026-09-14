@@ -2,7 +2,8 @@
 
 > **processProofTask**(`engineCloneData`, `payload`): `Promise`\<[`IImmutableProofTaskResult`](../interfaces/IImmutableProofTaskResult.md)\>
 
-Process a proof task by creating a verifiable credential and notarizing it.
+Process a proof task by creating a verifiable credential and notarizing it. Waits for the
+worker's engine clone to finish starting, building it if it hasn't started yet.
 
 ## Parameters
 

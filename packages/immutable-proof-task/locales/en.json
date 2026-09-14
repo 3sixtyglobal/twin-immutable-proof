@@ -1,7 +1,7 @@
 {
 	"debug": {
 		"immutableProofTask": {
-			"taskEngineStarted": "The proof task engine started for proof \"{proofId}\" in {elapsedMs}ms",
+			"taskEngineStarted": "The proof task worker engine started in {elapsedMs}ms",
 			"taskVerifiableCredentialCreated": "The verifiable credential for proof \"{proofId}\" was created in {elapsedMs}ms",
 			"taskNotarizationComplete": "The notarization for proof \"{proofId}\" completed in {elapsedMs}ms, total task time {totalElapsedMs}ms"
 		}
@@ -13,7 +13,7 @@
 	},
 	"warn": {
 		"immutableProofTask": {
-			"taskEngineStopFailed": "Stopping the task engine for proof \"{proofId}\" failed, the task result is unaffected"
+			"taskEngineStopFailed": "Stopping the proof task worker engine failed, a new engine will be started for the next task"
 		}
 	}
 }
