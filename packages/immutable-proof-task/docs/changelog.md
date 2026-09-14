@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.3-next.2](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.3-next.1...immutable-proof-task-v0.9.3-next.2) (2026-09-14)
+
+
+### Bug Fixes
+
+* reuse the proof task worker's engine clone instead of rebuilding it per task ([#116](https://github.com/iotaledger/twin-immutable-proof/issues/116)) ([760833b](https://github.com/iotaledger/twin-immutable-proof/commit/760833b39d0bb7947e7af549dda236d52f806a86))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.9.3-next.1 to 0.9.3-next.2
+
 ## [0.9.3-next.1](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.9.3-next.0...immutable-proof-task-v0.9.3-next.1) (2026-09-09)
 
 
