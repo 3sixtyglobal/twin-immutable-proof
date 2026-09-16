@@ -49,8 +49,6 @@ import {
 	ImmutableProofFailure,
 	ImmutableProofMetricIds,
 	ImmutableProofMetrics,
-	ImmutableProofSpanAttributes,
-	ImmutableProofSpanNames,
 	ImmutableProofTopics,
 	ImmutableProofTypes,
 	type IImmutableProof,
@@ -78,7 +76,6 @@ import {
 	type IProof
 } from "@twin.org/standards-w3c-did";
 import { MetricHelper, type ITelemetryComponent } from "@twin.org/telemetry-models";
-import { TracingHelper, type ITracingComponent } from "@twin.org/tracing-models";
 import type { ImmutableProof } from "./entities/immutableProof.js";
 import type { IImmutableProofServiceConfig } from "./models/IImmutableProofServiceConfig.js";
 import type { IImmutableProofServiceConstructorOptions } from "./models/IImmutableProofServiceConstructorOptions.js";
@@ -121,6 +118,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	 * @internal
 	 */
 	private static readonly _DEFAULT_TASK_FAILURE_RETAIN_FOR: number = 604800000;
+
+	/**
+	 * The default idle timeout in milliseconds for the proof task worker, 1 minute.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_TASK_WORKER_IDLE_TIMEOUT: number = 60000;
 
 	/**
 	 * The default interval in minutes at which the reconciliation sweep runs.
@@ -249,6 +252,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	private readonly _taskFailureRetainFor: number;
 
 	/**
+	 * The idle timeout in milliseconds for the proof task worker.
+	 * @internal
+	 */
+	private readonly _taskWorkerIdleTimeout: number;
+
+	/**
 	 * Whether this instance registered the scheduled sweep, so stop() only removes what
 	 * this instance added and a clone can never cancel the main thread's schedule.
 	 * @internal
@@ -297,12 +306,6 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	 * @internal
 	 */
 	private readonly _telemetryComponent?: ITelemetryComponent;
-
-	/**
-	 * The optional tracing component for recording spans.
-	 * @internal
-	 */
-	private readonly _tracingComponent?: ITracingComponent;
 
 	/**
 	 * Creates an instance of ImmutableProofService.
@@ -381,6 +384,20 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 			Validation.integer(
 				nameof(this._config.taskFailureRetainFor),
 				this._config.taskFailureRetainFor,
+				validationErrors,
+				undefined,
+				{ minValue: -1 }
+			);
+		}
+		if (!Is.undefined(this._config.taskWorkerIdleTimeout)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.taskWorkerIdleTimeout),
+				this._config.taskWorkerIdleTimeout
+			);
+			Validation.integer(
+				nameof(this._config.taskWorkerIdleTimeout),
+				this._config.taskWorkerIdleTimeout,
 				validationErrors,
 				undefined,
 				{ minValue: -1 }
@@ -476,6 +493,8 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 			this._config.taskRetryInterval ?? ImmutableProofService._DEFAULT_TASK_RETRY_INTERVAL;
 		this._taskFailureRetainFor =
 			this._config.taskFailureRetainFor ?? ImmutableProofService._DEFAULT_TASK_FAILURE_RETAIN_FOR;
+		this._taskWorkerIdleTimeout =
+			this._config.taskWorkerIdleTimeout ?? ImmutableProofService._DEFAULT_TASK_WORKER_IDLE_TIMEOUT;
 		this._sweepIntervalMinutes =
 			this._config.sweepIntervalMinutes ?? ImmutableProofService._DEFAULT_SWEEP_INTERVAL_MINUTES;
 		this._sweepStaleThresholdMs =
@@ -490,9 +509,6 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 
 		this._telemetryComponent = ComponentFactory.getIfExists<ITelemetryComponent>(
 			options?.telemetryComponentType
-		);
-		this._tracingComponent = ComponentFactory.getIfExists<ITracingComponent>(
-			options?.tracingComponentType
 		);
 	}
 
@@ -564,9 +580,21 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 		await this._backgroundTaskComponent.registerHandler<
 			IImmutableProofTaskPayload,
 			IImmutableProofTaskResult
-		>("immutable-proof", "@twin.org/immutable-proof-task", "processProofTask", async task => {
-			await this.finaliseTask(task);
-		});
+		>(
+			"immutable-proof",
+			"@twin.org/immutable-proof-task",
+			"processProofTask",
+			async task => {
+				await this.finaliseTask(task);
+			},
+			{
+				idleShutdownTimeout: this._taskWorkerIdleTimeout,
+				initialiseMethod: "processProofTaskStart",
+				initialiseMethodParams: async () => [this._loggingComponentType],
+				shutdownMethod: "processProofTaskEnd",
+				shutdownMethodParams: async () => [this._loggingComponentType]
+			}
+		);
 
 		// Clones (worker threads running a cloned engine, e.g. inside processProofTask) must
 		// never register their own copy of the scheduled sweep. Safe today because the clone
@@ -638,95 +666,79 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 		const contextIds = await ContextIdStore.getContextIds();
 		ContextIdHelper.guard(contextIds, ContextIdKeys.Organization);
 
-		return TracingHelper.withSpan(
-			this._tracingComponent,
-			ImmutableProofSpanNames.Create,
-			undefined,
-			async () => {
+		try {
+			const validationFailures: IValidationFailure[] = [];
+			await JsonLdHelper.validate(document, validationFailures);
+			Validation.asValidationError(
+				ImmutableProofService.CLASS_NAME,
+				nameof(document),
+				validationFailures
+			);
+
+			const id = RandomHelper.generateUuidV7("compact");
+
+			const dateCreated = new Date(Date.now()).toISOString();
+
+			const proofObjectId = ObjectHelper.extractProperty<string>(document, ["@id", "id"], false);
+
+			// We don't want to store the whole document in the immutable proof, as this could be large
+			// and also reveal information that should not be stored in the proof so we hash the document
+			// and store the hash
+			const proofObjectIntegrity = IntegrityHelper.generate(
+				IntegrityAlgorithm.Sha256,
+				ObjectHelper.toBytes(JsonHelper.canonicalize(document))
+			);
+
+			const proofEntityBase: ImmutableProof = {
+				id,
+				organizationId: contextIds[ContextIdKeys.Organization],
+				dateCreated,
+				proofObjectId,
+				proofObjectIntegrity,
+				deleteLock: options?.deleteLock
+			};
+
+			const proofTaskPayload = this.buildTaskPayload(proofEntityBase);
+
+			// Create the task before persisting the entity. If the entity write below then
+			// fails, the task is removed too (see catch), so this ordering avoids relying on
+			// the sweep to notice and park an entity that was never enqueued.
+			const taskId = await this._backgroundTaskComponent.create(
+				"immutable-proof",
+				proofTaskPayload,
+				this.buildTaskRetryOptions()
+			);
+
+			try {
+				await this._proofStorage.set({ ...proofEntityBase, taskId });
+			} catch (error) {
+				// The entity failed to persist after the task was created: best-effort remove
+				// the task so it doesn't run for a proof that was never saved.
 				try {
-					const validationFailures: IValidationFailure[] = [];
-					await JsonLdHelper.validate(document, validationFailures);
-					Validation.asValidationError(
-						ImmutableProofService.CLASS_NAME,
-						nameof(document),
-						validationFailures
-					);
-
-					const id = RandomHelper.generateUuidV7("compact");
-
-					const dateCreated = new Date(Date.now()).toISOString();
-
-					const proofObjectId = ObjectHelper.extractProperty<string>(
-						document,
-						["@id", "id"],
-						false
-					);
-
-					// We don't want to store the whole document in the immutable proof, as this could be large
-					// and also reveal information that should not be stored in the proof so we hash the document
-					// and store the hash
-					const proofObjectIntegrity = IntegrityHelper.generate(
-						IntegrityAlgorithm.Sha256,
-						ObjectHelper.toBytes(JsonHelper.canonicalize(document))
-					);
-
-					const proofEntityBase: ImmutableProof = {
-						id,
-						organizationId: contextIds[ContextIdKeys.Organization],
-						dateCreated,
-						proofObjectId,
-						proofObjectIntegrity,
-						deleteLock: options?.deleteLock
-					};
-
-					const proofTaskPayload = this.buildTaskPayload(proofEntityBase);
-
-					// Create the task before persisting the entity. If the entity write below then
-					// fails, the task is removed too (see catch), so this ordering avoids relying on
-					// the sweep to notice and park an entity that was never enqueued.
-					const taskId = await this._backgroundTaskComponent.create(
-						"immutable-proof",
-						proofTaskPayload,
-						this.buildTaskRetryOptions()
-					);
-
-					try {
-						await this._proofStorage.set({ ...proofEntityBase, taskId });
-					} catch (error) {
-						// The entity failed to persist after the task was created: best-effort remove
-						// the task so it doesn't run for a proof that was never saved.
-						try {
-							await this._backgroundTaskComponent.remove(taskId);
-						} catch (removeError) {
-							await this._logging?.log({
-								source: ImmutableProofService.CLASS_NAME,
-								level: "warn",
-								ts: Date.now(),
-								message: "orphanedTaskRemoveFailed",
-								error: BaseError.fromError(removeError),
-								data: { proofId: proofTaskPayload.proofId, taskId }
-							});
-						}
-						throw error;
-					}
-
-					await MetricHelper.metricIncrement(
-						this._telemetryComponent,
-						ImmutableProofMetricIds.ProofsCreated,
-						{ hasDeleteLock: Is.stringValue(options?.deleteLock) }
-					);
-
-					return proofTaskPayload.proofId;
-				} catch (error) {
-					throw new GeneralError(
-						ImmutableProofService.CLASS_NAME,
-						"createFailed",
-						undefined,
-						error
-					);
+					await this._backgroundTaskComponent.remove(taskId);
+				} catch (removeError) {
+					await this._logging?.log({
+						source: ImmutableProofService.CLASS_NAME,
+						level: "warn",
+						ts: Date.now(),
+						message: "orphanedTaskRemoveFailed",
+						error: BaseError.fromError(removeError),
+						data: { proofId: proofTaskPayload.proofId, taskId }
+					});
 				}
+				throw error;
 			}
-		);
+
+			await MetricHelper.metricIncrement(
+				this._telemetryComponent,
+				ImmutableProofMetricIds.ProofsCreated,
+				{ hasDeleteLock: Is.stringValue(options?.deleteLock) }
+			);
+
+			return proofTaskPayload.proofId;
+		} catch (error) {
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "createFailed", undefined, error);
+		}
 	}
 
 	/**
@@ -740,24 +752,17 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 
 		this.parseProofId(id);
 
-		return TracingHelper.withSpan(
-			this._tracingComponent,
-			ImmutableProofSpanNames.Get,
-			{ attributes: { [ImmutableProofSpanAttributes.Id]: id } },
-			async () => {
-				try {
-					const { verifiableCredential } = await this.internalGet(id, false);
+		try {
+			const { verifiableCredential } = await this.internalGet(id, false);
 
-					const result = await JsonLdProcessor.compact(
-						verifiableCredential,
-						verifiableCredential["@context"]
-					);
-					return result;
-				} catch (error) {
-					throw new GeneralError(ImmutableProofService.CLASS_NAME, "getFailed", undefined, error);
-				}
-			}
-		);
+			const result = await JsonLdProcessor.compact(
+				verifiableCredential,
+				verifiableCredential["@context"]
+			);
+			return result;
+		} catch (error) {
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "getFailed", undefined, error);
+		}
 	}
 
 	/**
@@ -771,43 +776,31 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 
 		this.parseProofId(id);
 
-		return TracingHelper.withSpan(
-			this._tracingComponent,
-			ImmutableProofSpanNames.Verify,
-			{ attributes: { [ImmutableProofSpanAttributes.Id]: id } },
-			async () => {
-				try {
-					const { verified, failure } = await this.internalGet(id, true);
+		try {
+			const { verified, failure } = await this.internalGet(id, true);
 
-					if (verified) {
-						await MetricHelper.metricIncrement(
-							this._telemetryComponent,
-							ImmutableProofMetricIds.VerificationsSucceeded
-						);
-					} else {
-						await MetricHelper.metricIncrement(
-							this._telemetryComponent,
-							ImmutableProofMetricIds.VerificationsFailed,
-							{ failureReason: failure }
-						);
-					}
-
-					return {
-						"@context": ImmutableProofContexts.Context,
-						type: ImmutableProofTypes.ImmutableProofVerification,
-						verified,
-						failure
-					};
-				} catch (error) {
-					throw new GeneralError(
-						ImmutableProofService.CLASS_NAME,
-						"verifyFailed",
-						undefined,
-						error
-					);
-				}
+			if (verified) {
+				await MetricHelper.metricIncrement(
+					this._telemetryComponent,
+					ImmutableProofMetricIds.VerificationsSucceeded
+				);
+			} else {
+				await MetricHelper.metricIncrement(
+					this._telemetryComponent,
+					ImmutableProofMetricIds.VerificationsFailed,
+					{ failureReason: failure }
+				);
 			}
-		);
+
+			return {
+				"@context": ImmutableProofContexts.Context,
+				type: ImmutableProofTypes.ImmutableProofVerification,
+				verified,
+				failure
+			};
+		} catch (error) {
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "verifyFailed", undefined, error);
+		}
 	}
 
 	/**
@@ -823,42 +816,30 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 
 		const urnParsed = this.parseProofId(id);
 
-		await TracingHelper.withSpan(
-			this._tracingComponent,
-			ImmutableProofSpanNames.Remove,
-			{ attributes: { [ImmutableProofSpanAttributes.Id]: id } },
-			async () => {
-				try {
-					const proofId = urnParsed.namespaceSpecific(0);
-					const proofEntity = await this._proofStorage.get(proofId);
+		try {
+			const proofId = urnParsed.namespaceSpecific(0);
+			const proofEntity = await this._proofStorage.get(proofId);
 
-					if (Is.empty(proofEntity)) {
-						throw new NotFoundError(ImmutableProofService.CLASS_NAME, "proofNotFound", id);
-					}
-
-					if (Is.stringValue(proofEntity.notarizationId)) {
-						await this._notarizationConnector.remove(
-							contextIds[ContextIdKeys.Organization],
-							proofEntity.notarizationId
-						);
-					}
-
-					await this._proofStorage.remove(proofId);
-
-					await MetricHelper.metricIncrement(
-						this._telemetryComponent,
-						ImmutableProofMetricIds.ProofsRemoved
-					);
-				} catch (error) {
-					throw new GeneralError(
-						ImmutableProofService.CLASS_NAME,
-						"removeFailed",
-						undefined,
-						error
-					);
-				}
+			if (Is.empty(proofEntity)) {
+				throw new NotFoundError(ImmutableProofService.CLASS_NAME, "proofNotFound", id);
 			}
-		);
+
+			if (Is.stringValue(proofEntity.notarizationId)) {
+				await this._notarizationConnector.remove(
+					contextIds[ContextIdKeys.Organization],
+					proofEntity.notarizationId
+				);
+			}
+
+			await this._proofStorage.remove(proofId);
+
+			await MetricHelper.metricIncrement(
+				this._telemetryComponent,
+				ImmutableProofMetricIds.ProofsRemoved
+			);
+		} catch (error) {
+			throw new GeneralError(ImmutableProofService.CLASS_NAME, "removeFailed", undefined, error);
+		}
 	}
 
 	/**

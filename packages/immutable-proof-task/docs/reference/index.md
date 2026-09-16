@@ -7,4 +7,6 @@
 
 ## Functions
 
+- [processProofTaskStart](functions/processProofTaskStart.md)
+- [processProofTaskEnd](functions/processProofTaskEnd.md)
 - [processProofTask](functions/processProofTask.md)

@@ -183,8 +183,8 @@ describe("ImmutableProofTask", () => {
 		});
 
 		expect(result.notarizationId).toBeDefined();
+		// Same-thread call without engineCloneData, so no worker engine start is logged.
 		expect(logEntries.map(entry => entry.message)).toEqual([
-			"taskEngineStarted",
 			"taskVerifiableCredentialCreated",
 			"taskNotarizationComplete"
 		]);

@@ -224,6 +224,7 @@ describe("ImmutableProofService", () => {
 	});
 
 	afterEach(async () => {
+		await backgroundTaskService.stop();
 		await proofStorage.teardown();
 		await notarizationStorage.teardown();
 		await backgroundTaskStorage.teardown();
@@ -239,6 +240,11 @@ describe("ImmutableProofService", () => {
 		expect(() => new ImmutableProofService({ config: { taskRetryCount: -1 } })).toThrow();
 		expect(() => new ImmutableProofService({ config: { taskRetryInterval: 0 } })).toThrow();
 		expect(() => new ImmutableProofService({ config: { taskFailureRetainFor: -2 } })).toThrow();
+	});
+
+	test("Can fail to create an instance of the service with an out of range task worker idle timeout", async () => {
+		expect(() => new ImmutableProofService({ config: { taskWorkerIdleTimeout: -2 } })).toThrow();
+		expect(() => new ImmutableProofService({ config: { taskWorkerIdleTimeout: 1.5 } })).toThrow();
 	});
 
 	test("Can fail to create an instance of the service with out of range sweep options", async () => {
@@ -262,6 +268,46 @@ describe("ImmutableProofService", () => {
 			}
 		});
 		expect(service).toBeDefined();
+	});
+
+	test("Registers the proof task handler with a bounded idle timeout and worker lifecycle methods", async () => {
+		const registerHandlerSpy = vi.spyOn(backgroundTaskService, "registerHandler");
+
+		const defaultService = new ImmutableProofService();
+		await defaultService.start();
+
+		expect(registerHandlerSpy).toHaveBeenCalledWith(
+			"immutable-proof",
+			"@twin.org/immutable-proof-task",
+			"processProofTask",
+			expect.any(Function),
+			expect.objectContaining({
+				idleShutdownTimeout: 60000,
+				initialiseMethod: "processProofTaskStart",
+				shutdownMethod: "processProofTaskEnd"
+			})
+		);
+
+		registerHandlerSpy.mockClear();
+
+		const configuredService = new ImmutableProofService({
+			config: { taskWorkerIdleTimeout: 5000 }
+		});
+		await configuredService.start();
+
+		expect(registerHandlerSpy).toHaveBeenCalledWith(
+			"immutable-proof",
+			"@twin.org/immutable-proof-task",
+			"processProofTask",
+			expect.any(Function),
+			expect.objectContaining({
+				idleShutdownTimeout: 5000,
+				initialiseMethod: "processProofTaskStart",
+				shutdownMethod: "processProofTaskEnd"
+			})
+		);
+
+		registerHandlerSpy.mockRestore();
 	});
 
 	test("Can create a proof that is pending", async () => {
@@ -447,7 +493,8 @@ describe("ImmutableProofService", () => {
 				executeMethod: async (method: string, args?: unknown) => {
 					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
 					completed(method, res);
-				}
+				},
+				terminate: async () => {}
 			}));
 
 		await backgroundTaskService.start();
@@ -591,7 +638,8 @@ describe("ImmutableProofService", () => {
 				executeMethod: async (method: string, args?: unknown) => {
 					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
 					completed(method, res);
-				}
+				},
+				terminate: async () => {}
 			}));
 
 		await backgroundTaskService.start();
@@ -905,7 +953,8 @@ describe("ImmutableProofService", () => {
 				executeMethod: async (method: string, args?: unknown) => {
 					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
 					completed(method, res);
-				}
+				},
+				terminate: async () => {}
 			}));
 
 		await backgroundTaskService.start();
@@ -968,7 +1017,8 @@ describe("ImmutableProofService", () => {
 				executeMethod: async (method: string, args?: unknown) => {
 					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
 					completed(method, res);
-				}
+				},
+				terminate: async () => {}
 			}));
 
 		await backgroundTaskService.start();
@@ -1039,7 +1089,8 @@ describe("ImmutableProofService", () => {
 					await taskGate;
 					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
 					completed(method, res);
-				}
+				},
+				terminate: async () => {}
 			}));
 
 		await backgroundTaskService.start();
@@ -1115,7 +1166,8 @@ describe("ImmutableProofService", () => {
 				executeMethod: async (method: string, args?: unknown) => {
 					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
 					completed(method, res);
-				}
+				},
+				terminate: async () => {}
 			}));
 
 		await backgroundTaskService.start();
@@ -1152,7 +1204,8 @@ describe("ImmutableProofService", () => {
 				executeMethod: async (method: string, args?: unknown) => {
 					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
 					completed(method, res);
-				}
+				},
+				terminate: async () => {}
 			}));
 
 		NotarizationConnectorFactory.register(
