@@ -231,15 +231,22 @@ describe("ImmutableProofService — metrics", () => {
 			}));
 	}
 
-	test("start() registers all 5 counters with type Counter", async () => {
+	test("start() registers the 5 counters and the completion lag gauge", async () => {
 		const { component, created } = makeMockTelemetry();
 		ComponentFactory.register("test-telemetry", () => component);
 
 		const service = new ImmutableProofService({ telemetryComponentType: "test-telemetry" });
 		await service.start();
 
-		expect(created).toHaveLength(5);
-		for (const m of created) {
+		expect(created).toHaveLength(6);
+
+		const gauge = created.find(m => m.id === "ip_proof_completion_lag");
+		expect(gauge?.type).toBe(MetricType.Gauge);
+		expect(gauge?.unit).toBe("ms");
+
+		const counters = created.filter(m => m.id !== "ip_proof_completion_lag");
+		expect(counters).toHaveLength(5);
+		for (const m of counters) {
 			expect(m.type).toBe(MetricType.Counter);
 		}
 
@@ -351,6 +358,46 @@ describe("ImmutableProofService — metrics", () => {
 
 		expect(values.filter(v => v.id === "ip_verifications_succeeded")).toHaveLength(1);
 		expect(values.filter(v => v.id === "ip_verifications_failed")).toHaveLength(0);
+	});
+
+	test("a completed proof emits ip_proof_completion_lag as the time since it was requested", async () => {
+		const { component, values } = makeMockTelemetry();
+		ComponentFactory.register("test-telemetry", () => component);
+
+		const service = new ImmutableProofService({ telemetryComponentType: "test-telemetry" });
+		await service.start();
+
+		await service.create(PROOF_OBJECT);
+
+		// The proof is requested at FIRST_TICK and only processed once the clock has moved on.
+		Date.now = vi.fn().mockImplementation(() => FIRST_TICK + 5000);
+		mockInlineTaskExecution();
+		await backgroundTaskService.start();
+		await waitForProofGeneration();
+
+		for (
+			let attempt = 0;
+			attempt < 40 && !values.some(v => v.id === "ip_proof_completion_lag");
+			attempt++
+		) {
+			await new Promise(resolve => setTimeout(resolve, 200));
+		}
+
+		const lagValues = values.filter(v => v.id === "ip_proof_completion_lag");
+		expect(lagValues).toHaveLength(1);
+		expect(lagValues[0].value).toBe(5000);
+	});
+
+	test("a proof that has not completed emits no ip_proof_completion_lag", async () => {
+		const { component, values } = makeMockTelemetry();
+		ComponentFactory.register("test-telemetry", () => component);
+
+		const service = new ImmutableProofService({ telemetryComponentType: "test-telemetry" });
+		await service.start();
+
+		await service.create(PROOF_OBJECT);
+
+		expect(values.filter(v => v.id === "ip_proof_completion_lag")).toHaveLength(0);
 	});
 
 	test("verify() on a missing proof emits no counter", async () => {

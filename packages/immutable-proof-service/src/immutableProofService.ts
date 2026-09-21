@@ -126,6 +126,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	private static readonly _DEFAULT_TASK_WORKER_IDLE_TIMEOUT: number = 60000;
 
 	/**
+	 * The default maximum number of proof task workers that can run in parallel.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_TASK_WORKER_COUNT: number = 1;
+
+	/**
 	 * The default interval in minutes at which the reconciliation sweep runs.
 	 * @internal
 	 */
@@ -256,6 +262,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	 * @internal
 	 */
 	private readonly _taskWorkerIdleTimeout: number;
+
+	/**
+	 * The maximum number of proof task workers that can run in parallel.
+	 * @internal
+	 */
+	private readonly _taskWorkerCount: number;
 
 	/**
 	 * Whether this instance registered the scheduled sweep, so stop() only removes what
@@ -403,6 +415,20 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 				{ minValue: -1 }
 			);
 		}
+		if (!Is.undefined(this._config.taskWorkerCount)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.taskWorkerCount),
+				this._config.taskWorkerCount
+			);
+			Validation.integer(
+				nameof(this._config.taskWorkerCount),
+				this._config.taskWorkerCount,
+				validationErrors,
+				undefined,
+				{ minValue: 1 }
+			);
+		}
 		if (!Is.undefined(this._config.sweepIntervalMinutes)) {
 			Guards.integer(
 				ImmutableProofService.CLASS_NAME,
@@ -495,6 +521,8 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 			this._config.taskFailureRetainFor ?? ImmutableProofService._DEFAULT_TASK_FAILURE_RETAIN_FOR;
 		this._taskWorkerIdleTimeout =
 			this._config.taskWorkerIdleTimeout ?? ImmutableProofService._DEFAULT_TASK_WORKER_IDLE_TIMEOUT;
+		this._taskWorkerCount =
+			this._config.taskWorkerCount ?? ImmutableProofService._DEFAULT_TASK_WORKER_COUNT;
 		this._sweepIntervalMinutes =
 			this._config.sweepIntervalMinutes ?? ImmutableProofService._DEFAULT_SWEEP_INTERVAL_MINUTES;
 		this._sweepStaleThresholdMs =
@@ -588,6 +616,7 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 				await this.finaliseTask(task);
 			},
 			{
+				maxWorkerCount: this._taskWorkerCount,
 				idleShutdownTimeout: this._taskWorkerIdleTimeout,
 				initialiseMethod: "processProofTaskStart",
 				initialiseMethodParams: async () => [this._loggingComponentType],
@@ -1324,6 +1353,9 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 				const proofEntity = await this._proofStorage.get(proofId);
 
 				if (Is.object(proofEntity)) {
+					// Measured against the request time, before dateCreated is replaced below.
+					const completionLagMs = Date.now() - new Date(proofEntity.dateCreated).getTime();
+
 					proofEntity.notarizationId = task.result.notarizationId;
 
 					// Update the date created if we can extract it from the VC
@@ -1338,6 +1370,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 					);
 
 					await this._proofStorage.set(proofEntity);
+
+					await MetricHelper.metricValue(
+						this._telemetryComponent,
+						ImmutableProofMetricIds.ProofCompletionLag,
+						completionLagMs
+					);
 
 					await this._logging?.log({
 						source: ImmutableProofService.CLASS_NAME,

@@ -82,6 +82,20 @@ shut it down after every task, or -1 to never shut it down, the minimum value ot
 
 ***
 
+### taskWorkerCount? {#taskworkercount}
+
+> `optional` **taskWorkerCount?**: `number`
+
+The maximum number of proof task workers that can run in parallel, the minimum value is 1.
+
+#### Default
+
+```ts
+1
+```
+
+***
+
 ### sweepIntervalMinutes? {#sweepintervalminutes}
 
 > `optional` **sweepIntervalMinutes?**: `number`

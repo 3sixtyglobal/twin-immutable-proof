@@ -247,6 +247,11 @@ describe("ImmutableProofService", () => {
 		expect(() => new ImmutableProofService({ config: { taskWorkerIdleTimeout: 1.5 } })).toThrow();
 	});
 
+	test("Can fail to create an instance of the service with an out of range task worker count", async () => {
+		expect(() => new ImmutableProofService({ config: { taskWorkerCount: 0 } })).toThrow();
+		expect(() => new ImmutableProofService({ config: { taskWorkerCount: 1.5 } })).toThrow();
+	});
+
 	test("Can fail to create an instance of the service with out of range sweep options", async () => {
 		expect(() => new ImmutableProofService({ config: { sweepStaleThresholdMs: 59999 } })).toThrow();
 		expect(() => new ImmutableProofService({ config: { sweepMaxAttempts: 0 } })).toThrow();
@@ -305,6 +310,36 @@ describe("ImmutableProofService", () => {
 				initialiseMethod: "processProofTaskStart",
 				shutdownMethod: "processProofTaskEnd"
 			})
+		);
+
+		registerHandlerSpy.mockRestore();
+	});
+
+	test("Registers the proof task handler with one worker by default and the configured worker count otherwise", async () => {
+		const registerHandlerSpy = vi.spyOn(backgroundTaskService, "registerHandler");
+
+		const defaultService = new ImmutableProofService();
+		await defaultService.start();
+
+		expect(registerHandlerSpy).toHaveBeenCalledWith(
+			"immutable-proof",
+			"@twin.org/immutable-proof-task",
+			"processProofTask",
+			expect.any(Function),
+			expect.objectContaining({ maxWorkerCount: 1 })
+		);
+
+		registerHandlerSpy.mockClear();
+
+		const configuredService = new ImmutableProofService({ config: { taskWorkerCount: 3 } });
+		await configuredService.start();
+
+		expect(registerHandlerSpy).toHaveBeenCalledWith(
+			"immutable-proof",
+			"@twin.org/immutable-proof-task",
+			"processProofTask",
+			expect.any(Function),
+			expect.objectContaining({ maxWorkerCount: 3 })
 		);
 
 		registerHandlerSpy.mockRestore();

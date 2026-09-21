@@ -44,6 +44,12 @@ export interface IImmutableProofServiceConfig {
 	taskWorkerIdleTimeout?: number;
 
 	/**
+	 * The maximum number of proof task workers that can run in parallel, the minimum value is 1.
+	 * @default 1
+	 */
+	taskWorkerCount?: number;
+
+	/**
 	 * How often, in minutes, the reconciliation sweep runs. The sweep re-enqueues proofs
 	 * whose task exhausted its retries or was never created, so they self-heal without
 	 * operator action, running on a schedule via the task scheduler component and fanning
