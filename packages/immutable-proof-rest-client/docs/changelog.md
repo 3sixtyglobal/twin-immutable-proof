@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.1-next.2](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-rest-client-v0.10.1-next.1...immutable-proof-rest-client-v0.10.1-next.2) (2026-09-21)
+
+
+### Miscellaneous Chores
+
+* **immutable-proof-rest-client:** Synchronize repo versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.10.1-next.1 to 0.10.1-next.2
+
 ## [0.10.1-next.1](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-rest-client-v0.10.1-next.0...immutable-proof-rest-client-v0.10.1-next.1) (2026-09-18)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1-next.2](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-models-v0.10.1-next.1...immutable-proof-models-v0.10.1-next.2) (2026-09-21)
+
+
+### Features
+
+* add task worker count option and proof completion lag metric ([#127](https://github.com/iotaledger/twin-immutable-proof/issues/127)) ([806e58d](https://github.com/iotaledger/twin-immutable-proof/commit/806e58dd3ffc48a6104948a861b345695e91607c))
+
 ## [0.10.1-next.1](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-models-v0.10.1-next.0...immutable-proof-models-v0.10.1-next.1) (2026-09-18)
 
 
