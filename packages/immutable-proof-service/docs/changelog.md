@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.10.1-next.3](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.1-next.2...immutable-proof-service-v0.10.1-next.3) (2026-09-22)
+
+
+### Bug Fixes
+
+* describe every pre-versioning proof shape in the version 0 schema ([#130](https://github.com/iotaledger/twin-immutable-proof/issues/130)) ([2b3c42a](https://github.com/iotaledger/twin-immutable-proof/commit/2b3c42ab394951d6ea2535bfbe47facb8882bd17))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.10.1-next.2 to 0.10.1-next.3
+    * @twin.org/immutable-proof-task bumped from 0.10.1-next.2 to 0.10.1-next.3
+
 ## [0.10.1-next.2](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.1-next.1...immutable-proof-service-v0.10.1-next.2) (2026-09-21)
 
 
