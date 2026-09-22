@@ -17,8 +17,9 @@ import {
 	RandomHelper
 } from "@twin.org/core";
 import { JsonLdProcessor } from "@twin.org/data-json-ld";
+import { entity, EntitySchemaFactory, EntitySchemaHelper, property } from "@twin.org/entity";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
-import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
+import { EntityStorageConnectorFactory, MigrationHelper } from "@twin.org/entity-storage-models";
 import {
 	EntityStorageLoggingConnector,
 	initSchema as initSchemaLogging,
@@ -40,8 +41,31 @@ import {
 	TEST_ORGANIZATION_IDENTITY
 } from "./setupTestEnv.js";
 import type { ImmutableProof } from "../src/entities/immutableProof.js";
+import type { ImmutableProofV0 } from "../src/entities/immutableProofV0.js";
 import { ImmutableProofService } from "../src/immutableProofService.js";
 import { initSchema } from "../src/schema.js";
+
+/**
+ * The physical shape of an immutable proof row as it was written before organizationId
+ * existed on the entity, used to seed a legacy row past the current, stricter validation.
+ */
+@entity()
+class ProofStoredBeforeOrganizationId {
+	@property({ type: "string", isPrimary: true })
+	public id!: string;
+
+	@property({ type: "string", format: "date-time" })
+	public dateCreated!: string;
+
+	@property({ type: "string", optional: true })
+	public proofObjectId?: string;
+
+	@property({ type: "string" })
+	public proofObjectHash!: string;
+
+	@property({ type: "string", optional: true })
+	public verifiableStorageId?: string;
+}
 
 let proofStorage: MemoryEntityStorageConnector<ImmutableProof>;
 let notarizationStorage: MemoryEntityStorageConnector<Notarization>;
@@ -1726,6 +1750,185 @@ describe("ImmutableProofService", () => {
 			const service = new ImmutableProofService();
 			const results = await service.healthApplication(vi.fn());
 			expect(results).toHaveLength(0);
+		});
+	});
+
+	describe("ImmutableProof schema migration", () => {
+		const legacyHash = "sha256:0kGVLYNcCnQRmYc3nnLBRGGPkxFTZLE7ClkIvLTFGQ4=";
+
+		beforeAll(() => {
+			EntitySchemaFactory.register(nameof<ProofStoredBeforeOrganizationId>(), () =>
+				EntitySchemaHelper.getSchema(ProofStoredBeforeOrganizationId)
+			);
+		});
+
+		test("accepts a proof stored before organizationId existed as a version 0 row", async () => {
+			const v0Connector = new MemoryEntityStorageConnector<ImmutableProofV0>({
+				entitySchema: nameof<ImmutableProofV0>(),
+				config: { storageKey: "immutable-proof-migration-v0-row" }
+			});
+
+			await v0Connector.set({
+				id: "legacy-1",
+				dateCreated: "2026-01-15T10:00:00.000Z",
+				proofObjectId: "aig:vertex-1",
+				proofObjectHash: legacyHash
+			});
+
+			const stored = await v0Connector.get("legacy-1");
+			expect(stored?.proofObjectHash).toBe(legacyHash);
+		});
+
+		test("rejects the version 0 to 1 step for a proof stored before organizationId existed when nothing supplies the organization", async () => {
+			const storageKey = "immutable-proof-migration-no-hook";
+			const legacyConnector = new MemoryEntityStorageConnector<ProofStoredBeforeOrganizationId>({
+				entitySchema: nameof<ProofStoredBeforeOrganizationId>(),
+				config: { storageKey }
+			});
+			await legacyConnector.set({
+				id: "legacy-1",
+				dateCreated: "2026-01-15T10:00:00.000Z",
+				proofObjectId: "aig:vertex-1",
+				proofObjectHash: legacyHash
+			});
+
+			const source = new MemoryEntityStorageConnector<ImmutableProof>({
+				entitySchema: nameof<ImmutableProof>(),
+				config: { storageKey }
+			});
+			await source.set({
+				id: "current-1",
+				organizationId: TEST_ORGANIZATION_IDENTITY,
+				dateCreated: "2026-09-01T10:00:00.000Z",
+				proofObjectId: "aig:vertex-2",
+				proofObjectIntegrity: "sha256-0kGVLYNcCnQRmYc3nnLBRGGPkxFTZLE7ClkIvLTFGQ4=",
+				notarizationId: "notarization:1"
+			});
+
+			const step = {
+				fromProperties: EntitySchemaFactory.get(nameof<ImmutableProofV0>()).properties ?? [],
+				toProperties: EntitySchemaFactory.get(nameof<ImmutableProof>()).properties ?? []
+			};
+
+			await expect(
+				MigrationHelper.migrateWithChain(source, nameof<ImmutableProof>(), undefined, [step])
+			).rejects.toMatchObject({
+				message: "migrationHelper.migrateSchemaFailed",
+				cause: expect.objectContaining({
+					message: "migrationHelper.coercionProducedUndefined",
+					properties: expect.objectContaining({ property: "organizationId" })
+				})
+			});
+
+			const untouched = await legacyConnector.get("legacy-1");
+			expect(untouched?.proofObjectHash).toBe(legacyHash);
+		});
+
+		test("migrates a proof stored before organizationId existed when the step supplies the organization and converts the hash", async () => {
+			const storageKey = "immutable-proof-migration-with-hook";
+			const legacyConnector = new MemoryEntityStorageConnector<ProofStoredBeforeOrganizationId>({
+				entitySchema: nameof<ProofStoredBeforeOrganizationId>(),
+				config: { storageKey }
+			});
+			await legacyConnector.set({
+				id: "legacy-1",
+				dateCreated: "2026-01-15T10:00:00.000Z",
+				proofObjectId: "aig:vertex-1",
+				proofObjectHash: legacyHash
+			});
+
+			const currentRow = {
+				id: "current-1",
+				organizationId: TEST_ORGANIZATION_IDENTITY,
+				dateCreated: "2026-09-01T10:00:00.000Z",
+				proofObjectId: "aig:vertex-2",
+				proofObjectIntegrity: "sha256-0kGVLYNcCnQRmYc3nnLBRGGPkxFTZLE7ClkIvLTFGQ4=",
+				notarizationId: "notarization:1"
+			};
+			const source = new MemoryEntityStorageConnector<ImmutableProof>({
+				entitySchema: nameof<ImmutableProof>(),
+				config: { storageKey }
+			});
+			await source.set(currentRow);
+
+			const step = {
+				fromProperties: EntitySchemaFactory.get(nameof<ImmutableProofV0>()).properties ?? [],
+				toProperties: EntitySchemaFactory.get(nameof<ImmutableProof>()).properties ?? [],
+				transformEntity: (row: unknown) => {
+					const proof = row as ImmutableProofV0;
+					return {
+						...proof,
+						organizationId: proof.organizationId ?? TEST_ORGANIZATION_IDENTITY,
+						proofObjectIntegrity:
+							proof.proofObjectIntegrity ?? proof.proofObjectHash?.replace("sha256:", "sha256-")
+					};
+				}
+			};
+
+			const { migrated, finalConnector } = await MigrationHelper.migrateWithChain(
+				source,
+				nameof<ImmutableProof>(),
+				undefined,
+				[step]
+			);
+			expect(migrated).toBe(2);
+
+			const migratedStore = (await (
+				finalConnector as MemoryEntityStorageConnector<ImmutableProof>
+			).getStore()) as (ImmutableProof & { proofObjectHash?: string })[];
+			const migratedLegacy = migratedStore.find(row => row.id === "legacy-1");
+			expect(migratedLegacy?.organizationId).toBe(TEST_ORGANIZATION_IDENTITY);
+			expect(migratedLegacy?.proofObjectIntegrity).toBe(
+				"sha256-0kGVLYNcCnQRmYc3nnLBRGGPkxFTZLE7ClkIvLTFGQ4="
+			);
+			expect(migratedLegacy?.proofObjectHash).toBeUndefined();
+
+			const migratedCurrent = migratedStore.find(row => row.id === "current-1");
+			expect(migratedCurrent).toMatchObject(currentRow);
+		});
+
+		test("exposes every dropped legacy column to removeEntityProperty with its stored value", async () => {
+			let observedEntity: { [key: string]: unknown } | undefined;
+			let removedProperties: string[] | undefined;
+
+			const step = {
+				fromProperties: EntitySchemaFactory.get(nameof<ImmutableProofV0>()).properties ?? [],
+				toProperties: EntitySchemaFactory.get(nameof<ImmutableProof>()).properties ?? [],
+				removeEntityProperty: (row: unknown, droppedProperties: { property: unknown }[]) => {
+					observedEntity = row as { [key: string]: unknown };
+					removedProperties = droppedProperties.map(dropped => String(dropped.property));
+				}
+			};
+
+			await MigrationHelper.applyEntityChain(
+				{
+					id: "legacy-1",
+					nodeIdentity: "did:iota:node",
+					userIdentity: "did:iota:user",
+					organizationId: TEST_ORGANIZATION_IDENTITY,
+					dateCreated: "2026-01-15T10:00:00.000Z",
+					proofObjectId: "aig:vertex-1",
+					proofObjectIntegrity: "sha256-0kGVLYNcCnQRmYc3nnLBRGGPkxFTZLE7ClkIvLTFGQ4=",
+					proofObjectHash: legacyHash,
+					verifiableStorageId: "vs-1"
+				},
+				[step]
+			);
+
+			expect(removedProperties).toEqual(
+				expect.arrayContaining([
+					"proofObjectHash",
+					"verifiableStorageId",
+					"nodeIdentity",
+					"userIdentity"
+				])
+			);
+			expect(observedEntity).toMatchObject({
+				proofObjectHash: legacyHash,
+				verifiableStorageId: "vs-1",
+				nodeIdentity: "did:iota:node",
+				userIdentity: "did:iota:user"
+			});
 		});
 	});
 });
