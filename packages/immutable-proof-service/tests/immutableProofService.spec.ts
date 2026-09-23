@@ -1495,6 +1495,88 @@ describe("ImmutableProofService", () => {
 		expect(await backgroundTaskStorage.getStore()).toHaveLength(0);
 	});
 
+	test("Sweep does not park a proof whose completion lands after the sweep paged it", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({ taskId: "background-task:entity-storage:missing-task" })
+		);
+
+		// Simulate finaliseTask writing the notarizationId after the sweep has paged the row.
+		const originalQuery = proofStorage.query.bind(proofStorage);
+		vi.spyOn(proofStorage, "query").mockImplementation(async (...args) => {
+			const page = await originalQuery(...args);
+			await proofStorage.set(makeStuckProofEntity({ notarizationId: "notarization:1" }));
+			return page;
+		});
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000 }
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].notarizationId).toEqual("notarization:1");
+		expect(proofStore[0].isParked).toBeUndefined();
+	});
+
+	test("Sweep does not re-enqueue a proof whose completion lands after the sweep paged it", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({ taskId: "background-task:entity-storage:task-1" })
+		);
+		await backgroundTaskStorage.set(makeSweepTaskEntity({ status: TaskStatus.Failed }));
+
+		const originalQuery = proofStorage.query.bind(proofStorage);
+		vi.spyOn(proofStorage, "query").mockImplementation(async (...args) => {
+			const page = await originalQuery(...args);
+			await proofStorage.set(
+				makeStuckProofEntity({
+					taskId: "background-task:entity-storage:task-1",
+					notarizationId: "notarization:1"
+				})
+			);
+			return page;
+		});
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000 }
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].notarizationId).toEqual("notarization:1");
+		expect(proofStore[0].taskId).toEqual("background-task:entity-storage:task-1");
+		expect(proofStore[0].sweepAttempts).toBeUndefined();
+		expect(await backgroundTaskStorage.getStore()).toHaveLength(1);
+	});
+
+	test("Sweep does not overwrite a notarizationId written while the re-enqueued task was being created", async () => {
+		await proofStorage.set(
+			makeStuckProofEntity({ taskId: "background-task:entity-storage:task-1" })
+		);
+		await backgroundTaskStorage.set(makeSweepTaskEntity({ status: TaskStatus.Failed }));
+
+		const originalCreate = backgroundTaskService.create.bind(backgroundTaskService);
+		vi.spyOn(backgroundTaskService, "create").mockImplementation(async (...args) => {
+			const taskId = await originalCreate(...args);
+			await proofStorage.set(
+				makeStuckProofEntity({
+					taskId: "background-task:entity-storage:task-1",
+					notarizationId: "notarization:1"
+				})
+			);
+			return taskId;
+		});
+
+		const service = new ImmutableProofService({
+			config: { sweepStaleThresholdMs: 60000 }
+		});
+		await service.start();
+
+		const proofStore = await proofStorage.getStore();
+		expect(proofStore[0].notarizationId).toEqual("notarization:1");
+		expect(proofStore[0].sweepAttempts).toBeUndefined();
+		expect(proofStore[0].isParked).toBeUndefined();
+	});
+
 	test("Sweep re-enqueues a proof with a missing task record when its era is explicitly authorised", async () => {
 		await proofStorage.set(
 			makeStuckProofEntity({ taskId: "background-task:entity-storage:missing-task" })
