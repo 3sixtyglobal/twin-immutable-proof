@@ -330,7 +330,7 @@ importers:
         specifier: next
         version: 0.10.1-next.10
       '@twin.org/immutable-proof-models':
-        specifier: 0.10.1-next.4
+        specifier: 0.10.1-next.5
         version: link:../immutable-proof-models
       '@twin.org/nameof':
         specifier: next
@@ -415,10 +415,10 @@ importers:
         specifier: next
         version: 0.10.1-next.3
       '@twin.org/immutable-proof-models':
-        specifier: 0.10.1-next.4
+        specifier: 0.10.1-next.5
         version: link:../immutable-proof-models
       '@twin.org/immutable-proof-task':
-        specifier: 0.10.1-next.4
+        specifier: 0.10.1-next.5
         version: link:../immutable-proof-task
       '@twin.org/logging-models':
         specifier: next
@@ -527,7 +527,7 @@ importers:
         specifier: next
         version: 0.10.1-next.3
       '@twin.org/immutable-proof-models':
-        specifier: 0.10.1-next.4
+        specifier: 0.10.1-next.5
         version: link:../immutable-proof-models
       '@twin.org/logging-models':
         specifier: next
