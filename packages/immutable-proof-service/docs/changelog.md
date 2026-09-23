@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.10.1-next.4](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.1-next.3...immutable-proof-service-v0.10.1-next.4) (2026-09-23)
+
+
+### Bug Fixes
+
+* check notarization id ([#133](https://github.com/iotaledger/twin-immutable-proof/issues/133)) ([6216ea2](https://github.com/iotaledger/twin-immutable-proof/commit/6216ea2ba0916956b02bf69cbbbd209ecb5affc0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.10.1-next.3 to 0.10.1-next.4
+    * @twin.org/immutable-proof-task bumped from 0.10.1-next.3 to 0.10.1-next.4
+
 ## [0.10.1-next.3](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.1-next.2...immutable-proof-service-v0.10.1-next.3) (2026-09-22)
 
 
