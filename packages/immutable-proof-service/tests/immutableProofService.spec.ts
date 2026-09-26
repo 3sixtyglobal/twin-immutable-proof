@@ -1897,8 +1897,12 @@ describe("ImmutableProofService", () => {
 			).rejects.toMatchObject({
 				message: "migrationHelper.migrateSchemaFailed",
 				cause: expect.objectContaining({
-					message: "migrationHelper.coercionProducedUndefined",
-					properties: expect.objectContaining({ property: "organizationId" })
+					message: "migrationHelper.migrateEntityPartitionFailed",
+					properties: expect.objectContaining({ id: "legacy-1" }),
+					cause: expect.objectContaining({
+						message: "migrationHelper.coercionProducedUndefined",
+						properties: expect.objectContaining({ property: "organizationId" })
+					})
 				})
 			});
 
