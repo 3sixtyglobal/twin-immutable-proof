@@ -1,6 +1,6 @@
 {
 	"name": "@twin.org/immutable-proof-service",
-	"version": "0.10.1-next.5",
+	"version": "0.10.1-next.6",
 	"description": "Core proof lifecycle service with route helpers for create, get, and verify operations",
 	"repository": {
 		"type": "git",
@@ -39,8 +39,8 @@
 		"@twin.org/entity-storage-models": "next",
 		"@twin.org/event-bus-models": "next",
 		"@twin.org/identity-models": "next",
-		"@twin.org/immutable-proof-models": "0.10.1-next.5",
-		"@twin.org/immutable-proof-task": "0.10.1-next.5",
+		"@twin.org/immutable-proof-models": "0.10.1-next.6",
+		"@twin.org/immutable-proof-task": "0.10.1-next.6",
 		"@twin.org/logging-models": "next",
 		"@twin.org/nameof": "next",
 		"@twin.org/notarization-models": "next",

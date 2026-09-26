@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.1-next.6](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.10.1-next.5...immutable-proof-task-v0.10.1-next.6) (2026-09-26)
+
+
+### Bug Fixes
+
+* test identities ([250528c](https://github.com/iotaledger/twin-immutable-proof/commit/250528cda61bc1bc186ce299289cb6c7e096a85f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.10.1-next.5 to 0.10.1-next.6
+
 ## [0.10.1-next.5](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-task-v0.10.1-next.4...immutable-proof-task-v0.10.1-next.5) (2026-09-23)
 
 
