@@ -30,6 +30,11 @@
 
 ## Variables
 
+- [CompiledImmutableProof](variables/CompiledImmutableProof.md)
+- [CompiledImmutableProofCredential](variables/CompiledImmutableProofCredential.md)
+- [CompiledImmutableProofDataIntegrity](variables/CompiledImmutableProofDataIntegrity.md)
+- [CompiledImmutableProofVerification](variables/CompiledImmutableProofVerification.md)
+- [CompiledImmutableProofFailure](variables/CompiledImmutableProofFailure.md)
 - [ImmutableProofContexts](variables/ImmutableProofContexts.md)
 - [ImmutableProofFailure](variables/ImmutableProofFailure.md)
 - [ImmutableProofMetricIds](variables/ImmutableProofMetricIds.md)

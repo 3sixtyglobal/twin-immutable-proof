@@ -32,5 +32,11 @@ export const ImmutableProofMetrics: ITelemetryMetric[] = [
 		id: ImmutableProofMetricIds.NotarizationsRemoved,
 		label: "Notarizations removed",
 		type: MetricType.Counter
+	},
+	{
+		id: ImmutableProofMetricIds.ProofCompletionLag,
+		label: "Proof completion lag",
+		type: MetricType.Gauge,
+		unit: "ms"
 	}
 ];

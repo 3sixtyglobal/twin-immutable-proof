@@ -126,6 +126,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	private static readonly _DEFAULT_TASK_WORKER_IDLE_TIMEOUT: number = 60000;
 
 	/**
+	 * The default maximum number of proof task workers that can run in parallel.
+	 * @internal
+	 */
+	private static readonly _DEFAULT_TASK_WORKER_COUNT: number = 1;
+
+	/**
 	 * The default interval in minutes at which the reconciliation sweep runs.
 	 * @internal
 	 */
@@ -256,6 +262,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 	 * @internal
 	 */
 	private readonly _taskWorkerIdleTimeout: number;
+
+	/**
+	 * The maximum number of proof task workers that can run in parallel.
+	 * @internal
+	 */
+	private readonly _taskWorkerCount: number;
 
 	/**
 	 * Whether this instance registered the scheduled sweep, so stop() only removes what
@@ -403,6 +415,20 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 				{ minValue: -1 }
 			);
 		}
+		if (!Is.undefined(this._config.taskWorkerCount)) {
+			Guards.integer(
+				ImmutableProofService.CLASS_NAME,
+				nameof(this._config.taskWorkerCount),
+				this._config.taskWorkerCount
+			);
+			Validation.integer(
+				nameof(this._config.taskWorkerCount),
+				this._config.taskWorkerCount,
+				validationErrors,
+				undefined,
+				{ minValue: 1 }
+			);
+		}
 		if (!Is.undefined(this._config.sweepIntervalMinutes)) {
 			Guards.integer(
 				ImmutableProofService.CLASS_NAME,
@@ -495,6 +521,8 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 			this._config.taskFailureRetainFor ?? ImmutableProofService._DEFAULT_TASK_FAILURE_RETAIN_FOR;
 		this._taskWorkerIdleTimeout =
 			this._config.taskWorkerIdleTimeout ?? ImmutableProofService._DEFAULT_TASK_WORKER_IDLE_TIMEOUT;
+		this._taskWorkerCount =
+			this._config.taskWorkerCount ?? ImmutableProofService._DEFAULT_TASK_WORKER_COUNT;
 		this._sweepIntervalMinutes =
 			this._config.sweepIntervalMinutes ?? ImmutableProofService._DEFAULT_SWEEP_INTERVAL_MINUTES;
 		this._sweepStaleThresholdMs =
@@ -588,6 +616,7 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 				await this.finaliseTask(task);
 			},
 			{
+				maxWorkerCount: this._taskWorkerCount,
 				idleShutdownTimeout: this._taskWorkerIdleTimeout,
 				initialiseMethod: "processProofTaskStart",
 				initialiseMethodParams: async () => [this._loggingComponentType],
@@ -1099,20 +1128,41 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 			(proofEntity.sweepAttempts ?? 0) >= this._sweepMaxAttempts ||
 			!this.isRetryable(proofEntity, task)
 		) {
-			proofEntity.isParked = true;
-			await this._proofStorage.set(proofEntity);
+			// The paged row may be stale if the task completed since it was read, so write the
+			// park flag onto a fresh copy to avoid wiping a notarizationId finaliseTask just set.
+			const currentEntity = await this.getProofAwaitingNotarization(proofEntity.id);
+			if (!Is.object(currentEntity)) {
+				return "skipped";
+			}
+			currentEntity.isParked = true;
+			await this._proofStorage.set(currentEntity);
 			await this._logging?.log({
 				level: "warn",
 				source: ImmutableProofService.CLASS_NAME,
 				ts: Date.now(),
 				message: "sweepParked",
-				data: { proofId: proofEntity.id, sweepAttempts: proofEntity.sweepAttempts ?? 0 }
+				data: { proofId: currentEntity.id, sweepAttempts: currentEntity.sweepAttempts ?? 0 }
 			});
 			return "parked";
 		}
 
-		await this.reEnqueueProof(proofEntity);
-		return "reEnqueued";
+		const reEnqueued = await this.reEnqueueProof(proofEntity.id);
+		return reEnqueued ? "reEnqueued" : "skipped";
+	}
+
+	/**
+	 * Re-read a proof entity from storage, returning it only if it still exists and has not
+	 * yet been notarized.
+	 * @param proofId The id of the proof entity.
+	 * @returns The current proof entity, or undefined if it was removed or has been notarized.
+	 * @internal
+	 */
+	private async getProofAwaitingNotarization(proofId: string): Promise<ImmutableProof | undefined> {
+		const proofEntity = await this._proofStorage.get(proofId);
+		if (!Is.object(proofEntity) || Is.stringValue(proofEntity.notarizationId)) {
+			return undefined;
+		}
+		return proofEntity;
 	}
 
 	/**
@@ -1165,12 +1215,19 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 
 	/**
 	 * Rebuild and re-create the background task for a stuck proof, then persist the updated
-	 * sweep bookkeeping on its entity.
-	 * @param proofEntity The proof entity to re-enqueue.
-	 * @returns A promise that resolves when the task has been created and the entity updated.
+	 * sweep bookkeeping on its entity. The entity is re-read before the task is created and
+	 * again before the bookkeeping is written, so a completion that lands in the meantime is
+	 * neither duplicated nor overwritten.
+	 * @param proofId The id of the proof entity to re-enqueue.
+	 * @returns True if the task was created, false if the proof was removed or already notarized.
 	 * @internal
 	 */
-	private async reEnqueueProof(proofEntity: ImmutableProof): Promise<void> {
+	private async reEnqueueProof(proofId: string): Promise<boolean> {
+		const proofEntity = await this.getProofAwaitingNotarization(proofId);
+		if (!Is.object(proofEntity)) {
+			return false;
+		}
+
 		const ambientContextIds = (await ContextIdStore.getContextIds()) ?? {};
 
 		// Organization is absent from ambient context in multi-tenant mode, but create()'s
@@ -1187,19 +1244,26 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 			}
 		);
 
-		proofEntity.taskId = taskId;
-		proofEntity.sweepAttempts = (proofEntity.sweepAttempts ?? 0) + 1;
-		proofEntity.lastSweepAttempt = new Date(Date.now()).toISOString();
+		// The new task may already have completed and written its notarizationId, in which case
+		// the bookkeeping is no longer needed and writing it would overwrite that result.
+		const currentEntity = await this.getProofAwaitingNotarization(proofId);
+		if (Is.object(currentEntity)) {
+			currentEntity.taskId = taskId;
+			currentEntity.sweepAttempts = (currentEntity.sweepAttempts ?? 0) + 1;
+			currentEntity.lastSweepAttempt = new Date(Date.now()).toISOString();
 
-		await this._proofStorage.set(proofEntity);
+			await this._proofStorage.set(currentEntity);
+		}
 
 		await this._logging?.log({
 			level: "info",
 			source: ImmutableProofService.CLASS_NAME,
 			ts: Date.now(),
 			message: "sweepReEnqueued",
-			data: { proofId: proofEntity.id, taskId }
+			data: { proofId, taskId }
 		});
+
+		return true;
 	}
 
 	/**
@@ -1324,6 +1388,9 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 				const proofEntity = await this._proofStorage.get(proofId);
 
 				if (Is.object(proofEntity)) {
+					// Measured against the request time, before dateCreated is replaced below.
+					const completionLagMs = Date.now() - new Date(proofEntity.dateCreated).getTime();
+
 					proofEntity.notarizationId = task.result.notarizationId;
 
 					// Update the date created if we can extract it from the VC
@@ -1338,6 +1405,12 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 					);
 
 					await this._proofStorage.set(proofEntity);
+
+					await MetricHelper.metricValue(
+						this._telemetryComponent,
+						ImmutableProofMetricIds.ProofCompletionLag,
+						completionLagMs
+					);
 
 					await this._logging?.log({
 						source: ImmutableProofService.CLASS_NAME,

@@ -73,9 +73,12 @@ export async function setupTestEnv(): Promise<void> {
 				"elder blur tip exact organ pipe other same minute grace conduct father brother prosper tide icon pony suggest joy provide dignity domain nominee liquid"
 		);
 
-	const didNode = await TEST_IDENTITY_CONNECTOR.createDocument("test-node-identity");
+	// Proofs are signed with the node identity as both controller and issuer, so the document
+	// must control itself. The mocked RandomHelper makes its DID known up front.
+	const nodeIdentity = `did:entity-storage:${Converter.bytesToHex(new Uint8Array(32).fill(99), true)}`;
+	const didNode = await TEST_IDENTITY_CONNECTOR.createDocument(nodeIdentity);
 	await TEST_IDENTITY_CONNECTOR.addVerificationMethod(
-		"test-node-identity",
+		nodeIdentity,
 		didNode.id,
 		"assertionMethod",
 		"immutable-proof-assertion"

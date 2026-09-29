@@ -4,7 +4,9 @@ import { entity, property, SortDirection } from "@twin.org/entity";
 import type { DidContexts } from "@twin.org/standards-w3c-did";
 
 /**
- * Class describing the immutable proof, version 0.
+ * Class describing the immutable proof, version 0. Covers every row written before the
+ * version record existed, including rows that predate organizationId and carry
+ * proofObjectHash instead of proofObjectIntegrity.
  */
 @entity({ version: 0 })
 export class ImmutableProofV0 {
@@ -17,8 +19,8 @@ export class ImmutableProofV0 {
 	/**
 	 * The organization id.
 	 */
-	@property({ type: "string" })
-	public organizationId!: string;
+	@property({ type: "string", optional: true })
+	public organizationId?: string;
 
 	/**
 	 * The date/time of when the proof was created.
@@ -35,8 +37,32 @@ export class ImmutableProofV0 {
 	/**
 	 * The associated integrity for the item.
 	 */
-	@property({ type: "string" })
-	public proofObjectIntegrity!: string;
+	@property({ type: "string", optional: true })
+	public proofObjectIntegrity?: string;
+
+	/**
+	 * The digest as stored before proofObjectIntegrity existed, "sha256:" followed by base64.
+	 */
+	@property({ type: "string", optional: true })
+	public proofObjectHash?: string;
+
+	/**
+	 * The verifiable storage id, as stored before this property was dropped from the entity.
+	 */
+	@property({ type: "string", optional: true })
+	public verifiableStorageId?: string;
+
+	/**
+	 * The node identity, as stored before this property was dropped from the entity.
+	 */
+	@property({ type: "string", optional: true })
+	public nodeIdentity?: string;
+
+	/**
+	 * The user identity, as stored before this property was dropped from the entity.
+	 */
+	@property({ type: "string", optional: true })
+	public userIdentity?: string;
 
 	/**
 	 * The notarization id.

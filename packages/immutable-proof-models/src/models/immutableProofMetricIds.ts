@@ -29,7 +29,12 @@ export const ImmutableProofMetricIds = {
 	/**
 	 * Number of notarizations removed.
 	 */
-	NotarizationsRemoved: "ip_notarizations_removed"
+	NotarizationsRemoved: "ip_notarizations_removed",
+
+	/**
+	 * Time in milliseconds from a proof being requested to its notarization completing.
+	 */
+	ProofCompletionLag: "ip_proof_completion_lag"
 } as const;
 
 /**

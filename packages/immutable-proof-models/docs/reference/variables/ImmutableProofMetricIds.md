@@ -35,3 +35,9 @@ Number of proofs removed.
 > `readonly` **NotarizationsRemoved**: `"ip_notarizations_removed"` = `"ip_notarizations_removed"`
 
 Number of notarizations removed.
+
+### ProofCompletionLag {#proofcompletionlag}
+
+> `readonly` **ProofCompletionLag**: `"ip_proof_completion_lag"` = `"ip_proof_completion_lag"`
+
+Time in milliseconds from a proof being requested to its notarization completing.

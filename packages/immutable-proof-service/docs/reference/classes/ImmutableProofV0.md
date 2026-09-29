@@ -1,6 +1,8 @@
 # Class: ImmutableProofV0
 
-Class describing the immutable proof, version 0.
+Class describing the immutable proof, version 0. Covers every row written before the
+version record existed, including rows that predate organizationId and carry
+proofObjectHash instead of proofObjectIntegrity.
 
 ## Constructors
 
@@ -22,9 +24,9 @@ The id of the proof.
 
 ***
 
-### organizationId {#organizationid}
+### organizationId? {#organizationid}
 
-> **organizationId**: `string`
+> `optional` **organizationId?**: `string`
 
 The organization id.
 
@@ -46,11 +48,43 @@ The associated id for the item.
 
 ***
 
-### proofObjectIntegrity {#proofobjectintegrity}
+### proofObjectIntegrity? {#proofobjectintegrity}
 
-> **proofObjectIntegrity**: `string`
+> `optional` **proofObjectIntegrity?**: `string`
 
 The associated integrity for the item.
+
+***
+
+### proofObjectHash? {#proofobjecthash}
+
+> `optional` **proofObjectHash?**: `string`
+
+The digest as stored before proofObjectIntegrity existed, "sha256:" followed by base64.
+
+***
+
+### verifiableStorageId? {#verifiablestorageid}
+
+> `optional` **verifiableStorageId?**: `string`
+
+The verifiable storage id, as stored before this property was dropped from the entity.
+
+***
+
+### nodeIdentity? {#nodeidentity}
+
+> `optional` **nodeIdentity?**: `string`
+
+The node identity, as stored before this property was dropped from the entity.
+
+***
+
+### userIdentity? {#useridentity}
+
+> `optional` **userIdentity?**: `string`
+
+The user identity, as stored before this property was dropped from the entity.
 
 ***
 

@@ -1,5 +1,183 @@
 # Changelog
 
+## [0.10.1-next.6](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.1-next.5...immutable-proof-service-v0.10.1-next.6) (2026-09-26)
+
+
+### Features
+
+* compiled schemas ([8d69cf6](https://github.com/iotaledger/twin-immutable-proof/commit/8d69cf6bdeefcea734110c62e5e6d4b41f924b47))
+
+
+### Bug Fixes
+
+* test identities ([250528c](https://github.com/iotaledger/twin-immutable-proof/commit/250528cda61bc1bc186ce299289cb6c7e096a85f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.10.1-next.5 to 0.10.1-next.6
+    * @twin.org/immutable-proof-task bumped from 0.10.1-next.5 to 0.10.1-next.6
+
+## [0.10.1-next.5](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.1-next.4...immutable-proof-service-v0.10.1-next.5) (2026-09-23)
+
+
+### Features
+
+* add context id features ([#14](https://github.com/iotaledger/twin-immutable-proof/issues/14)) ([ed5a594](https://github.com/iotaledger/twin-immutable-proof/commit/ed5a594eaa7d50f74b1c09a7a560d48b33a4ecd1))
+* add event-driven telemetry metrics ([#99](https://github.com/iotaledger/twin-immutable-proof/issues/99)) ([9ceb5dc](https://github.com/iotaledger/twin-immutable-proof/commit/9ceb5dcea75dcd239f5c551208c68d756ecf89a2))
+* add logging ([#18](https://github.com/iotaledger/twin-immutable-proof/issues/18)) ([e331ce8](https://github.com/iotaledger/twin-immutable-proof/commit/e331ce843393554750c2708ebce1273056b6399a))
+* add proof task retries, failure retention and step logging ([#71](https://github.com/iotaledger/twin-immutable-proof/issues/71)) ([60e21eb](https://github.com/iotaledger/twin-immutable-proof/commit/60e21ebb8a143e19dd21db5aac35c6d0f1585345))
+* add task worker count option and proof completion lag metric ([#127](https://github.com/iotaledger/twin-immutable-proof/issues/127)) ([806e58d](https://github.com/iotaledger/twin-immutable-proof/commit/806e58dd3ffc48a6104948a861b345695e91607c))
+* add validate-locales ([d6a7c07](https://github.com/iotaledger/twin-immutable-proof/commit/d6a7c0794a1922981a42f56cc24724d7cee727f6))
+* enhanced rest testing ([#64](https://github.com/iotaledger/twin-immutable-proof/issues/64)) ([5c389d6](https://github.com/iotaledger/twin-immutable-proof/commit/5c389d6da0292f6ceb3b23f5d1380fc9fb5c652c))
+* eslint migration to flat config ([c8536f2](https://github.com/iotaledger/twin-immutable-proof/commit/c8536f219c7709c6c08b9266e537831f9054dda9))
+* health provider ([#96](https://github.com/iotaledger/twin-immutable-proof/issues/96)) ([b01e203](https://github.com/iotaledger/twin-immutable-proof/commit/b01e203dd8cd65ee31580401b529feb67edfb90f))
+* immutable proof as vc ([#31](https://github.com/iotaledger/twin-immutable-proof/issues/31)) ([79cdb03](https://github.com/iotaledger/twin-immutable-proof/commit/79cdb03eb86c4f6d2ab1d5bf235f74ff74e8b877))
+* improve entity schemas ([#124](https://github.com/iotaledger/twin-immutable-proof/issues/124)) ([3e2a4ec](https://github.com/iotaledger/twin-immutable-proof/commit/3e2a4ec2cf460b8b81974846f6ccc79cea0cf2b0))
+* proof task retry retention logging ([#93](https://github.com/iotaledger/twin-immutable-proof/issues/93)) ([ecfbb23](https://github.com/iotaledger/twin-immutable-proof/commit/ecfbb23752f67339337e11c9251ab432982bf666))
+* remove default loggers ([1f59001](https://github.com/iotaledger/twin-immutable-proof/commit/1f59001038a9b83b5e3675c4cee2c4131023e9ff))
+* remove inline service tracing in favour of the tracing facade ([#113](https://github.com/iotaledger/twin-immutable-proof/issues/113)) ([3117a4e](https://github.com/iotaledger/twin-immutable-proof/commit/3117a4e78a74f077d5dc7facf4bb174ae76826b1))
+* remove unused namespace ([a39864c](https://github.com/iotaledger/twin-immutable-proof/commit/a39864c0b2ca8753334a34028b8e5823a14162b4))
+* remove vm linkage in on chain proof ([4034336](https://github.com/iotaledger/twin-immutable-proof/commit/4034336177261dcf3b017524a56f3f6537545227))
+* replace verifiable storage with notarization as immutable proof ([#41](https://github.com/iotaledger/twin-immutable-proof/issues/41)) ([54f2154](https://github.com/iotaledger/twin-immutable-proof/commit/54f215469b0bdc9ea94cad572ca13b8533144104))
+* rest enhancements ([#66](https://github.com/iotaledger/twin-immutable-proof/issues/66)) ([7d097ae](https://github.com/iotaledger/twin-immutable-proof/commit/7d097aeda267c87ee877fd348ce3854bea88a09d))
+* tracing ([#104](https://github.com/iotaledger/twin-immutable-proof/issues/104)) ([63069ac](https://github.com/iotaledger/twin-immutable-proof/commit/63069acf2813da477c0baf31b15ed52ce33129b1))
+* typescript 6 update ([34d8aea](https://github.com/iotaledger/twin-immutable-proof/commit/34d8aea0ea0c1e1252de1882517abb1683d98313))
+* update background tasks ([f25741c](https://github.com/iotaledger/twin-immutable-proof/commit/f25741c704e2c8311bc98bc69d4d926c523c781e))
+* update contexts ([#22](https://github.com/iotaledger/twin-immutable-proof/issues/22)) ([645b880](https://github.com/iotaledger/twin-immutable-proof/commit/645b8803540408c74e3891b2c5ff9aefd5908d9f))
+* update contexts and namespaces ([#20](https://github.com/iotaledger/twin-immutable-proof/issues/20)) ([d38aa69](https://github.com/iotaledger/twin-immutable-proof/commit/d38aa696c73e4fcc304f08fb458d5900109abcb4))
+* update data types to use fully qualified names ([e94d0f5](https://github.com/iotaledger/twin-immutable-proof/commit/e94d0f5db93856b5b59cfd34e55252fa13a7f4e0))
+* update dependencies ([df11db0](https://github.com/iotaledger/twin-immutable-proof/commit/df11db08159e4d334d0020ef0539deda904ca898))
+* update dependencies ([1ec6b18](https://github.com/iotaledger/twin-immutable-proof/commit/1ec6b18e93198a8fc4935700863cdab1c3df7b64))
+* update dependencies ([7d6b321](https://github.com/iotaledger/twin-immutable-proof/commit/7d6b321928ca0434ee530816b1440f1687b94a6e))
+* update framework core ([e708d4d](https://github.com/iotaledger/twin-immutable-proof/commit/e708d4dd3febcfbcd64663d5be004eab1d26c0fb))
+* update remove methods ([#45](https://github.com/iotaledger/twin-immutable-proof/issues/45)) ([9db19bb](https://github.com/iotaledger/twin-immutable-proof/commit/9db19bb4c8e6f5d66139755e8b8a8071a77c4887))
+* update schemas ([ab0569a](https://github.com/iotaledger/twin-immutable-proof/commit/ab0569adf3419beefd8aef7793fdbe5b2fe2d93e))
+* use shared store mechanism ([#3](https://github.com/iotaledger/twin-immutable-proof/issues/3)) ([7042a40](https://github.com/iotaledger/twin-immutable-proof/commit/7042a40f0ef8b01463f07aeb1efae4f417162fa1))
+
+
+### Bug Fixes
+
+* check notarization id ([#133](https://github.com/iotaledger/twin-immutable-proof/issues/133)) ([6216ea2](https://github.com/iotaledger/twin-immutable-proof/commit/6216ea2ba0916956b02bf69cbbbd209ecb5affc0))
+* constructor component name ([06ea7c3](https://github.com/iotaledger/twin-immutable-proof/commit/06ea7c3602a7b465870300bf02f358d95312d49a))
+* describe every pre-versioning proof shape in the version 0 schema ([#130](https://github.com/iotaledger/twin-immutable-proof/issues/130)) ([2b3c42a](https://github.com/iotaledger/twin-immutable-proof/commit/2b3c42ab394951d6ea2535bfbe47facb8882bd17))
+* Missing user and node identity on create ([#1](https://github.com/iotaledger/twin-immutable-proof/issues/1)) ([80ea2f9](https://github.com/iotaledger/twin-immutable-proof/commit/80ea2f901afc7531f4a522227a61e6fa1482484d))
+* proof reconstitution failure ([#91](https://github.com/iotaledger/twin-immutable-proof/issues/91)) ([1ce0d4c](https://github.com/iotaledger/twin-immutable-proof/commit/1ce0d4c1a97f5293b4844026479288e8c2e3d689))
+* register platform mock in immutable proof service tests ([#52](https://github.com/iotaledger/twin-immutable-proof/issues/52)) ([b9575d3](https://github.com/iotaledger/twin-immutable-proof/commit/b9575d3d79de9abad08692831f751d1aab20c0b5))
+* reuse the proof task worker's engine clone instead of rebuilding it per task ([#116](https://github.com/iotaledger/twin-immutable-proof/issues/116)) ([760833b](https://github.com/iotaledger/twin-immutable-proof/commit/760833b39d0bb7947e7af549dda236d52f806a86))
+* test mocks ([c89f465](https://github.com/iotaledger/twin-immutable-proof/commit/c89f465873024196bfd4b8cc48df1c301acf62f9))
+* use async getStore in tests ([ec0b3b3](https://github.com/iotaledger/twin-immutable-proof/commit/ec0b3b38271fddf38a4b521cf871cc9cc01049f4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.10.1-next.4 to 0.10.1-next.5
+    * @twin.org/immutable-proof-task bumped from 0.10.1-next.4 to 0.10.1-next.5
+
+## [0.10.1-next.4](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.1-next.3...immutable-proof-service-v0.10.1-next.4) (2026-09-23)
+
+
+### Bug Fixes
+
+* check notarization id ([#133](https://github.com/iotaledger/twin-immutable-proof/issues/133)) ([6216ea2](https://github.com/iotaledger/twin-immutable-proof/commit/6216ea2ba0916956b02bf69cbbbd209ecb5affc0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.10.1-next.3 to 0.10.1-next.4
+    * @twin.org/immutable-proof-task bumped from 0.10.1-next.3 to 0.10.1-next.4
+
+## [0.10.1-next.3](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.1-next.2...immutable-proof-service-v0.10.1-next.3) (2026-09-22)
+
+
+### Bug Fixes
+
+* describe every pre-versioning proof shape in the version 0 schema ([#130](https://github.com/iotaledger/twin-immutable-proof/issues/130)) ([2b3c42a](https://github.com/iotaledger/twin-immutable-proof/commit/2b3c42ab394951d6ea2535bfbe47facb8882bd17))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.10.1-next.2 to 0.10.1-next.3
+    * @twin.org/immutable-proof-task bumped from 0.10.1-next.2 to 0.10.1-next.3
+
+## [0.10.1-next.2](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.1-next.1...immutable-proof-service-v0.10.1-next.2) (2026-09-21)
+
+
+### Features
+
+* add task worker count option and proof completion lag metric ([#127](https://github.com/iotaledger/twin-immutable-proof/issues/127)) ([806e58d](https://github.com/iotaledger/twin-immutable-proof/commit/806e58dd3ffc48a6104948a861b345695e91607c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.10.1-next.1 to 0.10.1-next.2
+    * @twin.org/immutable-proof-task bumped from 0.10.1-next.1 to 0.10.1-next.2
+
+## [0.10.1-next.1](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.1-next.0...immutable-proof-service-v0.10.1-next.1) (2026-09-18)
+
+
+### Features
+
+* add context id features ([#14](https://github.com/iotaledger/twin-immutable-proof/issues/14)) ([ed5a594](https://github.com/iotaledger/twin-immutable-proof/commit/ed5a594eaa7d50f74b1c09a7a560d48b33a4ecd1))
+* add event-driven telemetry metrics ([#99](https://github.com/iotaledger/twin-immutable-proof/issues/99)) ([9ceb5dc](https://github.com/iotaledger/twin-immutable-proof/commit/9ceb5dcea75dcd239f5c551208c68d756ecf89a2))
+* add logging ([#18](https://github.com/iotaledger/twin-immutable-proof/issues/18)) ([e331ce8](https://github.com/iotaledger/twin-immutable-proof/commit/e331ce843393554750c2708ebce1273056b6399a))
+* add proof task retries, failure retention and step logging ([#71](https://github.com/iotaledger/twin-immutable-proof/issues/71)) ([60e21eb](https://github.com/iotaledger/twin-immutable-proof/commit/60e21ebb8a143e19dd21db5aac35c6d0f1585345))
+* add validate-locales ([d6a7c07](https://github.com/iotaledger/twin-immutable-proof/commit/d6a7c0794a1922981a42f56cc24724d7cee727f6))
+* enhanced rest testing ([#64](https://github.com/iotaledger/twin-immutable-proof/issues/64)) ([5c389d6](https://github.com/iotaledger/twin-immutable-proof/commit/5c389d6da0292f6ceb3b23f5d1380fc9fb5c652c))
+* eslint migration to flat config ([c8536f2](https://github.com/iotaledger/twin-immutable-proof/commit/c8536f219c7709c6c08b9266e537831f9054dda9))
+* health provider ([#96](https://github.com/iotaledger/twin-immutable-proof/issues/96)) ([b01e203](https://github.com/iotaledger/twin-immutable-proof/commit/b01e203dd8cd65ee31580401b529feb67edfb90f))
+* immutable proof as vc ([#31](https://github.com/iotaledger/twin-immutable-proof/issues/31)) ([79cdb03](https://github.com/iotaledger/twin-immutable-proof/commit/79cdb03eb86c4f6d2ab1d5bf235f74ff74e8b877))
+* improve entity schemas ([#124](https://github.com/iotaledger/twin-immutable-proof/issues/124)) ([3e2a4ec](https://github.com/iotaledger/twin-immutable-proof/commit/3e2a4ec2cf460b8b81974846f6ccc79cea0cf2b0))
+* proof task retry retention logging ([#93](https://github.com/iotaledger/twin-immutable-proof/issues/93)) ([ecfbb23](https://github.com/iotaledger/twin-immutable-proof/commit/ecfbb23752f67339337e11c9251ab432982bf666))
+* remove default loggers ([1f59001](https://github.com/iotaledger/twin-immutable-proof/commit/1f59001038a9b83b5e3675c4cee2c4131023e9ff))
+* remove inline service tracing in favour of the tracing facade ([#113](https://github.com/iotaledger/twin-immutable-proof/issues/113)) ([3117a4e](https://github.com/iotaledger/twin-immutable-proof/commit/3117a4e78a74f077d5dc7facf4bb174ae76826b1))
+* remove unused namespace ([a39864c](https://github.com/iotaledger/twin-immutable-proof/commit/a39864c0b2ca8753334a34028b8e5823a14162b4))
+* remove vm linkage in on chain proof ([4034336](https://github.com/iotaledger/twin-immutable-proof/commit/4034336177261dcf3b017524a56f3f6537545227))
+* replace verifiable storage with notarization as immutable proof ([#41](https://github.com/iotaledger/twin-immutable-proof/issues/41)) ([54f2154](https://github.com/iotaledger/twin-immutable-proof/commit/54f215469b0bdc9ea94cad572ca13b8533144104))
+* rest enhancements ([#66](https://github.com/iotaledger/twin-immutable-proof/issues/66)) ([7d097ae](https://github.com/iotaledger/twin-immutable-proof/commit/7d097aeda267c87ee877fd348ce3854bea88a09d))
+* tracing ([#104](https://github.com/iotaledger/twin-immutable-proof/issues/104)) ([63069ac](https://github.com/iotaledger/twin-immutable-proof/commit/63069acf2813da477c0baf31b15ed52ce33129b1))
+* typescript 6 update ([34d8aea](https://github.com/iotaledger/twin-immutable-proof/commit/34d8aea0ea0c1e1252de1882517abb1683d98313))
+* update background tasks ([f25741c](https://github.com/iotaledger/twin-immutable-proof/commit/f25741c704e2c8311bc98bc69d4d926c523c781e))
+* update contexts ([#22](https://github.com/iotaledger/twin-immutable-proof/issues/22)) ([645b880](https://github.com/iotaledger/twin-immutable-proof/commit/645b8803540408c74e3891b2c5ff9aefd5908d9f))
+* update contexts and namespaces ([#20](https://github.com/iotaledger/twin-immutable-proof/issues/20)) ([d38aa69](https://github.com/iotaledger/twin-immutable-proof/commit/d38aa696c73e4fcc304f08fb458d5900109abcb4))
+* update data types to use fully qualified names ([e94d0f5](https://github.com/iotaledger/twin-immutable-proof/commit/e94d0f5db93856b5b59cfd34e55252fa13a7f4e0))
+* update dependencies ([df11db0](https://github.com/iotaledger/twin-immutable-proof/commit/df11db08159e4d334d0020ef0539deda904ca898))
+* update dependencies ([1ec6b18](https://github.com/iotaledger/twin-immutable-proof/commit/1ec6b18e93198a8fc4935700863cdab1c3df7b64))
+* update dependencies ([7d6b321](https://github.com/iotaledger/twin-immutable-proof/commit/7d6b321928ca0434ee530816b1440f1687b94a6e))
+* update framework core ([e708d4d](https://github.com/iotaledger/twin-immutable-proof/commit/e708d4dd3febcfbcd64663d5be004eab1d26c0fb))
+* update remove methods ([#45](https://github.com/iotaledger/twin-immutable-proof/issues/45)) ([9db19bb](https://github.com/iotaledger/twin-immutable-proof/commit/9db19bb4c8e6f5d66139755e8b8a8071a77c4887))
+* update schemas ([ab0569a](https://github.com/iotaledger/twin-immutable-proof/commit/ab0569adf3419beefd8aef7793fdbe5b2fe2d93e))
+* use shared store mechanism ([#3](https://github.com/iotaledger/twin-immutable-proof/issues/3)) ([7042a40](https://github.com/iotaledger/twin-immutable-proof/commit/7042a40f0ef8b01463f07aeb1efae4f417162fa1))
+
+
+### Bug Fixes
+
+* constructor component name ([06ea7c3](https://github.com/iotaledger/twin-immutable-proof/commit/06ea7c3602a7b465870300bf02f358d95312d49a))
+* Missing user and node identity on create ([#1](https://github.com/iotaledger/twin-immutable-proof/issues/1)) ([80ea2f9](https://github.com/iotaledger/twin-immutable-proof/commit/80ea2f901afc7531f4a522227a61e6fa1482484d))
+* proof reconstitution failure ([#91](https://github.com/iotaledger/twin-immutable-proof/issues/91)) ([1ce0d4c](https://github.com/iotaledger/twin-immutable-proof/commit/1ce0d4c1a97f5293b4844026479288e8c2e3d689))
+* register platform mock in immutable proof service tests ([#52](https://github.com/iotaledger/twin-immutable-proof/issues/52)) ([b9575d3](https://github.com/iotaledger/twin-immutable-proof/commit/b9575d3d79de9abad08692831f751d1aab20c0b5))
+* reuse the proof task worker's engine clone instead of rebuilding it per task ([#116](https://github.com/iotaledger/twin-immutable-proof/issues/116)) ([760833b](https://github.com/iotaledger/twin-immutable-proof/commit/760833b39d0bb7947e7af549dda236d52f806a86))
+* test mocks ([c89f465](https://github.com/iotaledger/twin-immutable-proof/commit/c89f465873024196bfd4b8cc48df1c301acf62f9))
+* use async getStore in tests ([ec0b3b3](https://github.com/iotaledger/twin-immutable-proof/commit/ec0b3b38271fddf38a4b521cf871cc9cc01049f4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/immutable-proof-models bumped from 0.10.1-next.0 to 0.10.1-next.1
+    * @twin.org/immutable-proof-task bumped from 0.10.1-next.0 to 0.10.1-next.1
+
 ## [0.10.0](https://github.com/iotaledger/twin-immutable-proof/compare/immutable-proof-service-v0.10.0...immutable-proof-service-v0.10.0) (2026-09-16)
 
 

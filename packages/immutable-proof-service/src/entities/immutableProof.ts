@@ -11,13 +11,13 @@ export class ImmutableProof {
 	/**
 	 * The id of the proof.
 	 */
-	@property({ type: "string", isPrimary: true })
+	@property({ type: "string", isPrimary: true, maxLength: 255 })
 	public id!: string;
 
 	/**
 	 * The organization id.
 	 */
-	@property({ type: "string" })
+	@property({ type: "string", maxLength: 255 })
 	public organizationId!: string;
 
 	/**
@@ -29,19 +29,19 @@ export class ImmutableProof {
 	/**
 	 * The associated id for the item.
 	 */
-	@property({ type: "string", optional: true })
+	@property({ type: "string", maxLength: 255, optional: true })
 	public proofObjectId?: string;
 
 	/**
 	 * The associated integrity for the item.
 	 */
-	@property({ type: "string" })
+	@property({ type: "string", maxLength: 255 })
 	public proofObjectIntegrity!: string;
 
 	/**
 	 * The notarization id.
 	 */
-	@property({ type: "string", optional: true })
+	@property({ type: "string", maxLength: 255, optional: true })
 	public notarizationId?: string;
 
 	/**
@@ -53,7 +53,7 @@ export class ImmutableProof {
 	/**
 	 * The id of the most recently enqueued background task for this proof.
 	 */
-	@property({ type: "string", optional: true })
+	@property({ type: "string", maxLength: 255, optional: true })
 	public taskId?: string;
 
 	/**
