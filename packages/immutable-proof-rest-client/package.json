@@ -1,6 +1,6 @@
 {
 	"name": "@twin.org/immutable-proof-rest-client",
-	"version": "0.10.1-next.6",
+	"version": "0.11.0",
 	"description": "HTTP client for calling immutable proof service endpoints from external components",
 	"repository": {
 		"type": "git",
@@ -28,20 +28,20 @@
 		"dist:no-test": "pnpm run clean && concurrently -g -n build,locales,types \"pnpm run build\" \"pnpm run validate-locales\" \"pnpm run test:build\""
 	},
 	"dependencies": {
-		"@twin.org/api-core": "next",
-		"@twin.org/api-models": "next",
-		"@twin.org/core": "next",
-		"@twin.org/data-json-ld": "next",
-		"@twin.org/entity": "next",
-		"@twin.org/immutable-proof-models": "0.10.1-next.6",
-		"@twin.org/nameof": "next",
-		"@twin.org/web": "next"
+		"@twin.org/api-core": "^0.11.0",
+		"@twin.org/api-models": "^0.11.0",
+		"@twin.org/core": "^0.11.0",
+		"@twin.org/data-json-ld": "^0.11.0",
+		"@twin.org/entity": "^0.11.0",
+		"@twin.org/immutable-proof-models": "^0.11.0",
+		"@twin.org/nameof": "^0.11.0",
+		"@twin.org/web": "^0.11.0"
 	},
 	"devDependencies": {
-		"@twin.org/nameof-transformer": "next",
-		"@twin.org/nameof-vitest-plugin": "next",
-		"@twin.org/standards-w3c-did": "next",
-		"@twin.org/validate-locales": "next",
+		"@twin.org/nameof-transformer": "^0.11.0",
+		"@twin.org/nameof-vitest-plugin": "^0.11.0",
+		"@twin.org/standards-w3c-did": "^0.11.0",
+		"@twin.org/validate-locales": "^0.11.0",
 		"@vitest/coverage-v8": "5.0.1",
 		"concurrently": "10.0.5",
 		"copyfiles": "2.4.1",
