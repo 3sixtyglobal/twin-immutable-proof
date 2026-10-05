@@ -4,7 +4,7 @@
 	"description": "Repository for immutable proof models, processing, services, and client integration",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/iotaledger/twin-immutable-proof.git"
+		"url": "git+https://github.com/3sixtyglobal/twin-immutable-proof.git"
 	},
 	"author": "martyn.janes@iota.org",
 	"license": "Apache-2.0",
@@ -70,7 +70,7 @@
 	},
 	"type": "module",
 	"bugs": {
-		"url": "git+https://github.com/iotaledger/twin-immutable-proof/issues"
+		"url": "git+https://github.com/3sixtyglobal/twin-immutable-proof/issues"
 	},
 	"homepage": "https://twindev.org"
 }

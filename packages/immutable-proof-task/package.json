@@ -4,7 +4,7 @@
 	"description": "Background proof processing that creates verifiable credentials from prepared payloads",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/iotaledger/twin-immutable-proof.git",
+		"url": "git+https://github.com/3sixtyglobal/twin-immutable-proof.git",
 		"directory": "packages/immutable-proof-task"
 	},
 	"author": "martyn.janes@iota.org",
@@ -92,7 +92,7 @@
 		"immutable-proof"
 	],
 	"bugs": {
-		"url": "git+https://github.com/iotaledger/twin-immutable-proof/issues"
+		"url": "git+https://github.com/3sixtyglobal/twin-immutable-proof/issues"
 	},
 	"homepage": "https://twindev.org"
 }

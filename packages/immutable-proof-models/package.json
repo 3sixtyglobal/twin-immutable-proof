@@ -4,7 +4,7 @@
 	"description": "Shared model contracts, schema types, and context constants for immutable proof workflows",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/iotaledger/twin-immutable-proof.git",
+		"url": "git+https://github.com/3sixtyglobal/twin-immutable-proof.git",
 		"directory": "packages/immutable-proof-models"
 	},
 	"author": "martyn.janes@iota.org",
@@ -84,7 +84,7 @@
 		"schemas"
 	],
 	"bugs": {
-		"url": "git+https://github.com/iotaledger/twin-immutable-proof/issues"
+		"url": "git+https://github.com/3sixtyglobal/twin-immutable-proof/issues"
 	},
 	"homepage": "https://twindev.org"
 }
