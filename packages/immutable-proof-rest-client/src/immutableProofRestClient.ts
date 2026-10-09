@@ -1,14 +1,14 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { BaseRestClient } from "@twin.org/api-core";
+import { BaseRestClient } from "@3sixty/api-core";
 import {
 	type IBaseRestClientConfig,
 	type ICreatedResponse,
 	type INoContentResponse,
 	HttpHeaderHelper
-} from "@twin.org/api-models";
-import { Guards } from "@twin.org/core";
-import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
+} from "@3sixty/api-models";
+import { Guards } from "@3sixty/core";
+import type { IJsonLdNodeObject } from "@3sixty/data-json-ld";
 import type {
 	IImmutableProofComponent,
 	IImmutableProofCreateRequest,
@@ -20,9 +20,9 @@ import type {
 	IImmutableProofVerification,
 	IImmutableProofVerifyRequest,
 	IImmutableProofVerifyResponse
-} from "@twin.org/immutable-proof-models";
-import { nameof } from "@twin.org/nameof";
-import { HeaderTypes, HttpMethod, MimeTypes } from "@twin.org/web";
+} from "@3sixty/immutable-proof-models";
+import { nameof } from "@3sixty/nameof";
+import { HeaderTypes, HttpMethod, MimeTypes } from "@3sixty/web";
 
 /**
  * Client for performing immutable proof through to REST endpoints.

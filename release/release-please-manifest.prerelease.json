@@ -1,6 +1,6 @@
 {
-	"packages/immutable-proof-models": "0.11.1-next.0",
-	"packages/immutable-proof-task": "0.11.1-next.0",
-	"packages/immutable-proof-service": "0.11.1-next.0",
-	"packages/immutable-proof-rest-client": "0.11.1-next.0"
+	"packages/immutable-proof-models": "0.20.0-next.0",
+	"packages/immutable-proof-task": "0.20.0-next.0",
+	"packages/immutable-proof-service": "0.20.0-next.0",
+	"packages/immutable-proof-rest-client": "0.20.0-next.0"
 }

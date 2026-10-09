@@ -7,14 +7,14 @@ import {
 	type IHealth,
 	type IHealthProviderComponent,
 	type IPlatformComponent
-} from "@twin.org/api-models";
+} from "@3sixty/api-models";
 import {
 	TaskStatus,
 	type IBackgroundTask,
 	type IBackgroundTaskComponent,
 	type ITaskSchedulerComponent
-} from "@twin.org/background-task-models";
-import { ContextIdHelper, ContextIdKeys, ContextIdStore } from "@twin.org/context";
+} from "@3sixty/background-task-models";
+import { ContextIdHelper, ContextIdKeys, ContextIdStore } from "@3sixty/context";
 import {
 	BaseError,
 	ComponentFactory,
@@ -29,21 +29,21 @@ import {
 	Urn,
 	Validation,
 	type IValidationFailure
-} from "@twin.org/core";
-import { IntegrityAlgorithm, IntegrityHelper } from "@twin.org/crypto";
-import { JsonLdHelper, JsonLdProcessor, type IJsonLdNodeObject } from "@twin.org/data-json-ld";
+} from "@3sixty/core";
+import { IntegrityAlgorithm, IntegrityHelper } from "@3sixty/crypto";
+import { JsonLdHelper, JsonLdProcessor, type IJsonLdNodeObject } from "@3sixty/data-json-ld";
 import {
 	ComparisonOperator,
 	LogicalOperator,
 	SortDirection,
 	type EntityCondition
-} from "@twin.org/entity";
+} from "@3sixty/entity";
 import {
 	EntityStorageConnectorFactory,
 	type IEntityStorageConnector
-} from "@twin.org/entity-storage-models";
-import type { IEventBusComponent } from "@twin.org/event-bus-models";
-import { IdentityConnectorFactory, type IIdentityConnector } from "@twin.org/identity-models";
+} from "@3sixty/entity-storage-models";
+import type { IEventBusComponent } from "@3sixty/event-bus-models";
+import { IdentityConnectorFactory, type IIdentityConnector } from "@3sixty/identity-models";
 import {
 	ImmutableProofContexts,
 	ImmutableProofFailure,
@@ -56,26 +56,26 @@ import {
 	type IImmutableProofCredential,
 	type IImmutableProofEventBusProofCreated,
 	type IImmutableProofVerification
-} from "@twin.org/immutable-proof-models";
+} from "@3sixty/immutable-proof-models";
 import type {
 	IImmutableProofTaskPayload,
 	IImmutableProofTaskResult
-} from "@twin.org/immutable-proof-task";
-import type { ILoggingComponent } from "@twin.org/logging-models";
-import { nameof, nameofKebabCase } from "@twin.org/nameof";
+} from "@3sixty/immutable-proof-task";
+import type { ILoggingComponent } from "@3sixty/logging-models";
+import { nameof, nameofKebabCase } from "@3sixty/nameof";
 import {
 	NotarizationConnectorFactory,
 	NotarizationMode,
 	type INotarizationConnector
-} from "@twin.org/notarization-models";
+} from "@3sixty/notarization-models";
 import {
 	DidContexts,
 	DidTypes,
 	VerifiableCredentialHelper,
 	type IDidVerifiableCredential,
 	type IProof
-} from "@twin.org/standards-w3c-did";
-import { MetricHelper, type ITelemetryComponent } from "@twin.org/telemetry-models";
+} from "@3sixty/standards-w3c-did";
+import { MetricHelper, type ITelemetryComponent } from "@3sixty/telemetry-models";
 import type { ImmutableProof } from "./entities/immutableProof.js";
 import type { IImmutableProofServiceConfig } from "./models/IImmutableProofServiceConfig.js";
 import type { IImmutableProofServiceConstructorOptions } from "./models/IImmutableProofServiceConstructorOptions.js";
@@ -610,7 +610,7 @@ export class ImmutableProofService implements IImmutableProofComponent, IHealthP
 			IImmutableProofTaskResult
 		>(
 			"immutable-proof",
-			"@twin.org/immutable-proof-task",
+			"@3sixty/immutable-proof-task",
 			"processProofTask",
 			async task => {
 				await this.finaliseTask(task);

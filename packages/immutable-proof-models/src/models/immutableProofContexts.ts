@@ -9,32 +9,32 @@ export const ImmutableProofContexts = {
 	/**
 	 * The canonical RDF namespace URI for Immutable Proof.
 	 */
-	Namespace: "https://schema.twindev.org/immutable-proof/",
+	Namespace: "https://schema.3sixty.global/immutable-proof/",
 
 	/**
 	 * The value to use in context for Immutable Proof.
 	 */
-	Context: "https://schema.twindev.org/immutable-proof/",
+	Context: "https://schema.3sixty.global/immutable-proof/",
 
 	/**
 	 * The JSON-LD Context URL for Immutable Proof.
 	 */
-	JsonLdContext: "https://schema.twindev.org/immutable-proof/types.jsonld",
+	JsonLdContext: "https://schema.3sixty.global/immutable-proof/types.jsonld",
 
 	/**
 	 * The canonical RDF namespace URI for TWIN Common.
 	 */
-	NamespaceCommon: "https://schema.twindev.org/common/",
+	NamespaceCommon: "https://schema.3sixty.global/common/",
 
 	/**
 	 * The value to use in JSON-LD context for TWIN Common.
 	 */
-	ContextCommon: "https://schema.twindev.org/common/",
+	ContextCommon: "https://schema.3sixty.global/common/",
 
 	/**
 	 * The JSON-LD Context URL for TWIN Common.
 	 */
-	JsonLdContextCommon: "https://schema.twindev.org/common/types.jsonld"
+	JsonLdContextCommon: "https://schema.3sixty.global/common/types.jsonld"
 } as const;
 
 /**

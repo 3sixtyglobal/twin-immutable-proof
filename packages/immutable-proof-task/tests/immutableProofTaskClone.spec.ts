@@ -1,21 +1,21 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
-import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
-import { EntityStorageIdentityConnector } from "@twin.org/identity-connector-entity-storage";
-import { IdentityConnectorFactory } from "@twin.org/identity-models";
-import { ImmutableProofContexts, ImmutableProofTypes } from "@twin.org/immutable-proof-models";
-import { LoggingConnectorFactory } from "@twin.org/logging-models";
-import { ModuleHelper } from "@twin.org/modules";
-import { nameof } from "@twin.org/nameof";
+import { MemoryEntityStorageConnector } from "@3sixty/entity-storage-connector-memory";
+import { EntityStorageConnectorFactory } from "@3sixty/entity-storage-models";
+import { EntityStorageIdentityConnector } from "@3sixty/identity-connector-entity-storage";
+import { IdentityConnectorFactory } from "@3sixty/identity-models";
+import { ImmutableProofContexts, ImmutableProofTypes } from "@3sixty/immutable-proof-models";
+import { LoggingConnectorFactory } from "@3sixty/logging-models";
+import { ModuleHelper } from "@3sixty/modules";
+import { nameof } from "@3sixty/nameof";
 import {
 	EntityStorageNotarizationConnector,
 	type Notarization,
 	initSchema as initSchemaNotarization
-} from "@twin.org/notarization-connector-entity-storage";
-import { NotarizationConnectorFactory } from "@twin.org/notarization-models";
-import { EntityStorageVaultConnector } from "@twin.org/vault-connector-entity-storage";
-import { VaultConnectorFactory } from "@twin.org/vault-models";
+} from "@3sixty/notarization-connector-entity-storage";
+import { NotarizationConnectorFactory } from "@3sixty/notarization-models";
+import { EntityStorageVaultConnector } from "@3sixty/vault-connector-entity-storage";
+import { VaultConnectorFactory } from "@3sixty/vault-models";
 import { setupTestEnv, TEST_NODE_IDENTITY } from "./setupTestEnv.js";
 import type { IImmutableProofTaskPayload } from "../src/models/IImmutableProofTaskPayload.js";
 import {

@@ -1,39 +1,32 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { HealthCategory, HealthStatus } from "@twin.org/api-models";
-import { TaskStatus } from "@twin.org/background-task-models";
+import { HealthCategory, HealthStatus } from "@3sixty/api-models";
+import { TaskStatus } from "@3sixty/background-task-models";
 import {
 	type BackgroundTask,
 	BackgroundTaskService,
 	initSchema as initSchemaBackgroundTask
-} from "@twin.org/background-task-service";
-import { ContextIdKeys, ContextIdStore } from "@twin.org/context";
-import {
-	ComponentFactory,
-	Converter,
-	Factory,
-	Is,
-	ObjectHelper,
-	RandomHelper
-} from "@twin.org/core";
-import { JsonLdProcessor } from "@twin.org/data-json-ld";
-import { entity, EntitySchemaFactory, EntitySchemaHelper, property } from "@twin.org/entity";
-import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
-import { EntityStorageConnectorFactory, MigrationHelper } from "@twin.org/entity-storage-models";
+} from "@3sixty/background-task-service";
+import { ContextIdKeys, ContextIdStore } from "@3sixty/context";
+import { ComponentFactory, Converter, Factory, Is, ObjectHelper, RandomHelper } from "@3sixty/core";
+import { JsonLdProcessor } from "@3sixty/data-json-ld";
+import { entity, EntitySchemaFactory, EntitySchemaHelper, property } from "@3sixty/entity";
+import { MemoryEntityStorageConnector } from "@3sixty/entity-storage-connector-memory";
+import { EntityStorageConnectorFactory, MigrationHelper } from "@3sixty/entity-storage-models";
 import {
 	EntityStorageLoggingConnector,
 	initSchema as initSchemaLogging,
 	type LogEntry
-} from "@twin.org/logging-connector-entity-storage";
-import { LoggingConnectorFactory } from "@twin.org/logging-models";
-import { ModuleHelper } from "@twin.org/modules";
-import { nameof } from "@twin.org/nameof";
+} from "@3sixty/logging-connector-entity-storage";
+import { LoggingConnectorFactory } from "@3sixty/logging-models";
+import { ModuleHelper } from "@3sixty/modules";
+import { nameof } from "@3sixty/nameof";
 import {
 	EntityStorageNotarizationConnector,
 	initSchema as initSchemaNotarization,
 	type Notarization
-} from "@twin.org/notarization-connector-entity-storage";
-import { NotarizationConnectorFactory } from "@twin.org/notarization-models";
+} from "@3sixty/notarization-connector-entity-storage";
+import { NotarizationConnectorFactory } from "@3sixty/notarization-models";
 import {
 	cleanupTestEnv,
 	setupTestEnv,
@@ -307,7 +300,7 @@ describe("ImmutableProofService", () => {
 
 		expect(registerHandlerSpy).toHaveBeenCalledWith(
 			"immutable-proof",
-			"@twin.org/immutable-proof-task",
+			"@3sixty/immutable-proof-task",
 			"processProofTask",
 			expect.any(Function),
 			expect.objectContaining({
@@ -326,7 +319,7 @@ describe("ImmutableProofService", () => {
 
 		expect(registerHandlerSpy).toHaveBeenCalledWith(
 			"immutable-proof",
-			"@twin.org/immutable-proof-task",
+			"@3sixty/immutable-proof-task",
 			"processProofTask",
 			expect.any(Function),
 			expect.objectContaining({
@@ -347,7 +340,7 @@ describe("ImmutableProofService", () => {
 
 		expect(registerHandlerSpy).toHaveBeenCalledWith(
 			"immutable-proof",
-			"@twin.org/immutable-proof-task",
+			"@3sixty/immutable-proof-task",
 			"processProofTask",
 			expect.any(Function),
 			expect.objectContaining({ maxWorkerCount: 1 })
@@ -360,7 +353,7 @@ describe("ImmutableProofService", () => {
 
 		expect(registerHandlerSpy).toHaveBeenCalledWith(
 			"immutable-proof",
-			"@twin.org/immutable-proof-task",
+			"@3sixty/immutable-proof-task",
 			"processProofTask",
 			expect.any(Function),
 			expect.objectContaining({ maxWorkerCount: 3 })
@@ -494,8 +487,8 @@ describe("ImmutableProofService", () => {
 		expect(proof).toEqual({
 			"@context": [
 				"https://www.w3.org/2018/credentials/v1",
-				"https://schema.twindev.org/immutable-proof/",
-				"https://schema.twindev.org/common/"
+				"https://schema.3sixty.global/immutable-proof/",
+				"https://schema.3sixty.global/common/"
 			],
 			type: ["VerifiableCredential", "ImmutableProof"],
 			id: "immutable-proof:01010101010101010101010101010101",
@@ -614,8 +607,8 @@ describe("ImmutableProofService", () => {
 		expect(proof).toEqual({
 			"@context": [
 				"https://www.w3.org/2018/credentials/v1",
-				"https://schema.twindev.org/immutable-proof/",
-				"https://schema.twindev.org/common/",
+				"https://schema.3sixty.global/immutable-proof/",
+				"https://schema.3sixty.global/common/",
 				"https://w3id.org/security/data-integrity/v2"
 			],
 			id: "immutable-proof:01010101010101010101010101010101",
@@ -656,8 +649,8 @@ describe("ImmutableProofService", () => {
 		expect(proof).toEqual({
 			"@context": [
 				"https://www.w3.org/2018/credentials/v1",
-				"https://schema.twindev.org/immutable-proof/",
-				"https://schema.twindev.org/common/"
+				"https://schema.3sixty.global/immutable-proof/",
+				"https://schema.3sixty.global/common/"
 			],
 			id: "immutable-proof:01010101010101010101010101010101",
 			issuer: TEST_ORGANIZATION_IDENTITY,
@@ -683,7 +676,7 @@ describe("ImmutableProofService", () => {
 
 		const result = await service.verify(proofId);
 		expect(result).toEqual({
-			"@context": "https://schema.twindev.org/immutable-proof/",
+			"@context": "https://schema.3sixty.global/immutable-proof/",
 			type: "ImmutableProofVerification",
 			verified: false,
 			failure: "notIssued"
@@ -775,8 +768,8 @@ describe("ImmutableProofService", () => {
 		expect(proof).toEqual({
 			"@context": [
 				"https://www.w3.org/2018/credentials/v1",
-				"https://schema.twindev.org/immutable-proof/",
-				"https://schema.twindev.org/common/",
+				"https://schema.3sixty.global/immutable-proof/",
+				"https://schema.3sixty.global/common/",
 				"https://w3id.org/security/data-integrity/v2"
 			],
 			id: "immutable-proof:01010101010101010101010101010101",
@@ -826,7 +819,7 @@ describe("ImmutableProofService", () => {
 
 		const result = await service.verify(proofId);
 		expect(result).toEqual({
-			"@context": "https://schema.twindev.org/immutable-proof/",
+			"@context": "https://schema.3sixty.global/immutable-proof/",
 			type: "ImmutableProofVerification",
 			verified: true
 		});
@@ -938,7 +931,7 @@ describe("ImmutableProofService", () => {
 
 		const result = await service.verify(proofId);
 		expect(result).toEqual({
-			"@context": "https://schema.twindev.org/immutable-proof/",
+			"@context": "https://schema.3sixty.global/immutable-proof/",
 			type: "ImmutableProofVerification",
 			verified: false,
 			failure: "verificationFailure"
@@ -966,7 +959,7 @@ describe("ImmutableProofService", () => {
 
 		const result = await service.verify(proofId);
 		expect(result).toEqual({
-			"@context": "https://schema.twindev.org/immutable-proof/",
+			"@context": "https://schema.3sixty.global/immutable-proof/",
 			type: "ImmutableProofVerification",
 			verified: false,
 			failure: "revoked"
@@ -998,7 +991,7 @@ describe("ImmutableProofService", () => {
 
 		const result = await service.verify(proofId);
 		expect(result).toEqual({
-			"@context": "https://schema.twindev.org/immutable-proof/",
+			"@context": "https://schema.3sixty.global/immutable-proof/",
 			type: "ImmutableProofVerification",
 			verified: false,
 			failure: "verificationFailure"

@@ -10,9 +10,9 @@ import {
 	type INotFoundResponse,
 	type IRestRoute,
 	type ITag
-} from "@twin.org/api-models";
-import { ContextIdStore } from "@twin.org/context";
-import { ComponentFactory, Guards } from "@twin.org/core";
+} from "@3sixty/api-models";
+import { ContextIdStore } from "@3sixty/context";
+import { ComponentFactory, Guards } from "@3sixty/core";
 import {
 	type IImmutableProofComponent,
 	type IImmutableProofCreateRequest,
@@ -25,10 +25,10 @@ import {
 	ImmutableProofContexts,
 	ImmutableProofFailure,
 	ImmutableProofTypes
-} from "@twin.org/immutable-proof-models";
-import { nameof } from "@twin.org/nameof";
-import { DidContexts, DidCryptoSuites, DidTypes, ProofTypes } from "@twin.org/standards-w3c-did";
-import { HeaderTypes, HttpStatusCode, type IHttpHeaders, MimeTypes } from "@twin.org/web";
+} from "@3sixty/immutable-proof-models";
+import { nameof } from "@3sixty/nameof";
+import { DidContexts, DidCryptoSuites, DidTypes, ProofTypes } from "@3sixty/standards-w3c-did";
+import { HeaderTypes, HttpStatusCode, type IHttpHeaders, MimeTypes } from "@3sixty/web";
 
 /**
  * The source used when communicating about these routes.

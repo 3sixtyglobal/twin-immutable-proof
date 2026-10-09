@@ -6,7 +6,7 @@ Interface describing an immutable proof verification.
 
 ### @context {#context}
 
-> **@context**: `"https://schema.twindev.org/immutable-proof/"`
+> **@context**: `"https://schema.3sixty.global/immutable-proof/"`
 
 JSON-LD Context.
 

@@ -4,8 +4,8 @@ import {
 	type BackgroundTask,
 	BackgroundTaskService,
 	initSchema as initSchemaBackgroundTask
-} from "@twin.org/background-task-service";
-import { ContextIdStore } from "@twin.org/context";
+} from "@3sixty/background-task-service";
+import { ContextIdStore } from "@3sixty/context";
 import {
 	AlreadyExistsError,
 	ComponentFactory,
@@ -13,29 +13,29 @@ import {
 	Factory,
 	Is,
 	RandomHelper
-} from "@twin.org/core";
-import { JsonLdProcessor } from "@twin.org/data-json-ld";
-import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
-import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
+} from "@3sixty/core";
+import { JsonLdProcessor } from "@3sixty/data-json-ld";
+import { MemoryEntityStorageConnector } from "@3sixty/entity-storage-connector-memory";
+import { EntityStorageConnectorFactory } from "@3sixty/entity-storage-models";
 import {
 	EntityStorageLoggingConnector,
 	initSchema as initSchemaLogging,
 	type LogEntry
-} from "@twin.org/logging-connector-entity-storage";
-import { LoggingConnectorFactory } from "@twin.org/logging-models";
-import { ModuleHelper } from "@twin.org/modules";
-import { nameof } from "@twin.org/nameof";
+} from "@3sixty/logging-connector-entity-storage";
+import { LoggingConnectorFactory } from "@3sixty/logging-models";
+import { ModuleHelper } from "@3sixty/modules";
+import { nameof } from "@3sixty/nameof";
 import {
 	EntityStorageNotarizationConnector,
 	initSchema as initSchemaNotarization,
 	type Notarization
-} from "@twin.org/notarization-connector-entity-storage";
-import { NotarizationConnectorFactory } from "@twin.org/notarization-models";
+} from "@3sixty/notarization-connector-entity-storage";
+import { NotarizationConnectorFactory } from "@3sixty/notarization-models";
 import {
 	MetricType,
 	type ITelemetryComponent,
 	type ITelemetryMetric
-} from "@twin.org/telemetry-models";
+} from "@3sixty/telemetry-models";
 import { cleanupTestEnv, setupTestEnv, TEST_ORGANIZATION_IDENTITY } from "./setupTestEnv.js";
 import type { ImmutableProof } from "../src/entities/immutableProof.js";
 import { ImmutableProofService } from "../src/immutableProofService.js";

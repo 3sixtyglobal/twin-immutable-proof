@@ -1,8 +1,8 @@
 {
 	"prefix": "twin-immutable-proof",
-	"contextUrl": "https://schema.twindev.org/immutable-proof/",
+	"contextUrl": "https://schema.3sixty.global/immutable-proof/",
 	"additionalContextUrls": {
-		"twin-common": "https://schema.twindev.org/common/",
+		"twin-common": "https://schema.3sixty.global/common/",
 		"schema": "http://schema.org/",
 		"sec": "https://w3id.org/security#",
 		"cred": "https://www.w3.org/2018/credentials#"

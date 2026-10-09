@@ -5,7 +5,7 @@ Use these snippets to connect to an API, create and retrieve proofs, and validat
 ## ImmutableProofRestClient
 
 ```typescript
-import { ImmutableProofRestClient } from '@twin.org/immutable-proof-rest-client';
+import { ImmutableProofRestClient } from '@3sixty/immutable-proof-rest-client';
 
 const client = new ImmutableProofRestClient({
   endpoint: 'http://localhost:8080'
@@ -15,7 +15,7 @@ console.log(client.className()); // ImmutableProofRestClient
 ```
 
 ```typescript
-import { ImmutableProofRestClient } from '@twin.org/immutable-proof-rest-client';
+import { ImmutableProofRestClient } from '@3sixty/immutable-proof-rest-client';
 
 const client = new ImmutableProofRestClient({
   endpoint: 'http://localhost:8080'
@@ -31,7 +31,7 @@ console.log(proofId); // immutable-proof:01JABCDEF1234567890
 ```
 
 ```typescript
-import { ImmutableProofRestClient } from '@twin.org/immutable-proof-rest-client';
+import { ImmutableProofRestClient } from '@3sixty/immutable-proof-rest-client';
 
 const client = new ImmutableProofRestClient({
   endpoint: 'http://localhost:8080'
@@ -45,7 +45,7 @@ console.log(verification.verified); // true
 ```
 
 ```typescript
-import { ImmutableProofRestClient } from '@twin.org/immutable-proof-rest-client';
+import { ImmutableProofRestClient } from '@3sixty/immutable-proof-rest-client';
 
 const client = new ImmutableProofRestClient({
   endpoint: 'http://localhost:8080'

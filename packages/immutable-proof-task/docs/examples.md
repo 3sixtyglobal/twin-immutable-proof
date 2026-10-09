@@ -5,7 +5,7 @@ These snippets show how to prepare payloads and execute background task processi
 ## processProofTask
 
 ```typescript
-import type { IImmutableProofTaskPayload } from '@twin.org/immutable-proof-task';
+import type { IImmutableProofTaskPayload } from '@3sixty/immutable-proof-task';
 
 const payload: IImmutableProofTaskPayload = {
   proofId: 'immutable-proof:01JABCDEF1234567890',
@@ -13,7 +13,10 @@ const payload: IImmutableProofTaskPayload = {
   identityConnectorType: 'identity',
   verificationMethodId: 'immutable-proof-assertion',
   credentialSubject: {
-    '@context': ['https://schema.twindev.org/immutable-proof', 'https://schema.twindev.org/common'],
+    '@context': [
+      'https://schema.3sixty.global/immutable-proof',
+      'https://schema.3sixty.global/common'
+    ],
     type: 'ImmutableProof',
     id: 'https://example.org/documents/100',
     proofIntegrity: 'yEr9VvYCGDh2Ww1YwQMehUy4LlW35mLhX8j8R8U6x0g='
@@ -24,7 +27,7 @@ console.log(payload.identity); // did:iota:tst:issuer
 ```
 
 ```typescript
-import { processProofTask } from '@twin.org/immutable-proof-task';
+import { processProofTask } from '@3sixty/immutable-proof-task';
 
 const engineCloneData = {
   factories: {},
@@ -37,7 +40,10 @@ const result = await processProofTask(engineCloneData, {
   identityConnectorType: 'identity',
   verificationMethodId: 'immutable-proof-assertion',
   credentialSubject: {
-    '@context': ['https://schema.twindev.org/immutable-proof', 'https://schema.twindev.org/common'],
+    '@context': [
+      'https://schema.3sixty.global/immutable-proof',
+      'https://schema.3sixty.global/common'
+    ],
     type: 'ImmutableProof',
     id: 'https://example.org/documents/100',
     proofIntegrity: 'yEr9VvYCGDh2Ww1YwQMehUy4LlW35mLhX8j8R8U6x0g='

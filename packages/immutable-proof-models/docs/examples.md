@@ -5,13 +5,13 @@ These snippets show how to register data types and then use the immutable proof 
 ## ImmutableProofDataTypes
 
 ```typescript
-import { DataTypeHandlerFactory } from '@twin.org/data-core';
-import { ImmutableProofDataTypes, ImmutableProofTypes } from '@twin.org/immutable-proof-models';
+import { DataTypeHandlerFactory } from '@3sixty/data-core';
+import { ImmutableProofDataTypes, ImmutableProofTypes } from '@3sixty/immutable-proof-models';
 
 ImmutableProofDataTypes.registerTypes();
 
 const handler = DataTypeHandlerFactory.get(
-  'https://schema.twindev.org/immutable-proof/ImmutableProof'
+  'https://schema.3sixty.global/immutable-proof/ImmutableProof'
 );
 console.log(handler.type === ImmutableProofTypes.ImmutableProof); // true
 ```
@@ -23,7 +23,7 @@ import type {
   IImmutableProofCreateRequest,
   IImmutableProofGetResponse,
   IImmutableProofVerifyResponse
-} from '@twin.org/immutable-proof-models';
+} from '@3sixty/immutable-proof-models';
 
 const createRequest: IImmutableProofCreateRequest = {
   body: {
@@ -39,11 +39,11 @@ console.log(createRequest.body.document.type); // Person
 ```
 
 ```typescript
-import { ImmutableProofFailure, ImmutableProofTypes } from '@twin.org/immutable-proof-models';
+import { ImmutableProofFailure, ImmutableProofTypes } from '@3sixty/immutable-proof-models';
 import type {
   IImmutableProofGetResponse,
   IImmutableProofVerifyResponse
-} from '@twin.org/immutable-proof-models';
+} from '@3sixty/immutable-proof-models';
 
 const getResponse: IImmutableProofGetResponse = {
   body: {
@@ -60,7 +60,7 @@ const getResponse: IImmutableProofGetResponse = {
 
 const verifyResponse: IImmutableProofVerifyResponse = {
   body: {
-    '@context': 'https://schema.twindev.org/immutable-proof',
+    '@context': 'https://schema.3sixty.global/immutable-proof',
     type: ImmutableProofTypes.ImmutableProofVerification,
     verified: false,
     failure: ImmutableProofFailure.ProofMissing

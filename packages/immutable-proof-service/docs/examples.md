@@ -5,7 +5,7 @@ These examples show how to initialise storage and routes, create and retrieve pr
 ## ImmutableProofService
 
 ```typescript
-import { ImmutableProofService } from '@twin.org/immutable-proof-service';
+import { ImmutableProofService } from '@3sixty/immutable-proof-service';
 
 const service = new ImmutableProofService({
   identityConnectorType: 'identity',
@@ -18,7 +18,7 @@ console.log(service.className()); // ImmutableProofService
 ```
 
 ```typescript
-import { ImmutableProofService } from '@twin.org/immutable-proof-service';
+import { ImmutableProofService } from '@3sixty/immutable-proof-service';
 
 const service = new ImmutableProofService();
 await service.start();
@@ -33,7 +33,7 @@ console.log(proofId); // immutable-proof:01JABCDEF1234567890
 ```
 
 ```typescript
-import { ImmutableProofService } from '@twin.org/immutable-proof-service';
+import { ImmutableProofService } from '@3sixty/immutable-proof-service';
 
 const service = new ImmutableProofService();
 const proofId = 'immutable-proof:01JABCDEF1234567890';
@@ -46,7 +46,7 @@ console.log(verification.verified); // true
 ```
 
 ```typescript
-import { ImmutableProofService } from '@twin.org/immutable-proof-service';
+import { ImmutableProofService } from '@3sixty/immutable-proof-service';
 
 const service = new ImmutableProofService();
 const proofId = 'immutable-proof:01JABCDEF1234567890';
@@ -60,7 +60,7 @@ console.log(verificationAfterRemoval.verified); // false
 ## ImmutableProof
 
 ```typescript
-import { ImmutableProof } from '@twin.org/immutable-proof-service';
+import { ImmutableProof } from '@3sixty/immutable-proof-service';
 
 const entity: ImmutableProof = {
   id: '01JABCDEF1234567890',
@@ -81,7 +81,7 @@ import {
   generateRestRoutesImmutableProof,
   initSchema,
   restEntryPoints
-} from '@twin.org/immutable-proof-service';
+} from '@3sixty/immutable-proof-service';
 
 initSchema();
 
@@ -95,7 +95,7 @@ import {
   immutableProofCreate,
   immutableProofGet,
   immutableProofVerify
-} from '@twin.org/immutable-proof-service';
+} from '@3sixty/immutable-proof-service';
 
 const requestContext = {};
 

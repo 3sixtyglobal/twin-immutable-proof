@@ -1,4 +1,4 @@
-# @twin.org/immutable-proof-task
+# @3sixty/immutable-proof-task
 
 ## Interfaces
 

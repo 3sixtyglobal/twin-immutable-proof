@@ -8,6 +8,7 @@
 	"release-type": "node",
 	"initial-version": "0.0.1",
 	"versioning": "default",
+	"last-release-sha": "5f964228d97aa39905e4ef4b2a7e68699919a53e",
 	"packages": {
 		"packages/immutable-proof-models": {
 			"package-name": "immutable-proof-models",

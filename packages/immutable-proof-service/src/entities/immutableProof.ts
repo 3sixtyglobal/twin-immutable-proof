@@ -1,7 +1,7 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { entity, property, SortDirection } from "@twin.org/entity";
-import type { DidContexts } from "@twin.org/standards-w3c-did";
+import { entity, property, SortDirection } from "@3sixty/entity";
+import type { DidContexts } from "@3sixty/standards-w3c-did";
 
 /**
  * Class describing the immutable proof.

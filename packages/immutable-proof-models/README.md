@@ -1,11 +1,11 @@
-# TWIN Immutable Proof Models
+# 3Sixty Immutable Proof Models
 
 This package defines the shared contracts used by immutable proof components, including request and response models, verification structures, topics, and schema context values. It provides a stable foundation so services, tasks, and clients can exchange data consistently.
 
 ## Installation
 
 ```shell
-npm install @twin.org/immutable-proof-models
+npm install @3sixty/immutable-proof-models
 ```
 
 ## Examples

@@ -1,4 +1,4 @@
-# @twin.org/immutable-proof-rest-client
+# @3sixty/immutable-proof-rest-client
 
 ## Classes
 

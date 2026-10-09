@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IImmutableProof } from "@twin.org/immutable-proof-models";
+import type { IImmutableProof } from "@3sixty/immutable-proof-models";
 
 /**
  * The payload for the immutable proof task.

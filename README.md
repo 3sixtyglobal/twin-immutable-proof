@@ -1,4 +1,4 @@
-# TWIN Immutable Proof
+# 3Sixty Immutable Proof
 
 This repository provides a focused set of components for creating, storing, and validating immutable proof records across distributed systems. The modules are designed to work together so teams can model proof data, run background processing, expose service endpoints, and integrate through a dedicated client.
 

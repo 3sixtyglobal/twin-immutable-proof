@@ -1,5 +1,5 @@
 {
-	"baseUrl": "https://schema.twindev.org/immutable-proof/",
+	"baseUrl": "https://schema.3sixty.global/immutable-proof/",
 	"types": [
 		"./src/models/IImmutableProof.ts",
 		"./src/models/IImmutableProofCredential.ts",
@@ -8,8 +8,8 @@
 		"./src/models/immutableProofFailure.ts"
 	],
 	"externalReferences": {
-		"JsonLd(.*)": "https://schema.twindev.org/json-ld/JsonLd$1",
-		"Did(.*)": "https://schema.twindev.org/w3c-did/Did$1",
-		"DataIntegrityProof": "https://schema.twindev.org/w3c-did/DataIntegrityProof"
+		"JsonLd(.*)": "https://schema.3sixty.global/json-ld/JsonLd$1",
+		"Did(.*)": "https://schema.3sixty.global/w3c-did/Did$1",
+		"DataIntegrityProof": "https://schema.3sixty.global/w3c-did/DataIntegrityProof"
 	}
 }

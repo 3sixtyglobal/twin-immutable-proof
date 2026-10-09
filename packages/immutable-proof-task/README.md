@@ -1,11 +1,11 @@
-# TWIN Immutable Proof Task
+# 3Sixty Immutable Proof Task
 
 This package provides background processing for immutable proof generation. It accepts prepared task payloads, resolves the configured identity connector, and produces verifiable credential output for downstream storage and verification.
 
 ## Installation
 
 ```shell
-npm install @twin.org/immutable-proof-task
+npm install @3sixty/immutable-proof-task
 ```
 
 ## Examples

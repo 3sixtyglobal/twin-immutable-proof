@@ -1,10 +1,10 @@
 {
-	"name": "@twin.org/immutable-proof-task",
-	"version": "0.11.1-next.0",
+	"name": "@3sixty/immutable-proof-task",
+	"version": "0.20.0-next.0",
 	"description": "Background proof processing that creates verifiable credentials from prepared payloads",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/3sixtyglobal/twin-immutable-proof.git",
+		"url": "git+https://github.com/3sixtyglobal/immutable-proof.git",
 		"directory": "packages/immutable-proof-task"
 	},
 	"author": "martyn.janes@iota.org",
@@ -28,32 +28,32 @@
 		"dist:no-test": "pnpm run clean && concurrently -g -n build,locales,types \"pnpm run build\" \"pnpm run validate-locales\" \"pnpm run test:build\""
 	},
 	"dependencies": {
-		"@twin.org/context": "next",
-		"@twin.org/core": "next",
-		"@twin.org/data-json-ld": "next",
-		"@twin.org/identity-models": "next",
-		"@twin.org/immutable-proof-models": "0.11.1-next.0",
-		"@twin.org/logging-models": "next",
-		"@twin.org/modules": "next",
-		"@twin.org/nameof": "next",
-		"@twin.org/notarization-models": "next",
-		"@twin.org/standards-w3c-did": "next"
+		"@3sixty/context": "next",
+		"@3sixty/core": "next",
+		"@3sixty/data-json-ld": "next",
+		"@3sixty/identity-models": "next",
+		"@3sixty/immutable-proof-models": "0.20.0-next.0",
+		"@3sixty/logging-models": "next",
+		"@3sixty/modules": "next",
+		"@3sixty/nameof": "next",
+		"@3sixty/notarization-models": "next",
+		"@3sixty/standards-w3c-did": "next"
 	},
 	"devDependencies": {
-		"@twin.org/api-service": "next",
-		"@twin.org/api-tenant-processor": "next",
-		"@twin.org/crypto": "next",
-		"@twin.org/entity-storage-connector-memory": "next",
-		"@twin.org/entity-storage-models": "next",
-		"@twin.org/identity-connector-entity-storage": "next",
-		"@twin.org/logging-connector-entity-storage": "next",
-		"@twin.org/logging-service": "next",
-		"@twin.org/nameof-transformer": "next",
-		"@twin.org/nameof-vitest-plugin": "next",
-		"@twin.org/notarization-connector-entity-storage": "next",
-		"@twin.org/validate-locales": "next",
-		"@twin.org/vault-connector-entity-storage": "next",
-		"@twin.org/vault-models": "next",
+		"@3sixty/api-service": "next",
+		"@3sixty/api-tenant-processor": "next",
+		"@3sixty/crypto": "next",
+		"@3sixty/entity-storage-connector-memory": "next",
+		"@3sixty/entity-storage-models": "next",
+		"@3sixty/identity-connector-entity-storage": "next",
+		"@3sixty/logging-connector-entity-storage": "next",
+		"@3sixty/logging-service": "next",
+		"@3sixty/nameof-transformer": "next",
+		"@3sixty/nameof-vitest-plugin": "next",
+		"@3sixty/notarization-connector-entity-storage": "next",
+		"@3sixty/validate-locales": "next",
+		"@3sixty/vault-connector-entity-storage": "next",
+		"@3sixty/vault-models": "next",
 		"@types/node": "26.6.2",
 		"@vitest/coverage-v8": "5.0.1",
 		"concurrently": "10.0.5",
@@ -92,7 +92,7 @@
 		"immutable-proof"
 	],
 	"bugs": {
-		"url": "git+https://github.com/3sixtyglobal/twin-immutable-proof/issues"
+		"url": "git+https://github.com/3sixtyglobal/immutable-proof/issues"
 	},
-	"homepage": "https://twindev.org"
+	"homepage": "https://3sixty.global"
 }

@@ -1,4 +1,4 @@
-# @twin.org/immutable-proof-models
+# @3sixty/immutable-proof-models
 
 ## Classes
 

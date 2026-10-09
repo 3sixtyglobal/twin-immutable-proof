@@ -1,11 +1,11 @@
-# TWIN Immutable Proof Service
+# 3Sixty Immutable Proof Service
 
 This package implements the core immutable proof lifecycle, including proof creation, retrieval, verification, and storage coordination. It also exposes route and schema helpers so API hosts can register endpoints and entity schemas with consistent behaviour.
 
 ## Installation
 
 ```shell
-npm install @twin.org/immutable-proof-service
+npm install @3sixty/immutable-proof-service
 ```
 
 ## Examples

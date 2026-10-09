@@ -1,24 +1,24 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import path from "node:path";
-import { Converter, RandomHelper } from "@twin.org/core";
-import { Bip39 } from "@twin.org/crypto";
-import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
-import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
+import { Converter, RandomHelper } from "@3sixty/core";
+import { Bip39 } from "@3sixty/crypto";
+import { MemoryEntityStorageConnector } from "@3sixty/entity-storage-connector-memory";
+import { EntityStorageConnectorFactory } from "@3sixty/entity-storage-models";
 import {
 	EntityStorageIdentityConnector,
 	type IdentityDocument,
 	initSchema as initSchemaIdentity
-} from "@twin.org/identity-connector-entity-storage";
-import { IdentityConnectorFactory } from "@twin.org/identity-models";
-import { nameof } from "@twin.org/nameof";
+} from "@3sixty/identity-connector-entity-storage";
+import { IdentityConnectorFactory } from "@3sixty/identity-models";
+import { nameof } from "@3sixty/nameof";
 import {
 	EntityStorageVaultConnector,
 	type VaultKey,
 	type VaultSecret,
 	initSchema as initSchemaVault
-} from "@twin.org/vault-connector-entity-storage";
-import { VaultConnectorFactory, VaultKeyType } from "@twin.org/vault-models";
+} from "@3sixty/vault-connector-entity-storage";
+import { VaultConnectorFactory, VaultKeyType } from "@3sixty/vault-models";
 import * as dotenv from "dotenv";
 
 console.debug("Setting up test environment from .env and .env.dev files");

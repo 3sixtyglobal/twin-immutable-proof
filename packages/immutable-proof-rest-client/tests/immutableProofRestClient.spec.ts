@@ -1,17 +1,17 @@
 // Copyright 2026 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { GuardError } from "@twin.org/core";
+import { GuardError } from "@3sixty/core";
 import type {
 	IImmutableProofCredential,
 	IImmutableProofVerification
-} from "@twin.org/immutable-proof-models";
+} from "@3sixty/immutable-proof-models";
 import {
 	ImmutableProofContexts,
 	ImmutableProofFailure,
 	ImmutableProofTypes
-} from "@twin.org/immutable-proof-models";
-import { DidContexts, ProofTypes } from "@twin.org/standards-w3c-did";
-import { HttpMethod } from "@twin.org/web";
+} from "@3sixty/immutable-proof-models";
+import { DidContexts, ProofTypes } from "@3sixty/standards-w3c-did";
+import { HttpMethod } from "@3sixty/web";
 import { ImmutableProofRestClient } from "../src/immutableProofRestClient.js";
 import {
 	createdResponse,

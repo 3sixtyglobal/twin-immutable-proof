@@ -1,16 +1,16 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { ComponentFactory, Converter, GeneralError, ObjectHelper } from "@twin.org/core";
-import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
-import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
-import { ImmutableProofContexts, ImmutableProofTypes } from "@twin.org/immutable-proof-models";
-import { nameof } from "@twin.org/nameof";
+import { ComponentFactory, Converter, GeneralError, ObjectHelper } from "@3sixty/core";
+import { MemoryEntityStorageConnector } from "@3sixty/entity-storage-connector-memory";
+import { EntityStorageConnectorFactory } from "@3sixty/entity-storage-models";
+import { ImmutableProofContexts, ImmutableProofTypes } from "@3sixty/immutable-proof-models";
+import { nameof } from "@3sixty/nameof";
 import {
 	EntityStorageNotarizationConnector,
 	initSchema as initSchemaNotarization,
 	type Notarization
-} from "@twin.org/notarization-connector-entity-storage";
-import { NotarizationConnectorFactory } from "@twin.org/notarization-models";
+} from "@3sixty/notarization-connector-entity-storage";
+import { NotarizationConnectorFactory } from "@3sixty/notarization-models";
 import { setupTestEnv, TEST_NODE_IDENTITY } from "./setupTestEnv.js";
 import { processProofTask } from "../src/processProofTask.js";
 

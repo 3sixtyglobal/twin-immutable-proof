@@ -1,14 +1,14 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { ContextIdStore } from "@twin.org/context";
-import { BaseError, ComponentFactory, Guards, Is, ObjectHelper } from "@twin.org/core";
-import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import { IdentityConnectorFactory } from "@twin.org/identity-models";
-import type { ILoggingComponent } from "@twin.org/logging-models";
-import { ModuleHelper } from "@twin.org/modules";
-import { nameof } from "@twin.org/nameof";
-import { NotarizationConnectorFactory, NotarizationMode } from "@twin.org/notarization-models";
-import type { IProof } from "@twin.org/standards-w3c-did";
+import { ContextIdStore } from "@3sixty/context";
+import { BaseError, ComponentFactory, Guards, Is, ObjectHelper } from "@3sixty/core";
+import type { IJsonLdNodeObject } from "@3sixty/data-json-ld";
+import { IdentityConnectorFactory } from "@3sixty/identity-models";
+import type { ILoggingComponent } from "@3sixty/logging-models";
+import { ModuleHelper } from "@3sixty/modules";
+import { nameof } from "@3sixty/nameof";
+import { NotarizationConnectorFactory, NotarizationMode } from "@3sixty/notarization-models";
+import type { IProof } from "@3sixty/standards-w3c-did";
 import { ImmutableProofTask } from "./immutableProofTask.js";
 import type { IImmutableProofTaskPayload } from "./models/IImmutableProofTaskPayload.js";
 import type { IImmutableProofTaskResult } from "./models/IImmutableProofTaskResult.js";
@@ -52,7 +52,7 @@ export async function processProofTaskStart(
 		// If the clone data is not empty we are running in a worker thread - create a
 		// cloned engine instance via dynamic import so no static engine dependency is needed.
 		built = await ModuleHelper.execModuleMethod<NonNullable<typeof engine>>(
-			"@twin.org/engine-core",
+			"@3sixty/engine-core",
 			"EngineCoreBuilder.fromClone",
 			[
 				"engine",

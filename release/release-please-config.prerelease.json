@@ -10,6 +10,7 @@
 	"versioning": "prerelease",
 	"prerelease": true,
 	"prerelease-type": "next",
+	"last-release-sha": "e3cad27f280e5f03937d125af47b56ff582edb07",
 	"packages": {
 		"packages/immutable-proof-models": {
 			"package-name": "immutable-proof-models",

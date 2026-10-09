@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { nameof } from "@twin.org/nameof";
+import { nameof } from "@3sixty/nameof";
 
 /**
  * The source context for guards and logging in the immutable proof task.

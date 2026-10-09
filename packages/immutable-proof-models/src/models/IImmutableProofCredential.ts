@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IDidVerifiableCredential, IProof } from "@twin.org/standards-w3c-did";
+import type { IDidVerifiableCredential, IProof } from "@3sixty/standards-w3c-did";
 import type { IImmutableProofDataIntegrity } from "./IImmutableProofDataIntegrity.js";
 
 /**

@@ -1,7 +1,7 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IError } from "@twin.org/core";
-import type { IDidVerifiableCredential } from "@twin.org/standards-w3c-did";
+import type { IError } from "@3sixty/core";
+import type { IDidVerifiableCredential } from "@3sixty/standards-w3c-did";
 
 /**
  * The result for the immutable proof task.

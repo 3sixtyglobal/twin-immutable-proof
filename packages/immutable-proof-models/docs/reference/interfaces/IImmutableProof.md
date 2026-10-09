@@ -6,7 +6,7 @@ Interface describing an immutable proof state.
 
 ### @context? {#context}
 
-> `optional` **@context?**: \[`"https://schema.twindev.org/immutable-proof/"`, `"https://schema.twindev.org/common/"`\]
+> `optional` **@context?**: \[`"https://schema.3sixty.global/immutable-proof/"`, `"https://schema.3sixty.global/common/"`\]
 
 JSON-LD Context.
 

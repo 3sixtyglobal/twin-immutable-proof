@@ -1,4 +1,4 @@
-# @twin.org/immutable-proof-service
+# @3sixty/immutable-proof-service
 
 ## Classes
 

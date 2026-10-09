@@ -1,8 +1,8 @@
 {
 	"openapi": "3.1.1",
 	"info": {
-		"title": "TWIN - Test Endpoints",
-		"description": "REST API for TWIN - Test Endpoints.",
+		"title": "3Sixty - Test Endpoints",
+		"description": "REST API for 3Sixty - Test Endpoints.",
 		"version": "1.0.0",
 		"license": {
 			"name": "Apache 2.0 License",
@@ -189,15 +189,15 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "https://schema.twindev.org/immutable-proof/ImmutableProofCredential"
+									"$ref": "https://schema.3sixty.global/immutable-proof/ImmutableProofCredential"
 								},
 								"examples": {
 									"immutableProofGetResponseExample": {
 										"value": {
 											"@context": [
 												"https://www.w3.org/2018/credentials/v1",
-												"https://schema.twindev.org/immutable-proof/",
-												"https://schema.twindev.org/common/"
+												"https://schema.3sixty.global/immutable-proof/",
+												"https://schema.3sixty.global/common/"
 											],
 											"type": [
 												"VerifiableCredential",
@@ -223,15 +223,15 @@
 							},
 							"application/ld+json": {
 								"schema": {
-									"$ref": "https://schema.twindev.org/immutable-proof/ImmutableProofCredential"
+									"$ref": "https://schema.3sixty.global/immutable-proof/ImmutableProofCredential"
 								},
 								"examples": {
 									"immutableProofJsonLdGetResponseExample": {
 										"value": {
 											"@context": [
 												"https://www.w3.org/2018/credentials/v1",
-												"https://schema.twindev.org/immutable-proof/",
-												"https://schema.twindev.org/common/"
+												"https://schema.3sixty.global/immutable-proof/",
+												"https://schema.3sixty.global/common/"
 											],
 											"type": [
 												"VerifiableCredential",
@@ -494,19 +494,19 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "https://schema.twindev.org/immutable-proof/ImmutableProofVerification"
+									"$ref": "https://schema.3sixty.global/immutable-proof/ImmutableProofVerification"
 								},
 								"examples": {
 									"immutableProofVerifyResponseExample": {
 										"value": {
-											"@context": "https://schema.twindev.org/immutable-proof/",
+											"@context": "https://schema.3sixty.global/immutable-proof/",
 											"type": "ImmutableProofVerification",
 											"verified": true
 										}
 									},
 									"immutableProofVerifyResponseFailExample": {
 										"value": {
-											"@context": "https://schema.twindev.org/immutable-proof/",
+											"@context": "https://schema.3sixty.global/immutable-proof/",
 											"type": "ImmutableProofVerification",
 											"verified": false,
 											"failure": "verificationFailure"
@@ -748,7 +748,7 @@
 				"type": "object",
 				"properties": {
 					"document": {
-						"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
+						"$ref": "https://schema.3sixty.global/json-ld/JsonLdNodeObject"
 					},
 					"options": {
 						"type": "object",
